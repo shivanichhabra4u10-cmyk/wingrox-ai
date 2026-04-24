@@ -1,0 +1,88 @@
+/* Card Component Styles */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--ink-08);
+  border-radius: var(--r-xl);
+  padding: 28px;
+  position: relative;
+  transition: var(--t);
+}
+
+/* Accent top border - gold by default */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  background: var(--gold);
+}
+
+/* ACCENT COLORS */
+.accent-gold::before {
+  background: linear-gradient(90deg, var(--gold), var(--teal), var(--gold));
+}
+
+.accent-teal::before {
+  background: var(--teal);
+}
+
+.accent-sage::before {
+  background: var(--sage);
+}
+
+.accent-rose::before {
+  background: var(--rose);
+}
+
+.accent-slate::before {
+  background: var(--slate);
+}
+
+/* VARIANTS */
+.variant-default {
+  box-shadow: var(--sh-lg);
+}
+
+.variant-default:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--sh-xl);
+  border-color: var(--gold);
+}
+
+.variant-highlight {
+  box-shadow: var(--sh-xl);
+  border-color: transparent;
+}
+
+.variant-highlight:hover {
+  transform: translateY(-6px);
+}
+
+.variant-minimal {
+  box-shadow: none;
+  border-color: var(--ink-15);
+}
+
+.variant-minimal:hover {
+  border-color: var(--gold);
+  background: var(--bg-warm);
+}
+
+/* CONTENT STYLING */
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--ink);
+}
+
+.description {
+  font-size: 13.5px;
+  color: var(--ink-70);
+  line-height: 1.65;
+  margin-bottom: 16px;
+}

@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  name      String
+  password  String     // hashed
+  role      UserRole   @default(USER)
+  avatar    String?
+  
+  // Relations
+  refreshTokens RefreshToken[]
+  auditLogs     AuditLog[]
+  accounts      Account[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  
+  @@map("users")
+}
+
+model Account {
+  id          String   @id @default(cuid())
+  name        String
+  legalName   String?
+  website     String?
+  country     String
+  industry    String
+  stage       String
+  annualRevenueUsd Decimal? @db.Decimal(14, 2)
+  description String?
+  ownerId     String
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  @@map("accounts")
+  @@index([ownerId])
+  @@index([country])
+  @@index([industry])
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  expiresAt DateTime
+  
+  createdAt DateTime @default(now())
+  
+  @@map("refresh_tokens")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action     String   // 'CREATE', 'UPDATE', 'DELETE', 'LOGIN', etc.
+  resource   String   // 'USER', 'REPORT', etc.
+  resourceId String?
+  changes    Json?    // Store before/after values
+  ipAddress  String?
+  
+  createdAt  DateTime @default(now())
+  
+  @@map("audit_logs")
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  USER
+  VIEWER
+}

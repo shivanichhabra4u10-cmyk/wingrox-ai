@@ -1,0 +1,15 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/hub/page": "app/hub/page.js",
+  "/expansion/page": "app/expansion/page.js",
+  "/eco/page": "app/eco/page.js",
+  "/intel/page": "app/intel/page.js",
+  "/match/page": "app/match/page.js",
+  "/login/page": "app/login/page.js",
+  "/page": "app/page.js",
+  "/reports/page": "app/reports/page.js",
+  "/signup/page": "app/signup/page.js",
+  "/sim/page": "app/sim/page.js",
+  "/twin/page": "app/twin/page.js"
+}

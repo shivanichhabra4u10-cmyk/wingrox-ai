@@ -1,0 +1,1 @@
+"use strict";exports.id=701,exports.ids=[701],exports.modules={701:(r,t,e)=>{e.r(t),e.d(t,{IntelDemandChart:()=>s});let s=(0,e(8570).createProxy)(String.raw`C:\Users\USER\repos\wingrox-ai\frontend\src\components\platform\charts\IntelDemandChart.tsx#IntelDemandChart`)}};
