@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST='{"components\\\\platform\\\\PlatformSim.tsx -> ./charts/SimScenarioChart":{"id":7248,"files":["static/chunks/ca377847-3c95587e5b2a5636.js","static/chunks/840-c121c70a92425505.js","static/chunks/248.92a8b33f114df32e.js"]}}';
+self.__REACT_LOADABLE_MANIFEST="{}"

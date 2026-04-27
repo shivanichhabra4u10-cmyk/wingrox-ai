@@ -1,5 +1,12 @@
-import { PlatformSim } from '@/components/platform/PlatformSim';
+import { PlatformHtmlViewFrame } from '@/components/platform/PlatformHtmlViewFrame';
 
 export default function SimulatorsPage() {
-  return <PlatformSim />;
+  return (
+    <PlatformHtmlViewFrame
+      active="sim"
+      title="Growth Simulator Suite"
+      loadingText="Loading Simulator Suite..."
+      viewName="sim"
+    />
+  );
 }

@@ -1,14 +1,53 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import PDFDocument from 'pdfkit';
+import { PrismaService } from '../../common/prisma.service';
 import { ReportRangeDTO, ReportsSegmentsResponse, ReportsSummaryResponse, SegmentItem } from './reports.dto';
 
 @Injectable()
 export class ReportsService {
+  constructor(private readonly prisma: PrismaService) {}
+
   private readonly cacheTtlMs = 30_000;
   private readonly summaryCache = new Map<string, { ts: number; data: ReportsSummaryResponse }>();
   private readonly segmentCache = new Map<string, { ts: number; data: ReportsSegmentsResponse }>();
 
-  getSummary(input: ReportRangeDTO): ReportsSummaryResponse {
+  private buildFilterSql(input: ReportRangeDTO, alias = 't'): Prisma.Sql {
+    const filters: Prisma.Sql[] = [];
+    const days = input.range === '7d' ? 7 : input.range === '90d' ? 90 : 30;
+
+    filters.push(Prisma.sql`${Prisma.raw(alias)}."createdAt" >= NOW() - (${days} - 1) * INTERVAL '1 day'`);
+
+    if (input.country) {
+      filters.push(Prisma.sql`COALESCE(${Prisma.raw(alias)}."company"->>'country', '') = ${input.country}`);
+    }
+    if (input.industry) {
+      filters.push(Prisma.sql`COALESCE(${Prisma.raw(alias)}."company"->>'industry', '') = ${input.industry}`);
+    }
+    if (input.stage) {
+      filters.push(Prisma.sql`COALESCE(${Prisma.raw(alias)}."company"->>'stage', '') = ${input.stage}`);
+    }
+
+    return filters.length ? Prisma.sql`WHERE ${Prisma.join(filters, ' AND ')}` : Prisma.sql``;
+  }
+
+  private packageValueSql(alias = 't') {
+    return Prisma.sql`
+      CASE ${Prisma.raw(alias)}."packageKey"
+        WHEN 'nucleus' THEN 0
+        WHEN 'catalyst' THEN 99
+        WHEN 'vanguard' THEN 199
+        WHEN 'apex' THEN 499
+        ELSE 0
+      END
+    `;
+  }
+
+  private jsonFieldSql(field: 'country' | 'industry' | 'stage') {
+    return Prisma.raw(`'${field}'`);
+  }
+
+  async getSummary(input: ReportRangeDTO): Promise<ReportsSummaryResponse> {
     const { range, country, industry, stage, page, limit } = input;
     const key = JSON.stringify({ range, country, industry, stage, page, limit });
     const cached = this.summaryCache.get(key);
@@ -17,28 +56,49 @@ export class ReportsService {
     }
 
     const days = range === '7d' ? 7 : range === '90d' ? 90 : 30;
-    const today = new Date();
-    const filterBoost = (country ? 1 : 0) + (industry ? 1 : 0) + (stage ? 1 : 0);
+    const whereClause = this.buildFilterSql(input);
+    const packageValue = this.packageValueSql();
 
-    const allTrend = Array.from({ length: days }).map((_, i) => {
-      const d = new Date(today);
-      d.setDate(today.getDate() - (days - i - 1));
-
-      return {
-        date: d.toISOString().slice(0, 10),
-        pipeline: 120000 + i * 1700 + filterBoost * 2400,
-        matches: 18 + Math.floor(i / 2) + filterBoost,
-        conversionRate: Number((4.2 + i * 0.08 + filterBoost * 0.12).toFixed(2)),
-      };
-    });
+    const allTrend = await this.prisma.$queryRaw<
+      Array<{ date: string; pipeline: number; matches: bigint; conversionRate: number }>
+    >`
+      WITH days AS (
+        SELECT generate_series(
+          date_trunc('day', NOW() - (${days} - 1) * INTERVAL '1 day'),
+          date_trunc('day', NOW()),
+          INTERVAL '1 day'
+        )::date AS day
+      ),
+      agg AS (
+        SELECT
+          DATE("createdAt") AS day,
+          SUM(${packageValue})::int AS pipeline,
+          COUNT(*) FILTER (WHERE "status" = 'COMPLETED')::bigint AS matches,
+          CASE
+            WHEN COUNT(*) = 0 THEN 0
+            ELSE ROUND((COUNT(*) FILTER (WHERE "status" = 'COMPLETED')::numeric / COUNT(*)::numeric) * 100, 2)
+          END AS "conversionRate"
+        FROM "twin_assessments" t
+        ${whereClause}
+        GROUP BY DATE("createdAt")
+      )
+      SELECT
+        TO_CHAR(days.day, 'YYYY-MM-DD') AS date,
+        COALESCE(agg.pipeline, 0)::int AS pipeline,
+        COALESCE(agg.matches, 0)::bigint AS matches,
+        COALESCE(agg."conversionRate", 0)::float8 AS "conversionRate"
+      FROM days
+      LEFT JOIN agg ON agg.day = days.day
+      ORDER BY days.day ASC
+    `;
 
     const start = (page - 1) * limit;
     const trend = allTrend.slice(start, start + limit);
 
-    const pipelineEur = allTrend[allTrend.length - 1]?.pipeline ?? 0;
-    const matches = allTrend[allTrend.length - 1]?.matches ?? 0;
+    const pipelineEur = allTrend.reduce((sum, point) => sum + point.pipeline, 0);
+    const matches = allTrend.reduce((sum, point) => sum + Number(point.matches), 0);
     const avgConversionRate = Number(
-      (allTrend.reduce((acc, p) => acc + p.conversionRate, 0) / allTrend.length).toFixed(2),
+      ((allTrend.reduce((acc, p) => acc + p.conversionRate, 0) || 0) / Math.max(allTrend.length, 1)).toFixed(2),
     );
 
     const summary: ReportsSummaryResponse = {
@@ -59,7 +119,12 @@ export class ReportsService {
         matches,
         avgConversionRate,
       },
-      trend,
+      trend: trend.map((point) => ({
+        date: point.date,
+        pipeline: point.pipeline,
+        matches: Number(point.matches),
+        conversionRate: point.conversionRate,
+      })),
     };
 
     this.summaryCache.set(key, { ts: Date.now(), data: summary });
@@ -104,7 +169,7 @@ export class ReportsService {
     });
   }
 
-  getSegments(input: ReportRangeDTO): ReportsSegmentsResponse {
+  async getSegments(input: ReportRangeDTO): Promise<ReportsSegmentsResponse> {
     const { range, country, industry, stage } = input;
     const key = JSON.stringify({ range, country, industry, stage });
     const cached = this.segmentCache.get(key);
@@ -112,18 +177,39 @@ export class ReportsService {
       return cached.data;
     }
 
-    const boost = (country ? 1 : 0) + (industry ? 1 : 0) + (stage ? 1 : 0);
-    const mk = (keyName: string, base: number, idx: number): SegmentItem => ({
-      key: keyName,
-      pipelineEur: base + idx * 18_000 + boost * 2_500,
-      matches: 10 + idx * 3 + boost,
-      avgConversionRate: Number((4.1 + idx * 0.45 + boost * 0.12).toFixed(2)),
-    });
+    const packageValue = this.packageValueSql();
+    const whereClause = this.buildFilterSql(input);
+
+    const queryFor = async (field: 'country' | 'industry' | 'stage') => {
+      const jsonField = this.jsonFieldSql(field);
+      const rows = await this.prisma.$queryRaw<Array<{ key: string; pipelineEur: number; matches: bigint; avgConversionRate: number }>>`
+        SELECT
+          COALESCE(NULLIF(t."company"->>${jsonField}, ''), 'Unknown') AS key,
+          SUM(${packageValue})::int AS "pipelineEur",
+          COUNT(*) FILTER (WHERE t."status" = 'COMPLETED')::bigint AS matches,
+          CASE
+            WHEN COUNT(*) = 0 THEN 0
+            ELSE ROUND((COUNT(*) FILTER (WHERE t."status" = 'COMPLETED')::numeric / COUNT(*)::numeric) * 100, 2)
+          END::float8 AS "avgConversionRate"
+        FROM "twin_assessments" t
+        ${whereClause}
+        GROUP BY 1
+        ORDER BY "pipelineEur" DESC, matches DESC
+        LIMIT 6
+      `;
+
+      return rows.map<SegmentItem>((row) => ({
+        key: row.key,
+        pipelineEur: row.pipelineEur,
+        matches: Number(row.matches),
+        avgConversionRate: row.avgConversionRate,
+      }));
+    };
 
     const data: ReportsSegmentsResponse = {
-      byCountry: [mk('Germany', 210_000, 1), mk('Netherlands', 170_000, 2), mk('UK', 195_000, 3)],
-      byIndustry: [mk('SaaS', 240_000, 1), mk('Manufacturing', 185_000, 2), mk('Fintech', 165_000, 3)],
-      byStage: [mk('Seed', 150_000, 1), mk('Series A', 220_000, 2), mk('Growth', 260_000, 3)],
+      byCountry: await queryFor('country'),
+      byIndustry: await queryFor('industry'),
+      byStage: await queryFor('stage'),
     };
 
     this.segmentCache.set(key, { ts: Date.now(), data });

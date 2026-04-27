@@ -82,6 +82,33 @@ model AuditLog {
   @@index([createdAt])
 }
 
+model TwinAssessment {
+  id            String    @id @default(cuid())
+  email         String
+  packageKey    String
+  status        String    @default("OTP_PENDING")
+  otpCodeHash   String?
+  otpExpiresAt  DateTime?
+  otpAttempts   Int       @default(0)
+  verifiedAt    DateTime?
+  completedAt   DateTime?
+  sessionJti    String?
+  company       Json?
+  canvas        Json?
+  answers       Json?
+  aiAnswers     Json?
+  report        Json?
+  metadata      Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("twin_assessments")
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+  @@index([email, status, createdAt])
+}
+
 enum UserRole {
   ADMIN
   MANAGER

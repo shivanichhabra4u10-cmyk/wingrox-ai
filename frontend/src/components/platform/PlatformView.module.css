@@ -70,6 +70,194 @@
   background: var(--gold-mist);
 }
 
+.twinHero {
+  background: var(--bg-dark);
+  padding: 84px 0 56px;
+  text-align: center;
+}
+
+.twinEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: rgba(201, 151, 58, 0.1);
+  border: 1px solid rgba(201, 151, 58, 0.2);
+  border-radius: var(--r-full);
+  padding: 5px 16px;
+}
+
+.twinTitle {
+  margin-top: 20px;
+  color: var(--bg);
+  font-size: clamp(42px, 5vw, 66px);
+  line-height: 1.08;
+}
+
+.twinTitle em {
+  color: var(--gold);
+  font-style: italic;
+}
+
+.twinSub {
+  margin: 18px auto 0;
+  max-width: 680px;
+  color: rgba(255, 255, 255, 0.58);
+  line-height: 1.8;
+}
+
+.twinPackagesSection {
+  padding: 56px 0 84px;
+  background: var(--bg);
+}
+
+.twinPackageGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.twinPackageCard {
+  border: 2px solid var(--ink-08);
+  border-radius: var(--r-xl);
+  background: var(--surface);
+  padding: 28px 22px;
+  transition: var(--t);
+  cursor: pointer;
+}
+
+.twinPackageCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--sh-lg);
+}
+
+.twinPkgFeatured {
+  background: var(--bg-dark);
+  border-color: var(--gold);
+}
+
+.twinPkgFeatured .twinPkgName,
+.twinPkgFeatured .twinPkgPrice,
+.twinPkgFeatured .twinPkgSub,
+.twinPkgFeatured .twinPkgList {
+  color: var(--bg);
+}
+
+.twinPkgSelected {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.twinPkgTag {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+}
+
+.twinPkgName {
+  margin-top: 8px;
+  font-family: var(--f-display);
+  font-size: 30px;
+}
+
+.twinPkgPrice {
+  font-family: var(--f-display);
+  font-size: 44px;
+  line-height: 1.1;
+}
+
+.twinPkgSub {
+  color: var(--ink-50);
+  font-size: 12px;
+}
+
+.twinPkgList {
+  margin-top: 16px;
+  display: grid;
+  gap: 7px;
+  color: var(--ink-70);
+  font-size: 13px;
+  list-style: none;
+}
+
+.twinPkgList li {
+  position: relative;
+  padding-left: 14px;
+}
+
+.twinPkgList li::before {
+  content: '\25C6';
+  position: absolute;
+  left: 0;
+  color: var(--gold);
+  font-size: 10px;
+  top: 2px;
+}
+
+.twinPkgCta {
+  margin-top: 18px;
+  width: 100%;
+  border-radius: var(--r-full);
+  padding: 11px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.twinPkgFeatured .twinPkgCta {
+  background: var(--gold);
+  color: #fff;
+}
+
+.twinAuthCard {
+  margin-top: 28px;
+  max-width: 720px;
+  background: var(--surface);
+  border: 1px solid var(--ink-08);
+  border-radius: var(--r-xl);
+  box-shadow: var(--sh-md);
+  padding: 28px;
+}
+
+.twinError {
+  margin-top: 10px;
+  color: var(--rose);
+  font-size: 13px;
+}
+
+.twinNotice {
+  margin-top: 10px;
+  color: var(--teal);
+  font-size: 13px;
+}
+
+.twinSession {
+  margin-top: 8px;
+  color: var(--sage);
+  font-size: 13px;
+}
+
+.twinStep2Card {
+  margin-top: 20px;
+  background: var(--surface);
+  border: 1px solid var(--ink-08);
+  border-radius: var(--r-xl);
+  box-shadow: var(--sh-md);
+  padding: 28px;
+}
+
+.twinDiagTitle {
+  margin: 14px 0 10px;
+  font-size: 26px;
+}
+
 .hero {
   min-height: calc(100dvh - 72px);
   padding: 72px 0 64px;
@@ -420,6 +608,10 @@
   border-radius: var(--r-xl);
   box-shadow: var(--sh-sm);
   padding: 34px;
+}
+
+.authFormCard {
+  max-width: 560px;
 }
 
 .formTitle {
@@ -935,6 +1127,10 @@
 }
 
 @media (max-width: 1024px) {
+  .twinPackageGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .heroGrid,
   .dashGrid,
   .panelGrid,
@@ -963,6 +1159,19 @@
 }
 
 @media (max-width: 640px) {
+  .twinPackageGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .twinAuthCard,
+  .twinStep2Card {
+    padding: 18px;
+  }
+
+  .twinTitle {
+    font-size: clamp(34px, 10vw, 48px);
+  }
+
   .container {
     padding: 0 20px;
   }

@@ -2,25 +2,21 @@
 
 import { useRouter } from 'next/navigation';
 import { LoginForm } from '@/components/auth/LoginForm';
-import { Navigation } from '@/components/layout/Navigation';
+import { PlatformAuthShell } from '@/components/platform/PlatformAuthShell';
+import styles from '@/components/platform/PlatformView.module.css';
 
 export default function LoginPage() {
   const router = useRouter();
 
   return (
-    <main>
-      <Navigation
-        links={[
-          { label: 'Platform', href: '#', active: false },
-          { label: 'Modules', href: '#', active: false },
-        ]}
-        showAuthButtons={false}
-      />
-      <section style={{ minHeight: '100vh', paddingTop: '120px', background: 'var(--bg-warm)' }}>
-        <div style={{ maxWidth: '520px', margin: '0 auto', padding: '0 20px' }}>
+    <PlatformAuthShell
+      eyebrow="Access · Secure Sign-In"
+      title={<>Enter the platform with <em>your account.</em></>}
+      subtitle="Access your Growth Intelligence OS, Digital Twin, strategic reports, and personalised operating views."
+    >
+        <div className={`${styles.formCard} ${styles.authFormCard}`}>
           <LoginForm onSuccess={() => router.push('/')} />
-        </div>
-      </section>
-    </main>
+      </div>
+    </PlatformAuthShell>
   );
 }

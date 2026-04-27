@@ -1,5 +1,12 @@
-import { redirect } from 'next/navigation';
+import { PlatformHtmlViewFrame } from '@/components/platform/PlatformHtmlViewFrame';
 
 export default function TwinPage() {
-  redirect('/wingrox-os.html#view-twin');
+  return (
+    <PlatformHtmlViewFrame
+      active="twin"
+      title="Digital Twin Intelligence Engine"
+      loadingText="Loading Digital Twin Engine..."
+      viewName="twin"
+    />
+  );
 }

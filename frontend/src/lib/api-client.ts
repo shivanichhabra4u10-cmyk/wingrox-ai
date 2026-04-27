@@ -158,6 +158,44 @@ class ApiClient {
     return response.data;
   }
 
+  // Twin assessment endpoints
+  async sendTwinOtp(payload: { email: string; packageKey: 'nucleus' | 'catalyst' | 'vanguard' | 'apex' }) {
+    const response = await this.client.post('/twin-assessment/otp/send', payload);
+    return response.data;
+  }
+
+  async verifyTwinOtp(payload: { email: string; code: string }) {
+    const response = await this.client.post('/twin-assessment/otp/verify', payload);
+    return response.data;
+  }
+
+  async saveTwinProgress(payload: {
+    sessionToken: string;
+    packageKey: 'nucleus' | 'catalyst' | 'vanguard' | 'apex';
+    company?: Record<string, unknown>;
+    canvas?: Record<string, unknown>;
+    answers?: Record<string, unknown>;
+    aiAnswers?: Record<string, unknown>;
+    metadata?: Record<string, unknown>;
+  }) {
+    const response = await this.client.post('/twin-assessment/progress', payload);
+    return response.data;
+  }
+
+  async completeTwinAssessment(payload: {
+    sessionToken: string;
+    packageKey: 'nucleus' | 'catalyst' | 'vanguard' | 'apex';
+    company?: Record<string, unknown>;
+    canvas?: Record<string, unknown>;
+    answers?: Record<string, unknown>;
+    aiAnswers?: Record<string, unknown>;
+    report?: Record<string, unknown>;
+    metadata?: Record<string, unknown>;
+  }) {
+    const response = await this.client.post('/twin-assessment/complete', payload);
+    return response.data;
+  }
+
   async createReportsStreamToken() {
     const response = await this.client.get('/reports/stream-token');
     return response.data;

@@ -1,5 +1,12 @@
-import { PlatformMatch } from '@/components/platform/PlatformMatch';
+import { PlatformHtmlViewFrame } from '@/components/platform/PlatformHtmlViewFrame';
 
 export default function MatchPage() {
-  return <PlatformMatch />;
+  return (
+    <PlatformHtmlViewFrame
+      active="match"
+      title="AI Partner & Investor Matchmaking"
+      loadingText="Loading Matchmaking Engine..."
+      viewName="match"
+    />
+  );
 }

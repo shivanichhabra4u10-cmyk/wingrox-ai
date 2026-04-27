@@ -1,9 +1,21 @@
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.enableShutdownHooks();
+
+  // Enforce consistent input shape and strip unknown fields.
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidUnknownValues: false,
+    }),
+  );
 
   // Enable CORS
   app.enableCors({
@@ -26,6 +38,7 @@ async function bootstrap() {
     .addTag('reports', 'Reporting and export endpoints')
     .addTag('health', 'System health')
     .addTag('dashboard', 'Dashboard analytics endpoints')
+    .addTag('twin-assessment', 'Twin assessment OTP and completion endpoints')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

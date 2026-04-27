@@ -1,5 +1,12 @@
-import { redirect } from 'next/navigation';
+import { PlatformHtmlViewFrame } from '@/components/platform/PlatformHtmlViewFrame';
 
 export default function EcosystemPage() {
-  redirect('/wingrox-os.html#view-eco');
+  return (
+    <PlatformHtmlViewFrame
+      active="eco"
+      title="Ecosystem Partner Cloud"
+      loadingText="Loading Ecosystem Cloud..."
+      viewName="eco"
+    />
+  );
 }

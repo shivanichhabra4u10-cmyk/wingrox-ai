@@ -68,7 +68,7 @@ export class ReportsController {
   @ApiQuery({ name: 'stage', required: false, type: String })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
-  getSummary(
+  async getSummary(
     @Query('range') range: string | undefined,
     @Query('country') country: string | undefined,
     @Query('industry') industry: string | undefined,
@@ -90,7 +90,7 @@ export class ReportsController {
 
     return {
       success: true,
-      data: this.reportsService.getSummary(parsed.data),
+      data: await this.reportsService.getSummary(parsed.data),
       timestamp: new Date().toISOString(),
     };
   }
@@ -104,7 +104,7 @@ export class ReportsController {
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiProduces('text/csv')
-  exportCsv(
+  async exportCsv(
     @Query('range') range: string | undefined,
     @Query('country') country: string | undefined,
     @Query('industry') industry: string | undefined,
@@ -125,7 +125,7 @@ export class ReportsController {
       throw new BadRequestException(parsed.error.errors[0]?.message ?? 'Invalid range');
     }
 
-    const summary = this.reportsService.getSummary(parsed.data);
+    const summary = await this.reportsService.getSummary(parsed.data);
     const csv = this.reportsService.toCsv(summary);
 
     res.setHeader('Content-Type', 'text/csv');
@@ -163,7 +163,7 @@ export class ReportsController {
       throw new BadRequestException(parsed.error.errors[0]?.message ?? 'Invalid range');
     }
 
-    const summary = this.reportsService.getSummary(parsed.data);
+    const summary = await this.reportsService.getSummary(parsed.data);
     const pdf = await this.reportsService.toPdfBuffer(summary);
 
     res.setHeader('Content-Type', 'application/pdf');
@@ -177,7 +177,7 @@ export class ReportsController {
   @ApiQuery({ name: 'country', required: false, type: String })
   @ApiQuery({ name: 'industry', required: false, type: String })
   @ApiQuery({ name: 'stage', required: false, type: String })
-  getSegments(
+  async getSegments(
     @Query('range') range: string | undefined,
     @Query('country') country: string | undefined,
     @Query('industry') industry: string | undefined,
@@ -198,7 +198,7 @@ export class ReportsController {
 
     return {
       success: true,
-      data: this.reportsService.getSegments(parsed.data),
+      data: await this.reportsService.getSegments(parsed.data),
       timestamp: new Date().toISOString(),
     };
   }

@@ -1,5 +1,12 @@
-import { redirect } from 'next/navigation';
+import { PlatformHtmlViewFrame } from '@/components/platform/PlatformHtmlViewFrame';
 
 export default function ExpansionPage() {
-  redirect('/wingrox-os.html#view-expansion');
+  return (
+    <PlatformHtmlViewFrame
+      active="expansion"
+      title="Global Scale-Up Readiness Navigator"
+      loadingText="Loading Readiness Navigator..."
+      viewName="expansion"
+    />
+  );
 }

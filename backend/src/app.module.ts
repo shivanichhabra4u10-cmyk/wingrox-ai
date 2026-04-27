@@ -9,6 +9,7 @@ import { PrismaService } from './common/prisma.service';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { AccountsModule } from './modules/accounts/accounts.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { TwinAssessmentModule } from './modules/twin-assessment/twin-assessment.module';
 
 const jwtExpiration = process.env.JWT_EXPIRATION ?? '24h';
 
@@ -27,6 +28,7 @@ const jwtExpiration = process.env.JWT_EXPIRATION ?? '24h';
     DashboardModule,
     AccountsModule,
     ReportsModule,
+    TwinAssessmentModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

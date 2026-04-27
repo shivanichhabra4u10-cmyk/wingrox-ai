@@ -50,6 +50,14 @@ export function PlatformNav({ active }: PlatformNavProps) {
             Ecosystem
           </Link>
         </nav>
+        <div className="nav-actions">
+          <Link href="/dashboard" className="nav-btn-ghost">
+            Dashboard
+          </Link>
+          <Link href="/twin" className="nav-btn-primary">
+            Build Your Twin
+          </Link>
+        </div>
       </div>
     </header>
   );
