@@ -24,6 +24,36 @@ type TwinAssessmentRow = {
   sessionJti: string | null;
 };
 
+type TwinDimensionReport = {
+  key: string;
+  title: string;
+  score: number;
+};
+
+type TwinConstraintReport = {
+  question: string;
+  value: number;
+};
+
+type TwinDynamicReport = {
+  generatedAt: string;
+  packageKey: string;
+  company: {
+    name: string;
+    country: string;
+    industry: string;
+    stage: string;
+  };
+  overallScore: number;
+  readinessBand: string;
+  dimensions: TwinDimensionReport[];
+  topConstraints: TwinConstraintReport[];
+  recommendations: string[];
+  strategicPriority: string;
+  planningHorizon: string;
+  notes: string;
+};
+
 @Injectable()
 export class TwinAssessmentService {
   constructor(
@@ -44,6 +74,154 @@ export class TwinAssessmentService {
         changes: changes as unknown as Prisma.InputJsonValue,
       },
     });
+  }
+
+  private extractAnswerMap(answers: Record<string, unknown> | undefined): Record<string, number> {
+    if (!answers) {
+      return {};
+    }
+
+    const result: Record<string, number> = {};
+
+    for (const [key, raw] of Object.entries(answers)) {
+      if (!/^D\d+$/.test(key)) {
+        continue;
+      }
+
+      const numericValue = Number(raw);
+      if (!Number.isFinite(numericValue)) {
+        continue;
+      }
+
+      result[key] = Math.max(0, Math.min(5, numericValue));
+    }
+
+    return result;
+  }
+
+  private buildDimensionScore(answerMap: Record<string, number>, keys: string[]): number {
+    const values = keys.map((key) => answerMap[key]).filter((value): value is number => typeof value === 'number');
+
+    if (!values.length) {
+      return 0;
+    }
+
+    const average = values.reduce((acc, value) => acc + value, 0) / values.length;
+    return Math.round(average * 20);
+  }
+
+  private getQuestionLabel(questionKey: string): string {
+    const map: Record<string, string> = {
+      D1: 'Revenue predictability',
+      D2: 'Growth consistency',
+      D8: 'Lead to customer conversion',
+      D12: 'Customer acquisition cost',
+      D14: 'Retention quality',
+      D18: 'Cost structure efficiency',
+      D24: 'Leadership depth',
+      D29: 'Positioning clarity',
+      D33: 'Strategic focus',
+    };
+
+    return map[questionKey] ?? `Diagnostic ${questionKey}`;
+  }
+
+  private buildDynamicReport(input: {
+    packageKey: string;
+    company?: Record<string, unknown>;
+    answers?: Record<string, unknown>;
+    strategicPriority: string;
+    planningHorizon: string;
+    notes: string;
+  }): TwinDynamicReport {
+    const answerMap = this.extractAnswerMap(input.answers);
+    const answerValues = Object.values(answerMap);
+
+    const dimensions: TwinDimensionReport[] = [
+      {
+        key: 'revenue-engine',
+        title: 'Revenue Engine',
+        score: this.buildDimensionScore(
+          answerMap,
+          ['D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11'],
+        ),
+      },
+      {
+        key: 'unit-economics',
+        title: 'Unit Economics',
+        score: this.buildDimensionScore(
+          answerMap,
+          ['D12', 'D13', 'D14', 'D15', 'D16', 'D17', 'D18', 'D19', 'D20', 'D21', 'D22', 'D23'],
+        ),
+      },
+      {
+        key: 'execution-strategy',
+        title: 'Execution & Strategy',
+        score: this.buildDimensionScore(
+          answerMap,
+          ['D24', 'D25', 'D26', 'D27', 'D28', 'D29', 'D30', 'D31', 'D32', 'D33', 'D34', 'D35'],
+        ),
+      },
+    ];
+
+    const overallScore = answerValues.length
+      ? Math.round((answerValues.reduce((acc, value) => acc + value, 0) / answerValues.length) * 20)
+      : 0;
+
+    const readinessBand = overallScore >= 80
+      ? 'Scale Ready'
+      : overallScore >= 65
+        ? 'Growth Ready'
+        : overallScore >= 50
+          ? 'Foundation Building'
+          : 'At Risk';
+
+    const topConstraints = Object.entries(answerMap)
+      .sort((a, b) => a[1] - b[1])
+      .slice(0, 3)
+      .map(([question, value]) => ({
+        question: this.getQuestionLabel(question),
+        value,
+      }));
+
+    const recommendations: string[] = [];
+    const revenueDimension = dimensions.find((item) => item.key === 'revenue-engine')?.score ?? 0;
+    const economicsDimension = dimensions.find((item) => item.key === 'unit-economics')?.score ?? 0;
+    const strategyDimension = dimensions.find((item) => item.key === 'execution-strategy')?.score ?? 0;
+
+    if (revenueDimension < 65) {
+      recommendations.push('Stabilize funnel quality first: tighten ICP, lead qualification, and conversion handoff.');
+    }
+    if (economicsDimension < 65) {
+      recommendations.push('Improve unit economics by reducing CAC leakage and raising retention-driven LTV.');
+    }
+    if (strategyDimension < 65) {
+      recommendations.push('Increase execution cadence with clear weekly operating priorities and ownership tracking.');
+    }
+    if (!recommendations.length) {
+      recommendations.push('Maintain momentum with a 30-60-90 execution roadmap focused on your top strategic priority.');
+    }
+
+    const company = input.company ?? {};
+
+    return {
+      generatedAt: new Date().toISOString(),
+      packageKey: input.packageKey,
+      company: {
+        name: typeof company.name === 'string' ? company.name : 'Unknown',
+        country: typeof company.country === 'string' ? company.country : 'Unknown',
+        industry: typeof company.industry === 'string' ? company.industry : 'Unknown',
+        stage: typeof company.stage === 'string' ? company.stage : 'Unknown',
+      },
+      overallScore,
+      readinessBand,
+      dimensions,
+      topConstraints,
+      recommendations,
+      strategicPriority: input.strategicPriority,
+      planningHorizon: input.planningHorizon,
+      notes: input.notes,
+    };
   }
 
   private async findById(id: string): Promise<TwinAssessmentRow | null> {
@@ -234,10 +412,28 @@ export class TwinAssessmentService {
       throw new UnauthorizedException('Unable to persist assessment');
     }
 
+    const reportSummary =
+      input.report && typeof input.report.summary === 'object' && input.report.summary
+        ? (input.report.summary as Record<string, unknown>)
+        : {};
+
+    const dynamicReport = this.buildDynamicReport({
+      packageKey: input.packageKey,
+      company: input.company,
+      answers: input.answers,
+      strategicPriority:
+        typeof reportSummary.strategicPriority === 'string'
+          ? reportSummary.strategicPriority
+          : 'Revenue acceleration',
+      planningHorizon:
+        typeof reportSummary.planningHorizon === 'string' ? reportSummary.planningHorizon : '12 months',
+      notes: typeof reportSummary.notes === 'string' ? reportSummary.notes.trim() : '',
+    });
+
     const now = new Date();
     await this.prisma.$executeRaw`
       UPDATE "twin_assessments"
-      SET "report" = ${JSON.stringify(input.report ?? {})}::jsonb,
+      SET "report" = ${JSON.stringify(dynamicReport)}::jsonb,
           "updatedAt" = ${now}
       WHERE "id" = ${updated.id}
     `;
@@ -247,7 +443,10 @@ export class TwinAssessmentService {
       completedAt: now.toISOString(),
     });
 
-    return updated;
+    return {
+      ...updated,
+      report: dynamicReport,
+    };
   }
 
   async listAssessments(input: ListAssessmentsDTO) {

@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
-import { apiClient } from '@/lib/api-client';
+import { apiClient, type TwinDynamicReport } from '@/lib/api-client';
 import { PlatformNav } from './PlatformNav';
 import styles from './PlatformView.module.css';
 import { PACKAGES } from './twin/packages';
@@ -158,9 +158,17 @@ export function PlatformTwin() {
   const [d35MustWinAlignment, setD35MustWinAlignment] = useState('4');
   const [completingAssessment, setCompletingAssessment] = useState(false);
   const [completedAssessmentId, setCompletedAssessmentId] = useState<string | null>(null);
+  const [dynamicReport, setDynamicReport] = useState<TwinDynamicReport | null>(null);
   const [completionPriority, setCompletionPriority] = useState('Revenue acceleration');
   const [completionHorizon, setCompletionHorizon] = useState('12 months');
   const [completionNotes, setCompletionNotes] = useState('');
+
+  const handleSelectPackage = (nextPackage: PackageKey) => {
+    setSelectedPackage(nextPackage);
+    setError(null);
+    setNotice(`Selected ${nextPackage === 'nucleus' ? 'Nucleus free package' : `${nextPackage} package`}.`);
+    document.getElementById('twin-auth-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   const selected = useMemo(
     () => PACKAGES.find((p) => p.key === selectedPackage) ?? PACKAGES[0],
@@ -519,6 +527,7 @@ export function PlatformTwin() {
 
       const assessmentId = (res?.data?.id as string | undefined) ?? null;
       setCompletedAssessmentId(assessmentId);
+      setDynamicReport((res?.data?.report as TwinDynamicReport | undefined) ?? null);
       setNotice('Assessment completed and stored in database.');
     } catch {
       setError('Could not complete the assessment right now. Please try again.');
@@ -720,24 +729,26 @@ export function PlatformTwin() {
           <TwinPackageGrid
             packages={PACKAGES}
             selectedPackage={selectedPackage}
-            onSelectPackage={setSelectedPackage}
+            onSelectPackage={handleSelectPackage}
           />
 
-          <TwinAuthCard
-            packageName={selected.name}
-            email={email}
-            otpCode={otpCode}
-            otpSent={otpSent}
-            sending={sending}
-            verifying={verifying}
-            error={error}
-            notice={notice}
-            sessionToken={sessionToken}
-            onEmailChange={setEmail}
-            onOtpChange={setOtpCode}
-            onSendOtp={handleSendOtp}
-            onVerifyOtp={handleVerifyOtp}
-          />
+          <div id="twin-auth-card">
+            <TwinAuthCard
+              packageName={selected.name}
+              email={email}
+              otpCode={otpCode}
+              otpSent={otpSent}
+              sending={sending}
+              verifying={verifying}
+              error={error}
+              notice={notice}
+              sessionToken={sessionToken}
+              onEmailChange={setEmail}
+              onOtpChange={setOtpCode}
+              onSendOtp={handleSendOtp}
+              onVerifyOtp={handleVerifyOtp}
+            />
+          </div>
 
           {showNativeStep2 ? (
             <TwinPhase2Card
@@ -854,6 +865,7 @@ export function PlatformTwin() {
               completionNotes={completionNotes}
               completingAssessment={completingAssessment}
               completedAssessmentId={completedAssessmentId}
+              dynamicReport={dynamicReport}
               onCompletionPriorityChange={setCompletionPriority}
               onCompletionHorizonChange={setCompletionHorizon}
               onCompletionNotesChange={setCompletionNotes}

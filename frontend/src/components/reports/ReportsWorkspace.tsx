@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
+import { apiClient, API_BASE_URL } from '@/lib/api-client';
 import { Button } from '@/components/ui/Button';
 import { ReportsTrendsChart } from './ReportsTrendsChart';
 
@@ -106,7 +106,7 @@ export function ReportsWorkspace() {
           return;
         }
 
-        const base = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api').replace(/\/$/, '');
+        const base = API_BASE_URL.replace(/\/$/, '');
         source = new EventSource(
           `${base}/reports/realtime?streamToken=${encodeURIComponent(streamToken)}&nonce=${encodeURIComponent(nonce)}`,
         );

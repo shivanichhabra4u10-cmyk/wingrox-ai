@@ -1,6 +1,51 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+function normalizeApiBaseUrl(rawValue?: string): string {   
+  
+  const raw = (rawValue || '/api').trim();
+  console.log('Raw API URL from environment:', raw);
+
+  if (raw.startsWith('/')) {
+    const backendOrigin = process.env.NEXT_PUBLIC_BACKEND_ORIGIN || 'http://localhost:3001';
+    return `${backendOrigin}${raw}`.replace(/\/$/, '');
+  }
+
+  const withProtocol = /^https?:\/\//i.test(raw) ? raw : `http://${raw}`;
+
+  try {
+    const parsed = new URL(withProtocol);
+    const cleanPath = parsed.pathname.replace(/\/$/, '');
+    parsed.pathname = cleanPath === '' || cleanPath === '/' ? '/api' : cleanPath;
+    console.log('Normalized API URL:', parsed.toString().replace(/\/$/, ''));
+    return parsed.toString().replace(/\/$/, '');
+  } catch {
+    console.log('in catch');
+    return 'http://localhost:3001';
+  }
+}
+
+export const API_BASE_URL = normalizeApiBaseUrl(process.env.NEXT_PUBLIC_API_URL);
+
+console.log('API_BASE_URL:', API_BASE_URL);
+
+export type TwinDynamicReport = {
+  generatedAt: string;
+  packageKey: string;
+  company: {
+    name: string;
+    country: string;
+    industry: string;
+    stage: string;
+  };
+  overallScore: number;
+  readinessBand: string;
+  dimensions: Array<{ key: string; title: string; score: number }>;
+  topConstraints: Array<{ question: string; value: number }>;
+  recommendations: string[];
+  strategicPriority: string;
+  planningHorizon: string;
+  notes: string;
+};
 
 /**
  * API Client
@@ -192,7 +237,14 @@ class ApiClient {
     report?: Record<string, unknown>;
     metadata?: Record<string, unknown>;
   }) {
-    const response = await this.client.post('/twin-assessment/complete', payload);
+    const response = await this.client.post<{
+      success: boolean;
+      data: {
+        id: string;
+        report?: TwinDynamicReport;
+      };
+      timestamp: string;
+    }>('/twin-assessment/complete', payload);
     return response.data;
   }
 

@@ -111,7 +111,6 @@ model TwinAssessment {
 
 enum UserRole {
   ADMIN
-  MANAGER
   USER
-  VIEWER
+  MODERATOR
 }
