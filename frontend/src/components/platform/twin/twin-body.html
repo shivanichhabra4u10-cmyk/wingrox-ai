@@ -1,0 +1,789 @@
+
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-wrap">
+    <a class="nav-logo" onclick="goTo('hero')">
+      <div class="logo-mark">
+        <div class="logo-sq a"></div><div class="logo-sq b"></div>
+        <div class="logo-sq c"></div><div class="logo-sq d"></div>
+      </div>
+      <span class="logo-text">Digital Twin Intelligence</span>
+    </a>
+    <div class="nav-links">
+      <button class="nav-link" onclick="goTo('hero');setTimeout(()=>scrollToEl('#about'),400)">About</button>
+      <button class="nav-link" onclick="goTo('hero');setTimeout(()=>scrollToEl('#how'),400)">How It Works</button>
+      <button class="nav-link" onclick="goTo('hero');setTimeout(()=>scrollToEl('#features'),400)">Features</button>
+    </div>
+    <button class="nav-btn" onclick="goTo('pricing')">Get Started →</button>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════
+     HERO PAGE
+═══════════════════════════════════════ -->
+<div id="page-hero">
+  <!-- HERO SECTION -->
+  <div class="hero-wrap">
+    <div class="hero-left">
+      <div class="hero-tag anim-1">AI-Powered Diagnostic Platform · 2025</div>
+      <h1 class="hero-h1 anim-2">Mirror Your <em>Organisation.</em></h1>
+      <h1 class="hero-h2 anim-2">Simulate Your <em>Future.</em></h1>
+      <p class="hero-sub anim-3">Most organisations don't fail from lack of effort. They fail because nobody can see clearly — which lever to pull, which bottleneck to break, which decision will matter most. This platform changes that.</p>
+      <div class="hero-ctas anim-4">
+        <button class="btn-primary" onclick="goTo('pricing')">View Intelligence Packages <span>→</span></button>
+        <button class="btn-outline" onclick="scrollToEl('#about')">Learn How</button>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-stat-grid">
+        <div class="hero-stat-card anim-1">
+          <div class="hsc-val">77<em>+</em></div>
+          <div class="hsc-label">Diagnostic Variables</div>
+          <div class="hsc-desc">Structured questions covering every dimension of your business</div>
+        </div>
+        <div class="hero-stat-card anim-2">
+          <div class="hsc-val"><em>AI</em></div>
+          <div class="hsc-label">Pain Intelligence Hub</div>
+          <div class="hsc-desc">WinGroX AI maps over 1M+ pain points to your problem — creating hyper-personalised diagnostics no generic tool can match.</div>
+        </div>
+        <div class="hero-stat-card anim-3">
+          <div class="hsc-val">24</div>
+          <div class="hsc-label">Report Sections</div>
+          <div class="hsc-desc">From revenue engine to 5-year projection and valuation estimate</div>
+        </div>
+        <div class="hero-stat-card anim-4">
+          <div class="hsc-val">5<em>yr</em></div>
+          <div class="hsc-label">Forward Simulation</div>
+          <div class="hsc-desc">Dual-scenario projection built from your actual diagnostic data</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-bottom-strip">
+    <div class="hbs-item"><span class="hbs-icon">◈</span><div class="hbs-text"><strong>Sector-Adaptive</strong>SaaS, Marketplace, Services, D2C, Healthcare, Fintech & more</div></div>
+    <div class="hbs-item"><span class="hbs-icon">⟳</span><div class="hbs-text"><strong>Context-Aware Questions</strong>Your strategic canvas personalises every question</div></div>
+    <div class="hbs-item"><span class="hbs-icon">◆</span><div class="hbs-text"><strong>AI Layer Integrated</strong>Claude reads your answers and finds what fixed questions missed</div></div>
+    <div class="hbs-item"><span class="hbs-icon">↗</span><div class="hbs-text"><strong>Instant Simulation</strong>Interactive sliders update revenue, profit and trajectory in real time</div></div>
+  </div>
+
+  <!-- ABOUT SECTION -->
+  <section class="about-section" id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div>
+          <div class="about-label">About This Platform</div>
+          <h2 class="about-h2">Built on the same frameworks as <em>top-tier strategy firms</em> — adapted for speed.</h2>
+          <p class="about-p">Elite consulting diagnostics combine structured data collection with expert interpretation. This platform replicates that process — quantitative questionnaire for the data spine, AI interpretation for everything fixed questions miss.</p>
+          <p class="about-p">The result is a Digital Twin of your organisation: a structured, analytical model of your current reality, constraints, and future possibilities — delivered in minutes, not months.</p>
+          <div class="about-pillars">
+            <div class="about-pillar"><span class="about-pillar-icon">◆</span><div class="about-pillar-body"><div class="about-pillar-title">Revenue Decomposition</div><div class="about-pillar-desc">Leads × Conversion × ARPU — with improvement levers at each stage</div></div></div>
+            <div class="about-pillar"><span class="about-pillar-icon">◆</span><div class="about-pillar-body"><div class="about-pillar-title">Theory of Constraints</div><div class="about-pillar-desc">Primary and secondary bottlenecks identified and quantified</div></div></div>
+            <div class="about-pillar"><span class="about-pillar-icon">◆</span><div class="about-pillar-body"><div class="about-pillar-title">Unit Economics Engine</div><div class="about-pillar-desc">CAC vs LTV vs contribution margin — your true economics revealed</div></div></div>
+            <div class="about-pillar"><span class="about-pillar-icon">◆</span><div class="about-pillar-body"><div class="about-pillar-title">WinGroX Pain Intelligence Hub</div><div class="about-pillar-desc">WinGroX AI maps over 1M+ pain points to your problem — creating hyper-personalised diagnostics no generic tool can match.</div></div></div>
+          </div>
+        </div>
+        <div class="about-right">
+          <div class="about-diagram">
+            <div class="about-label" style="margin-bottom:20px">Diagnostic Coverage · By Layer</div>
+            <div class="about-diag-row"><span class="adr-num">01</span><div class="adr-bar-wrap"><div class="adr-bar" style="background:var(--gold);width:0%" data-w="92%"></div></div><span class="adr-label">Revenue Engine</span></div>
+            <div class="about-diag-row"><span class="adr-num">02</span><div class="adr-bar-wrap"><div class="adr-bar" style="background:var(--teal);width:0%" data-w="88%"></div></div><span class="adr-label">Cost & Profit</span></div>
+            <div class="about-diag-row"><span class="adr-num">03</span><div class="adr-bar-wrap"><div class="adr-bar" style="background:var(--slate);width:0%" data-w="85%"></div></div><span class="adr-label">Team & Capacity</span></div>
+            <div class="about-diag-row"><span class="adr-num">04</span><div class="adr-bar-wrap"><div class="adr-bar" style="background:var(--sage);width:0%" data-w="78%"></div></div><span class="adr-label">Strategy & Risk</span></div>
+            <div class="about-diag-row"><span class="adr-num">05</span><div class="adr-bar-wrap"><div class="adr-bar" style="background:var(--rose);width:0%" data-w="71%"></div></div><span class="adr-label">Market Position</span></div>
+            <div class="about-diag-row"><span class="adr-num">AI</span><div class="adr-bar-wrap"><div class="adr-bar" style="background:linear-gradient(90deg,var(--gold),var(--teal));width:0%" data-w="95%"></div></div><span class="adr-label">AI Interpretation</span></div>
+            <div style="margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,.08);font-size:.78rem;color:rgba(255,255,255,.4);line-height:1.65">The AI layer reads your complete answers, strategic context, and free-text inputs to identify what the fixed questions couldn't capture — unique to your business.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how-section" id="how">
+    <div class="container">
+      <div class="section-label">The Process</div>
+      <h2 class="how-h2">Four steps from input<br>to intelligence.</h2>
+      <div class="how-steps">
+        <div class="how-step">
+          <div class="how-step-num"><span class="how-step-num-inner">Ⅰ</span></div>
+          <div class="how-step-title">Strategic Context</div>
+          <div class="how-step-desc">Declare your priorities, pain areas, obstacles, and opportunities. This shapes everything that follows.</div>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num"><span class="how-step-num-inner">Ⅱ</span></div>
+          <div class="how-step-title">Screening Diagnostic</div>
+          <div class="how-step-desc">12 screening questions identify your sector, function, business model, and intent. Full-page, one answer at a time.</div>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num"><span class="how-step-num-inner">Ⅲ</span></div>
+          <div class="how-step-title">Adaptive Questionnaire</div>
+          <div class="how-step-desc">65 structured questions adapted to your profile. Followed by 5–10 AI-generated follow-ups specific to what it found.</div>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num"><span class="how-step-num-inner">Ⅳ</span></div>
+          <div class="how-step-title">Digital Twin Report</div>
+          <div class="how-step-desc">A complete intelligence report built from structured data + AI interpretation. With live simulator and projections.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features-section" id="features">
+    <div class="container">
+      <div class="section-label">Platform Features</div>
+      <h2 class="features-h2">Everything a strategy consultant<br>would build — in one platform.</h2>
+      <p class="features-sub">Each feature is purpose-built to answer a specific leadership question. No padding. No generic insights.</p>
+      <div class="features-grid">
+        <div class="feature-card" style="--card-accent:var(--gold)">
+          <div class="fc-icon-wrap" style="background:var(--gold-pale)">◈</div>
+          <div class="fc-title">Sector-Adaptive Screening</div>
+          <div class="fc-desc">12 screening questions identify your exact sector, business model, function, and growth intent. The entire diagnostic then adapts to your profile.</div>
+          <div class="fc-tag" style="background:var(--gold-pale);color:var(--gold-deep);border:1px solid rgba(201,151,58,.2)">◆ Adaptive</div>
+        </div>
+        <div class="feature-card" style="--card-accent:var(--teal)">
+          <div class="fc-icon-wrap" style="background:var(--teal-pale)">◈</div>
+          <div class="fc-title">WinGroX Pain Intelligence Hub</div>
+          <div class="fc-desc">WinGroX AI maps over 1M+ pain points to your problem — creating hyper-personalised diagnostics no generic tool can match.</div>
+          <div class="fc-tag" style="background:var(--teal-pale);color:var(--teal);border:1px solid rgba(45,107,107,.2)">◆ Claude AI</div>
+        </div>
+        <div class="feature-card" style="--card-accent:var(--slate)">
+          <div class="fc-icon-wrap" style="background:var(--slate-pale)">◈</div>
+          <div class="fc-title">Full-Page Question UX</div>
+          <div class="fc-desc">One question per screen. Three-column layout with question context on left, answer choices in centre, navigation on right. Keyboard navigable. Zero scrolling.</div>
+          <div class="fc-tag" style="background:var(--slate-pale);color:var(--slate);border:1px solid rgba(58,79,107,.2)">◆ Premium UX</div>
+        </div>
+        <div class="feature-card" style="--card-accent:var(--sage)">
+          <div class="fc-icon-wrap" style="background:var(--sage-pale)">◈</div>
+          <div class="fc-title">Revenue Engine Simulator</div>
+          <div class="fc-desc">Interactive sliders for leads, conversion, ARPU, retention, and cost. Revenue, profit, and 12-month trajectory update instantly. Unlimited scenario modelling.</div>
+          <div class="fc-tag" style="background:var(--sage-pale);color:var(--sage);border:1px solid rgba(61,107,64,.2)">◆ Live Simulation</div>
+        </div>
+        <div class="feature-card" style="--card-accent:var(--rose)">
+          <div class="fc-icon-wrap" style="background:var(--rose-pale)">◈</div>
+          <div class="fc-title">Constraint Identification</div>
+          <div class="fc-desc">Primary and secondary bottlenecks mapped from your data. Each constraint is linked to your declared pain areas and quantified by revenue impact.</div>
+          <div class="fc-tag" style="background:var(--rose-pale);color:var(--rose);border:1px solid rgba(139,58,74,.2)">◆ Diagnostic</div>
+        </div>
+        <div class="feature-card" style="--card-accent:#7a4f2a">
+          <div class="fc-icon-wrap" style="background:#fdebd5">◈</div>
+          <div class="fc-title">5-Year Projection & Valuation</div>
+          <div class="fc-desc">Dual-scenario revenue and profit curves — current trajectory vs. with improvements. Company valuation estimated using revenue multiples adjusted for growth and margin.</div>
+          <div class="fc-tag" style="background:#fdebd5;color:#7a4f2a;border:1px solid rgba(122,79,42,.2)">◆ Forward-Looking</div>
+        </div>
+        <div class="feature-card" style="--card-accent:var(--gold-deep)">
+          <div class="fc-icon-wrap" style="background:var(--gold-pale)">◈</div>
+          <div class="fc-title">Strategic Context Canvas</div>
+          <div class="fc-desc">Declare your priorities, pain areas, obstacles, opportunities, and focus areas using chip-based tags. Every question is contextualised to your canvas throughout.</div>
+          <div class="fc-tag" style="background:var(--gold-pale);color:var(--gold-deep);border:1px solid rgba(201,151,58,.2)">◆ Personalised</div>
+        </div>
+        <div class="feature-card" style="--card-accent:var(--teal-light)">
+          <div class="fc-icon-wrap" style="background:var(--teal-pale)">◈</div>
+          <div class="fc-title">AS-IS vs TO-BE Model</div>
+          <div class="fc-desc">Side-by-side comparison of current reality vs. target state across revenue, margin, conversion, retention, scalability and business model evolution.</div>
+          <div class="fc-tag" style="background:var(--teal-pale);color:var(--teal);border:1px solid rgba(45,107,107,.2)">◆ Transformation</div>
+        </div>
+        <div class="feature-card" style="--card-accent:var(--slate)">
+          <div class="fc-icon-wrap" style="background:var(--slate-pale)">◈</div>
+          <div class="fc-title">Prioritised Action Roadmap</div>
+          <div class="fc-desc">Three-phase 12-month roadmap built around your focus areas and opportunities. Each action linked to expected impact and strategic priority — no generic recommendations.</div>
+          <div class="fc-tag" style="background:var(--slate-pale);color:var(--slate);border:1px solid rgba(58,79,107,.2)">◆ Actionable</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container">
+      <h2 class="cta-h2">Ready to see your organisation <em>clearly</em>?</h2>
+      <p class="cta-p">Start with your strategic context. The AI does the rest — building a complete digital mirror of your business in minutes.</p>
+      <button class="btn-gold" onclick="goTo('pricing')">View Intelligence Packages →</button>
+    </div>
+  </section>
+  <footer><div class="footer-inner"><div class="footer-logo">Digital Twin Intelligence</div><div class="footer-copy">© 2025 · AI-Powered Business Intelligence Platform</div></div></footer>
+</div>
+
+<!-- ═══════════════════════════════════════
+     STEP 1: COMPANY + STRATEGIC CANVAS
+═══════════════════════════════════════ -->
+<div id="page-company">
+  <div class="company-layout">
+    <!-- LEFT: dark panel with live canvas preview -->
+    <div class="company-left">
+      <div class="company-left-label">Step 01 of 04 · Company Profile</div>
+      <h2 class="company-left-h">Your context shapes <em>everything</em>.</h2>
+      <p class="company-left-p">The more precisely you declare your strategic situation, the more intelligent your diagnostic becomes. Every question, constraint, and recommendation will be personalised to what you share here.</p>
+      <div class="canvas-live" id="canvas-live">
+        <div class="canvas-live-title">Strategic Context · Live</div>
+        <div class="canvas-live-rows" id="canvas-live-rows">
+          <div class="clr"><span class="clr-label">Priorities</span><div class="clr-tags" id="clr-strategic"><span class="clr-empty">not yet declared</span></div></div>
+          <div class="clr"><span class="clr-label">Pain Areas</span><div class="clr-tags" id="clr-pain"><span class="clr-empty">not yet declared</span></div></div>
+          <div class="clr"><span class="clr-label">Obstacles</span><div class="clr-tags" id="clr-obstacle"><span class="clr-empty">not yet declared</span></div></div>
+          <div class="clr"><span class="clr-label">Opportunities</span><div class="clr-tags" id="clr-opportunity"><span class="clr-empty">not yet declared</span></div></div>
+          <div class="clr"><span class="clr-label">Focus</span><div class="clr-tags" id="clr-focus"><span class="clr-empty">not yet declared</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: form -->
+    <div class="company-right">
+      <div class="cf-section-title">Company Information</div>
+      <div class="cf-grid">
+        <div class="cf-field">
+          <label class="cf-label">Company Name <span>*</span></label>
+          <input type="text" class="cf-input" id="f-name" placeholder="e.g. Acme Technologies">
+          <span class="cf-err hidden" id="e-name">Required</span>
+        </div>
+        <div class="cf-field">
+          <label class="cf-label">Industry / Sector</label>
+          <input type="text" class="cf-input" id="f-industry" placeholder="e.g. SaaS, Healthcare, D2C">
+        </div>
+        <div class="cf-field">
+          <label class="cf-label">Your Email <span>*</span></label>
+          <input type="email" class="cf-input" id="f-email" placeholder="you@company.com">
+          <span class="cf-err hidden" id="e-email">Valid email required</span>
+        </div>
+        <div class="cf-field">
+          <label class="cf-label">Mobile <span>*</span></label>
+          <input type="tel" class="cf-input" id="f-mobile" placeholder="+91 98765 43210">
+          <span class="cf-err hidden" id="e-mobile">Required</span>
+        </div>
+        <div class="cf-field">
+          <label class="cf-label">LinkedIn / Website</label>
+          <input type="text" class="cf-input" id="f-linkedin" placeholder="linkedin.com/company/... or website">
+        </div>
+        <div class="cf-field">
+          <label class="cf-label">Upload Deck / Docs</label>
+          <div class="upload-zone">
+            <input type="file" class="upload-zone-input" id="f-file" multiple onchange="handleFile(this)">
+            <div class="upload-zone-text"><strong>Click to upload</strong> · PDF, PPT, XLS</div>
+            <div class="uploaded-items" id="uploaded-items"></div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="cf-divider">
+      <div class="cf-section-title">Strategic Context Canvas <span style="font-size:.66rem;color:var(--ink-40);font-weight:400;text-transform:none;letter-spacing:0">· Optional but powerful — shapes every question</span></div>
+
+      <div id="tf-strategic"></div>
+      <div id="tf-pain"></div>
+      <div id="tf-obstacle"></div>
+      <div id="tf-opportunity"></div>
+      <div id="tf-focus"></div>
+
+      <div class="adaptive-banner" id="adaptive-banner">
+        <span class="ab-icon">⚙</span>
+        <div class="ab-text" id="adaptive-banner-text">Your inputs are shaping the diagnostic. Sections will be reordered and contextualised.</div>
+      </div>
+
+      <div class="cf-actions">
+        <button class="btn-back" onclick="goTo('pricing')">← Back</button>
+        <button class="btn-continue" onclick="validateCompany()">Begin Screening →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCREENING + DIAGNOSTIC (full-page Q)
+═══════════════════════════════════════ -->
+<div id="page-screening">
+  <div class="screening-header">
+    <div class="sh-left">
+      <span class="sh-label" id="sh-label">Screening · Identifying Your Profile</span>
+      <div class="sh-progress-wrap"><div class="sh-progress-bar" id="sh-progress" style="width:0%"></div></div>
+    </div>
+    <div class="sh-right">
+      <span class="sh-counter">Q <strong id="sh-qnum">1</strong> of <strong id="sh-qtotal">12</strong></span>
+      <div class="sh-kb-hint"><kbd>↵</kbd> next &nbsp; <kbd>←</kbd><kbd>→</kbd> navigate &nbsp; <kbd>1</kbd>–<kbd>9</kbd> select</div>
+    </div>
+  </div>
+  <div id="questions-container"></div>
+  <div class="q-footer">
+    <span class="qf-info" id="qf-info">Answer to continue</span>
+    <div style="display:flex;gap:10px">
+      <button onclick="prevQ()" style="background:var(--bg-warm);border:1px solid var(--ink-15);padding:9px 20px;border-radius:var(--r-full);font-family:var(--f-body);font-size:.78rem;cursor:pointer">← Prev</button>
+      <button onclick="nextQ()" style="background:var(--bg-dark);color:var(--bg);border:none;padding:9px 22px;border-radius:var(--r-full);font-family:var(--f-body);font-size:.8rem;font-weight:500;cursor:pointer">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     AI FOLLOW-UP LAYER
+═══════════════════════════════════════ -->
+<div id="page-ai-followup">
+  <div class="ai-header">
+    <div class="ai-label">AI Intelligence Layer · Claude API</div>
+    <h2 class="ai-h">Questions only <em>your answers</em> could generate.</h2>
+    <p class="ai-sub">WinGroX AI maps over 1M+ pain points to your problem — creating hyper-personalised diagnostics no generic tool can match.</p>
+  </div>
+  <div class="ai-content">
+    <div class="ai-thinking" id="ai-thinking">
+      <div class="ai-spinner"></div>
+      <div class="ai-thinking-title">Analysing your profile</div>
+      <div class="ai-thinking-sub">Reading 77+ answers, strategic context, and free-text inputs to identify what to ask next.</div>
+      <div class="ai-thinking-steps" id="ai-thinking-steps">
+        <div class="ai-ts active" id="ai-ts-1"><div class="ai-ts-dot"></div>Reading structured diagnostic answers</div>
+        <div class="ai-ts" id="ai-ts-2"><div class="ai-ts-dot"></div>Analysing strategic context canvas</div>
+        <div class="ai-ts" id="ai-ts-3"><div class="ai-ts-dot"></div>Identifying gaps in fixed question coverage</div>
+        <div class="ai-ts" id="ai-ts-4"><div class="ai-ts-dot"></div>Detecting contradictions and edge cases</div>
+        <div class="ai-ts" id="ai-ts-5"><div class="ai-ts-dot"></div>Generating personalised follow-up questions</div>
+      </div>
+    </div>
+    <div class="ai-questions hidden" id="ai-questions-wrap">
+      <div id="ai-questions-list"></div>
+      <div class="ai-submit-wrap">
+        <button class="btn-outline" onclick="skipAI()">Skip AI questions → Generate report</button>
+        <button class="btn-gold" onclick="submitAI()">Submit & Generate Digital Twin →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PRICING PAGE
+═══════════════════════════════════════ -->
+<div id="page-pricing" style="display:none;min-height:100vh;background:var(--bg);padding-top:64px">
+  <div style="background:var(--bg-dark);padding:72px 0 56px;position:relative;overflow:hidden">
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(201,151,58,.1) 0%,transparent 65%);pointer-events:none"></div>
+    <div class="container" style="text-align:center;position:relative;z-index:1">
+      <div style="display:inline-flex;align-items:center;gap:8px;font-family:var(--f-mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);background:rgba(201,151,58,.1);border:1px solid rgba(201,151,58,.2);padding:5px 16px;border-radius:var(--r-full);margin-bottom:22px">◆ Intelligence Packages · 2025</div>
+      <h2 style="font-family:var(--f-display);font-size:clamp(2.4rem,5vw,4.2rem);font-weight:400;color:var(--bg);line-height:1.1;margin-bottom:18px">Choose the depth of<br><em style="font-style:italic;color:var(--gold)">your intelligence.</em></h2>
+      <p style="font-size:1rem;color:rgba(255,255,255,.5);max-width:540px;margin:0 auto 32px;line-height:1.8;font-weight:300">From a rapid signal scan to a full boardroom-grade strategic intelligence report with expert consultation. Each tier is modelled on how top consulting firms structure their diagnostics.</p>
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:var(--r-xl);padding:16px 24px;display:inline-flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:40px">
+        <span style="font-size:.78rem;color:rgba(255,255,255,.5);font-family:var(--f-mono)">Live demo →</span>
+        <button onclick="setDemo('stripe')" id="dcb-stripe" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:var(--r-full);color:rgba(255,255,255,.65);padding:6px 18px;font-family:var(--f-body);font-size:.76rem;cursor:pointer;transition:var(--t)" onmouseover="this.style.background='var(--gold)';this.style.color='white';this.style.borderColor='var(--gold)'" onmouseout="this.style.background='rgba(255,255,255,.08)';this.style.color='rgba(255,255,255,.65)';this.style.borderColor='rgba(255,255,255,.14)'">Stripe</button>
+        <button onclick="setDemo('oyo')" id="dcb-oyo" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:var(--r-full);color:rgba(255,255,255,.65);padding:6px 18px;font-family:var(--f-body);font-size:.76rem;cursor:pointer;transition:var(--t)" onmouseover="this.style.background='var(--gold)';this.style.color='white';this.style.borderColor='var(--gold)'" onmouseout="this.style.background='rgba(255,255,255,.08)';this.style.color='rgba(255,255,255,.65)';this.style.borderColor='rgba(255,255,255,.14)'">OYO Rooms</button>
+        <button onclick="setDemo('zepto')" id="dcb-zepto" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:var(--r-full);color:rgba(255,255,255,.65);padding:6px 18px;font-family:var(--f-body);font-size:.76rem;cursor:pointer;transition:var(--t)" onmouseover="this.style.background='var(--gold)';this.style.color='white';this.style.borderColor='var(--gold)'" onmouseout="this.style.background='rgba(255,255,255,.08)';this.style.color='rgba(255,255,255,.65)';this.style.borderColor='rgba(255,255,255,.14)'">Zepto</button>
+        <button onclick="setDemo('notion')" id="dcb-notion" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:var(--r-full);color:rgba(255,255,255,.65);padding:6px 18px;font-family:var(--f-body);font-size:.76rem;cursor:pointer;transition:var(--t)" onmouseover="this.style.background='var(--gold)';this.style.color='white';this.style.borderColor='var(--gold)'" onmouseout="this.style.background='rgba(255,255,255,.08)';this.style.color='rgba(255,255,255,.65)';this.style.borderColor='rgba(255,255,255,.14)'">Notion</button>
+        <button onclick="setDemo('pharmeasy')" id="dcb-pharmeasy" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:var(--r-full);color:rgba(255,255,255,.65);padding:6px 18px;font-family:var(--f-body);font-size:.76rem;cursor:pointer;transition:var(--t)" onmouseover="this.style.background='var(--gold)';this.style.color='white';this.style.borderColor='var(--gold)'" onmouseout="this.style.background='rgba(255,255,255,.08)';this.style.color='rgba(255,255,255,.65)';this.style.borderColor='rgba(255,255,255,.14)'">PharmEasy</button>
+      </div>
+      <div id="demo-strip" style="display:none;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:var(--r-xl);padding:16px 24px;margin-bottom:8px;text-align:left">
+        <div style="font-family:var(--f-mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--teal-light);margin-bottom:10px">◈ Live Preview · <span id="demo-co-name"></span></div>
+        <div id="demo-insights" style="display:flex;gap:24px;flex-wrap:wrap"></div>
+      </div>
+      <!-- Demo teaser bar -->
+      <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:var(--r-xl);padding:14px 20px;max-width:620px;margin:0 auto">
+        <span style="font-size:.78rem;color:rgba(255,255,255,.5);white-space:nowrap">Try live demo →</span>
+        <input id="demo-company-input" type="text" placeholder="Enter any company name (e.g. Airbnb, Swiggy, Stripe...)" style="flex:1;background:transparent;border:none;outline:none;font-family:var(--f-body);font-size:.88rem;color:var(--bg);color-scheme:dark" oninput="updateDemoTeaser(this.value)">
+        <button onclick="launchDemo()" style="background:var(--gold);color:white;border:none;padding:8px 18px;border-radius:var(--r-full);font-family:var(--f-body);font-size:.76rem;font-weight:500;cursor:pointer;white-space:nowrap">Preview →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Demo teaser card (shows when company typed) -->
+  <div id="demo-teaser" style="display:none;background:linear-gradient(135deg,var(--teal-pale),rgba(212,234,234,.3));border-top:1px solid rgba(45,107,107,.2);border-bottom:1px solid rgba(45,107,107,.2);padding:20px 0">
+    <div class="container">
+      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+        <span style="font-family:var(--f-mono);font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);background:rgba(45,107,107,.15);border:1px solid rgba(45,107,107,.25);padding:4px 12px;border-radius:var(--r-full)">◈ Live Signal Preview</span>
+        <span id="demo-teaser-text" style="font-size:.88rem;color:var(--ink);line-height:1.6;flex:1"></span>
+        <button onclick="goTo('pricing')" style="background:var(--teal);color:white;border:none;padding:7px 16px;border-radius:var(--r-full);font-size:.74rem;font-weight:500;cursor:pointer">Select a Package →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Package cards -->
+  <div class="container" style="padding:60px 32px 80px">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:32px" id="pricing-grid">
+
+      <!-- NUCLEUS — Free -->
+      <div class="pkg-card" id="pkg-card-nucleus" data-pkg="nucleus" onclick="selectPackage('nucleus')" style="background:var(--paper);border:2px solid var(--ink-06);border-radius:var(--r-xl);padding:32px 24px;cursor:pointer;transition:all .3s var(--ease);position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#6b7c8a,#8a9aaa)"></div>
+        <div style="font-family:var(--f-mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:#6b7c8a;margin-bottom:8px">Signal Scan</div>
+        <div style="font-family:var(--f-display);font-size:1.7rem;font-weight:500;color:var(--ink);margin-bottom:4px">Nucleus</div>
+        <div style="font-family:var(--f-display);font-size:2.6rem;font-weight:400;color:var(--ink);line-height:1;margin-bottom:6px">Free</div>
+        <div style="font-size:.74rem;color:var(--ink-40);margin-bottom:22px">No credit card needed</div>
+        <div style="font-size:.78rem;color:var(--ink-70);line-height:1.9;margin-bottom:24px">
+          <div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:#6b7c8a">◆</span> 15 core diagnostic questions</div>
+          <div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:#6b7c8a">◆</span> Revenue signal overview</div>
+          <div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:#6b7c8a">◆</span> 1 constraint identified</div>
+          <div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:#6b7c8a">◆</span> Executive summary (3 sections)</div>
+          <div style="display:flex;gap:8px;opacity:.4"><span>◆</span> No simulator</div>
+          <div style="display:flex;gap:8px;opacity:.4"><span>◆</span> No AI follow-up</div>
+          <div style="display:flex;gap:8px;opacity:.4"><span>◆</span> No expert call</div>
+        </div>
+        <button class="pkg-btn" style="width:100%;padding:12px;background:var(--ink-06);color:var(--ink);border:1.5px solid var(--ink-15);border-radius:var(--r-full);font-family:var(--f-body);font-size:.8rem;font-weight:500;cursor:pointer;transition:var(--t)">Start Free →</button>
+      </div>
+
+      <!-- CATALYST — $99 -->
+      <div class="pkg-card" id="pkg-card-catalyst" data-pkg="catalyst" onclick="selectPackage('catalyst')" style="background:var(--paper);border:2px solid var(--ink-06);border-radius:var(--r-xl);padding:32px 24px;cursor:pointer;transition:all .3s var(--ease);position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--slate),#5a70a0)"></div>
+        <div style="font-family:var(--f-mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--slate);margin-bottom:8px">Diagnostic Deep Dive</div>
+        <div style="font-family:var(--f-display);font-size:1.7rem;font-weight:500;color:var(--ink);margin-bottom:4px">Catalyst</div>
+        <div style="font-family:var(--f-display);font-size:2.6rem;font-weight:400;color:var(--ink);line-height:1;margin-bottom:6px">$99</div>
+        <div style="font-size:.74rem;color:var(--ink-40);margin-bottom:22px">One-time · Instant access</div>
+        <div style="font-size:.78rem;color:var(--ink-70);line-height:1.9;margin-bottom:24px">
+          <div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:var(--slate)">◆</span> 35 diagnostic questions</div>
+          <div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:var(--slate)">◆</span> Revenue engine + funnel</div>
+          <div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:var(--slate)">◆</span> 3 constraints mapped</div>
+          <div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:var(--slate)">◆</span> 6-section report</div>
+          <div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:var(--slate)">◆</span> Live revenue simulator</div>
+          <div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:#c9973a;font-weight:600">◆ 30-min expert strategy call</span></div>
+          <div style="display:flex;gap:8px;opacity:.4"><span>◆</span> No AI follow-up</div>
+        </div>
+        <button class="pkg-btn" style="width:100%;padding:12px;background:var(--slate);color:white;border:none;border-radius:var(--r-full);font-family:var(--f-body);font-size:.8rem;font-weight:500;cursor:pointer;transition:var(--t)">Get Catalyst →</button>
+      </div>
+
+      <!-- VANGUARD — $199 (MOST POPULAR) -->
+      <div class="pkg-card pkg-featured" id="pkg-card-vanguard" data-pkg="vanguard" onclick="selectPackage('vanguard')" style="background:var(--bg-dark);border:2px solid var(--gold);border-radius:var(--r-xl);padding:32px 24px;cursor:pointer;transition:all .3s var(--ease);position:relative;overflow:hidden;transform:translateY(-8px);box-shadow:0 20px 60px rgba(201,151,58,.2)">
+        <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--gold),var(--gold-2))"></div>
+        <div style="position:absolute;top:16px;right:16px;background:var(--gold);color:white;font-family:var(--f-mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:var(--r-full)">Most Popular</div>
+        <div style="font-family:var(--f-mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:8px">Full Intelligence</div>
+        <div style="font-family:var(--f-display);font-size:1.7rem;font-weight:500;color:var(--bg);margin-bottom:4px">Vanguard</div>
+        <div style="font-family:var(--f-display);font-size:2.6rem;font-weight:400;color:var(--bg);line-height:1;margin-bottom:6px">$199</div>
+        <div style="font-size:.74rem;color:rgba(255,255,255,.4);margin-bottom:22px">One-time · Instant access</div>
+        <div style="font-size:.78rem;color:rgba(255,255,255,.7);line-height:1.9;margin-bottom:24px">
+          <div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:var(--gold)">◆</span> 55 diagnostic questions</div>
+          <div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:var(--gold)">◆</span> Full 9-section report</div>
+          <div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:var(--gold)">◆</span> AI follow-up layer (5–8 questions)</div>
+          <div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:var(--gold)">◆</span> 5-year projection</div>
+          <div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:var(--gold)">◆</span> AS-IS vs TO-BE model</div>
+          <div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:var(--gold)">◆</span> Valuation estimate</div>
+          <div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:#7dd87d;font-weight:600">◆ 60-min expert strategy call</span></div>
+        </div>
+        <button class="pkg-btn" style="width:100%;padding:12px;background:var(--gold);color:white;border:none;border-radius:var(--r-full);font-family:var(--f-body);font-size:.8rem;font-weight:600;cursor:pointer;transition:var(--t)">Get Vanguard →</button>
+      </div>
+
+      <!-- APEX — $499 -->
+      <div class="pkg-card" id="pkg-card-apex" data-pkg="apex" onclick="selectPackage('apex')" style="background:linear-gradient(135deg,#0f0e0b,#1a1812);border:2px solid rgba(201,151,58,.35);border-radius:var(--r-xl);padding:32px 24px;cursor:pointer;transition:all .3s var(--ease);position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--gold-deep),var(--gold),var(--gold-2))"></div>
+        <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(201,151,58,.08) 0%,transparent 70%);pointer-events:none"></div>
+        <div style="font-family:var(--f-mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;position:relative">Boardroom Grade</div>
+        <div style="font-family:var(--f-display);font-size:1.7rem;font-weight:500;color:var(--bg);margin-bottom:4px;position:relative">Apex</div>
+        <div style="font-family:var(--f-display);font-size:2.6rem;font-weight:400;color:var(--bg);line-height:1;margin-bottom:6px;position:relative">$499</div>
+        <div style="font-size:.74rem;color:rgba(255,255,255,.35);margin-bottom:22px;position:relative">One-time · Priority access</div>
+        <div style="font-size:.78rem;color:rgba(255,255,255,.7);line-height:1.9;margin-bottom:24px;position:relative">
+          <div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:var(--gold-2)">◆</span> All 77+ diagnostic questions</div>
+          <div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:var(--gold-2)">◆</span> Full 11-section report</div>
+          <div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:var(--gold-2)">◆</span> AI follow-up (8–10 questions)</div>
+          <div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:var(--gold-2)">◆</span> Strategic canvas + roadmap</div>
+          <div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:var(--gold-2)">◆</span> Must-win battles framework</div>
+          <div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:var(--gold-2)">◆</span> Full simulator + projections</div>
+          <div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:#7dd87d;font-weight:600">◆ 90-min board-level review call</span></div>
+          <div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:#7dd87d;font-weight:600">◆ Written action brief delivered</span></div>
+        </div>
+        <button class="pkg-btn" style="width:100%;padding:12px;background:linear-gradient(135deg,var(--gold-deep),var(--gold));color:white;border:none;border-radius:var(--r-full);font-family:var(--f-body);font-size:.8rem;font-weight:600;cursor:pointer;transition:var(--t);position:relative">Get Apex →</button>
+      </div>
+    </div>
+
+    <!-- Enterprise row -->
+    <div onclick="goTo('enterprise')" style="background:linear-gradient(135deg,var(--bg-dark),#1e1c12);border:1px solid rgba(201,151,58,.2);border-radius:var(--r-xl);padding:32px 44px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:var(--t);gap:32px" onmouseover="this.style.borderColor='rgba(201,151,58,.5)'" onmouseout="this.style.borderColor='rgba(201,151,58,.2)'">
+      <div>
+        <div style="font-family:var(--f-mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:8px">Enterprise · Bespoke</div>
+        <div style="font-family:var(--f-display);font-size:1.8rem;font-weight:400;color:var(--bg);margin-bottom:8px">Meridian <em style="font-style:italic;color:var(--gold)">Corporate</em></div>
+        <div style="font-size:.88rem;color:rgba(255,255,255,.5);max-width:560px;line-height:1.75">For organisations with 50+ employees, multi-unit structures, or complex transformation agendas. Custom question sets, dedicated analyst, board presentation, and ongoing intelligence subscription.</div>
+      </div>
+      <div style="text-align:center;flex-shrink:0">
+        <div style="font-family:var(--f-display);font-size:1.4rem;color:var(--gold);margin-bottom:6px">Custom pricing</div>
+        <button style="background:rgba(201,151,58,.15);color:var(--gold);border:1px solid rgba(201,151,58,.3);padding:12px 28px;border-radius:var(--r-full);font-family:var(--f-body);font-size:.8rem;font-weight:500;cursor:pointer;white-space:nowrap">Request Proposal →</button>
+      </div>
+    </div>
+
+    <!-- Comparison table -->
+    <div style="margin-top:60px">
+      <div style="text-align:center;margin-bottom:36px">
+        <div style="font-family:var(--f-display);font-size:1.9rem;font-weight:400;color:var(--ink);margin-bottom:8px">What <span id="demo-table-co" style="color:var(--gold-deep);font-style:italic">Stripe</span> gets at each tier</div>
+        <div style="font-size:.88rem;color:var(--ink-70)">Modelled on McKinsey Diagnostic, Bain Rapid Assessment, and BCG Gamma frameworks</div>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:.82rem">
+          <thead>
+            <tr style="border-bottom:2px solid var(--ink-06)">
+              <th style="text-align:left;padding:12px 16px;color:var(--ink-40);font-weight:500;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase">Feature</th>
+              <th style="padding:12px 16px;color:#6b7c8a;font-weight:600;text-align:center">Nucleus<br><span style="font-weight:400;font-size:.76rem">Free</span></th>
+              <th style="padding:12px 16px;color:var(--slate);font-weight:600;text-align:center">Catalyst<br><span style="font-weight:400;font-size:.76rem">$99</span></th>
+              <th style="padding:12px 16px;color:var(--gold-deep);font-weight:700;text-align:center;background:var(--gold-pale);border-radius:8px 8px 0 0">Vanguard<br><span style="font-weight:400;font-size:.76rem">$199</span></th>
+              <th style="padding:12px 16px;color:var(--ink);font-weight:600;text-align:center">Apex<br><span style="font-weight:400;font-size:.76rem">$499</span></th>
+            </tr>
+          </thead>
+          <tbody id="demo-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     LOGIN / REGISTER PAGE
+═══════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════
+     AUTH MODAL (OTP gate — replaces page-login)
+═══════════════════════════════════════ -->
+<div id="auth-modal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(20,19,16,.88);backdrop-filter:blur(18px);align-items:center;justify-content:center">
+  <div style="background:var(--paper);border-radius:var(--r-xl);padding:52px 48px;max-width:480px;width:92%;box-shadow:var(--sh-xl);position:relative;animation:fadeUp .4s var(--ease) both">
+    <button onclick="closeAuth()" style="position:absolute;top:16px;right:16px;background:var(--ink-06);border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:1rem;color:var(--ink-70);line-height:1">×</button>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:28px">
+      <div class="logo-sq a" style="width:9px;height:9px;border-radius:2px"></div>
+      <div class="logo-sq b" style="width:9px;height:9px;border-radius:2px;opacity:.7"></div>
+      <div class="logo-sq c" style="width:9px;height:9px;border-radius:2px;opacity:.3"></div>
+      <span id="auth-pkg-label" style="margin-left:8px;font-family:var(--f-mono);font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-deep);background:var(--gold-pale);padding:3px 10px;border-radius:var(--r-full)"></span>
+    </div>
+    <div id="auth-step-1">
+      <div style="font-family:var(--f-display);font-size:1.9rem;font-weight:400;color:var(--ink);margin-bottom:8px;line-height:1.2">Access your <em style="color:var(--gold)">Digital Twin</em></div>
+      <p style="font-size:.84rem;color:var(--ink-70);line-height:1.75;margin-bottom:24px">Enter your work email. We send a one-time code — no bots, no passwords, no spam.</p>
+      <label style="font-size:.74rem;font-weight:500;color:var(--ink);display:block;margin-bottom:6px">Work Email</label>
+      <input type="email" id="auth-email" placeholder="you@company.com" autocomplete="email" style="width:100%;border:1.5px solid var(--ink-15);border-radius:var(--r);padding:12px 14px;font-family:var(--f-body);font-size:.9rem;outline:none;background:white;transition:var(--t);margin-bottom:14px;box-sizing:border-box" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--ink-15)'" onkeydown="if(event.key==='Enter')sendOTP()">
+      <button onclick="sendOTP()" style="width:100%;background:var(--bg-dark);color:white;border:none;padding:13px;border-radius:var(--r-full);font-family:var(--f-body);font-size:.85rem;font-weight:500;cursor:pointer;transition:var(--t)" onmouseover="this.style.background='var(--gold-deep)'" onmouseout="this.style.background='var(--bg-dark)'">Send Access Code →</button>
+      <p style="font-size:.72rem;color:var(--ink-40);text-align:center;margin-top:12px">Human-verified. Your data is never sold or used for AI training.</p>
+    </div>
+    <div id="auth-step-2" style="display:none">
+      <div style="font-family:var(--f-display);font-size:1.9rem;font-weight:400;color:var(--ink);margin-bottom:8px">Check your inbox</div>
+      <p style="font-size:.84rem;color:var(--ink-70);line-height:1.75;margin-bottom:8px">A 6-digit code was sent to <strong id="auth-email-display"></strong></p>
+      <div style="background:var(--gold-pale);border:1px solid rgba(201,151,58,.25);border-radius:var(--r);padding:10px 14px;font-size:.8rem;color:var(--gold-deep);margin-bottom:20px">Demo mode — use code: <strong>247891</strong></div>
+      <input type="text" id="auth-otp" maxlength="6" placeholder="_ _ _ _ _ _" autocomplete="one-time-code" style="width:100%;border:1.5px solid var(--ink-15);border-radius:var(--r);padding:14px;font-family:var(--f-mono);font-size:1.6rem;text-align:center;outline:none;letter-spacing:.25em;transition:var(--t);margin-bottom:14px;box-sizing:border-box" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--ink-15)'" onkeydown="if(event.key==='Enter')verifyOTP()">
+      <button onclick="verifyOTP()" style="width:100%;background:var(--gold);color:white;border:none;padding:13px;border-radius:var(--r-full);font-family:var(--f-body);font-size:.85rem;font-weight:500;cursor:pointer;transition:var(--t)" onmouseover="this.style.background='var(--gold-deep)'" onmouseout="this.style.background='var(--gold)'">Verify & Start Diagnostic →</button>
+      <div id="auth-err" style="display:none;font-size:.78rem;color:var(--rose);text-align:center;margin-top:10px">Incorrect code. Try again or use 247891.</div>
+    </div>
+    <div id="auth-step-3" style="display:none;text-align:center;padding:20px 0">
+      <div style="width:56px;height:56px;border-radius:50%;background:rgba(61,107,64,.1);border:2px solid var(--sage);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:1.4rem;color:var(--sage)">✓</div>
+      <div style="font-family:var(--f-display);font-size:1.6rem;font-weight:400;color:var(--ink);margin-bottom:8px">Identity verified</div>
+      <p style="font-size:.84rem;color:var(--ink-70);margin-bottom:20px">Preparing your diagnostic environment...</p>
+      <div style="width:100%;height:4px;background:var(--ink-06);border-radius:2px;overflow:hidden"><div id="auth-progress-bar" style="height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-2));width:0%;transition:width 1.5s var(--ease)"></div></div>
+    </div>
+  </div>
+</div>
+
+<div id="page-enterprise" style="display:none;min-height:100vh;background:var(--bg);padding-top:64px">
+  <div style="background:var(--bg-dark);padding:80px 0;position:relative;overflow:hidden">
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse 50% 80% at 80% 50%,rgba(201,151,58,.1) 0%,transparent 70%);pointer-events:none"></div>
+    <div class="container" style="display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center">
+      <div style="position:relative;z-index:1">
+        <div style="font-family:var(--f-mono);font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:18px">Meridian Corporate · Enterprise</div>
+        <h2 style="font-family:var(--f-display);font-size:clamp(2.2rem,4vw,3.8rem);font-weight:400;color:var(--bg);line-height:1.15;margin-bottom:22px">Built for organisations<br>that operate at <em style="color:var(--gold)">scale.</em></h2>
+        <p style="font-size:.94rem;color:rgba(255,255,255,.55);line-height:1.85;margin-bottom:32px;font-weight:300">Meridian Corporate is a bespoke intelligence engagement — combining our platform with dedicated analyst support, custom question architecture, and a boardroom-ready deliverable.</p>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          ${['Dedicated intelligence analyst assigned to your engagement','Custom 150+ question set built for your sector and structure','Multi-unit and divisional diagnostic capability','Board presentation deck with strategic recommendations','Ongoing quarterly intelligence subscription available','NDA-protected engagement from day one'].map(f=>`<div style="display:flex;align-items:center;gap:12px;font-size:.86rem;color:rgba(255,255,255,.65)"><span style="color:var(--gold);font-size:.8rem">◆</span>${f}</div>`).join('')}
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:var(--r-xl);padding:40px;position:relative;z-index:1">
+        <div style="font-family:var(--f-display);font-size:1.4rem;font-weight:400;color:var(--bg);margin-bottom:6px">Request a Proposal</div>
+        <div style="font-size:.8rem;color:rgba(255,255,255,.4);margin-bottom:28px">We respond within 24 hours. No sales pressure.</div>
+        <div style="display:flex;flex-direction:column;gap:14px" id="ent-form">
+          <input id="ent-name" type="text" placeholder="Full name" style="width:100%;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.1);border-radius:var(--r);padding:12px 14px;font-family:var(--f-body);font-size:.86rem;color:var(--bg);outline:none;box-sizing:border-box;transition:var(--t)" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'">
+          <input id="ent-email" type="email" placeholder="Work email" style="width:100%;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.1);border-radius:var(--r);padding:12px 14px;font-family:var(--f-body);font-size:.86rem;color:var(--bg);outline:none;box-sizing:border-box;transition:var(--t)" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'">
+          <input id="ent-company" type="text" placeholder="Organisation name" style="width:100%;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.1);border-radius:var(--r);padding:12px 14px;font-family:var(--f-body);font-size:.86rem;color:var(--bg);outline:none;box-sizing:border-box;transition:var(--t)" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'">
+          <input id="ent-size" type="text" placeholder="Team size (approx.)" style="width:100%;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.1);border-radius:var(--r);padding:12px 14px;font-family:var(--f-body);font-size:.86rem;color:var(--bg);outline:none;box-sizing:border-box;transition:var(--t)" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'">
+          <select id="ent-challenge" style="width:100%;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.1);border-radius:var(--r);padding:12px 14px;font-family:var(--f-body);font-size:.86rem;color:rgba(255,255,255,.7);outline:none;box-sizing:border-box;transition:var(--t)" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'">
+            <option value="">Primary challenge / goal</option>
+            <option>Revenue growth acceleration</option><option>Operational transformation</option><option>Strategy clarity and alignment</option><option>M&A integration diagnostic</option><option>Market expansion planning</option><option>Digital / platform transformation</option><option>Performance turnaround</option><option>Investor / board readiness</option><option>Other</option>
+          </select>
+          <textarea id="ent-brief" placeholder="Brief context — what are you trying to solve? (optional)" rows="3" style="width:100%;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.1);border-radius:var(--r-lg);padding:12px 14px;font-family:var(--f-body);font-size:.86rem;color:var(--bg);outline:none;resize:vertical;box-sizing:border-box;transition:var(--t)" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'"></textarea>
+          <button onclick="submitEnterprise()" style="width:100%;padding:14px;background:var(--gold);color:white;border:none;border-radius:var(--r-full);font-family:var(--f-body);font-size:.86rem;font-weight:600;cursor:pointer;transition:var(--t)" onmouseover="this.style.background='var(--gold-deep)'" onmouseout="this.style.background='var(--gold)'">Submit Proposal Request →</button>
+        </div>
+        <div id="ent-success" style="display:none;text-align:center;padding:20px 0">
+          <div style="font-size:2rem;margin-bottom:12px">✓</div>
+          <div style="font-family:var(--f-display);font-size:1.3rem;color:var(--bg);margin-bottom:8px">Proposal request received</div>
+          <div style="font-size:.84rem;color:rgba(255,255,255,.5);line-height:1.65">Our team will review your context and respond within 24 hours with a tailored proposal and next steps.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container" style="padding:60px 32px">
+    <div style="text-align:center;margin-bottom:44px"><div style="font-family:var(--f-display);font-size:2rem;font-weight:400;color:var(--ink)">How Meridian Corporate works</div></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;position:relative">
+      <div style="position:absolute;top:28px;left:12%;right:12%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)"></div>
+      ${[['01','Scoping call','30-minute discovery call to understand your organisation\'s structure and challenge'],['02','Custom diagnostic','Bespoke question set built for your sector, size, and strategic agenda'],['03','Intelligence build','Dedicated analyst builds your Digital Twin with full data validation'],['04','Board delivery','Boardroom presentation with prioritised strategic recommendations']].map(([n,t,d])=>`<div style="padding:0 24px;text-align:center;position:relative;z-index:1"><div style="width:56px;height:56px;border-radius:50%;background:var(--bg);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-family:var(--f-display);font-size:1.2rem;font-weight:400;color:var(--gold)">${n}</div><div style="font-size:.92rem;font-weight:600;color:var(--ink);margin-bottom:8px">${t}</div><div style="font-size:.8rem;color:var(--ink-70);line-height:1.65">${d}</div></div>`).join('')}
+    </div>
+  </div>
+</div>
+
+<!-- DOPAMINE HOOK — Section Complete Modal -->
+<div id="dopamine-modal" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(26,24,20,.75);backdrop-filter:blur(8px);align-items:center;justify-content:center">
+  <div id="dopamine-card" style="background:var(--bg-dark);border:1px solid rgba(201,151,58,.3);border-radius:var(--r-xl);padding:52px 48px;max-width:560px;width:90%;text-align:center;position:relative;animation:fadeUp .4s var(--ease) both;overflow:hidden">
+    <div style="position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(201,151,58,.18) 0%,transparent 70%);pointer-events:none"></div>
+    <div id="dop-badge" style="display:inline-flex;align-items:center;gap:7px;font-family:var(--f-mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);background:rgba(201,151,58,.12);border:1px solid rgba(201,151,58,.25);padding:5px 16px;border-radius:var(--r-full);margin-bottom:20px;position:relative"></div>
+    <div id="dop-title" style="font-family:var(--f-display);font-size:1.9rem;font-weight:400;color:var(--bg);line-height:1.25;margin-bottom:14px;position:relative"></div>
+    <div id="dop-insight" style="font-size:.9rem;color:rgba(255,255,255,.6);line-height:1.8;margin-bottom:28px;position:relative"></div>
+    <div id="dop-teaser" style="background:rgba(201,151,58,.08);border:1px solid rgba(201,151,58,.18);border-radius:var(--r-lg);padding:18px;margin-bottom:28px;position:relative">
+      <div style="font-family:var(--f-mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:8px">◈ Early Signal Detected</div>
+      <div id="dop-teaser-text" style="font-size:.86rem;color:rgba(255,255,255,.8);line-height:1.65"></div>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:center;position:relative">
+      <button id="dop-upgrade-btn" style="display:none;padding:11px 22px;background:rgba(201,151,58,.15);color:var(--gold);border:1px solid rgba(201,151,58,.3);border-radius:var(--r-full);font-family:var(--f-body);font-size:.78rem;cursor:pointer;transition:var(--t)" onclick="goTo('pricing')">Upgrade for Full Report</button>
+      <button onclick="closeDopamine()" style="padding:12px 32px;background:var(--gold);color:white;border:none;border-radius:var(--r-full);font-family:var(--f-body);font-size:.84rem;font-weight:500;cursor:pointer;transition:var(--t)" id="dop-continue-btn">Continue to Next Section →</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROCESSING -->
+<div id="page-processing">
+  <div class="proc-inner">
+    <div class="proc-logo">
+      <div class="proc-sq a"></div><div class="proc-sq b"></div>
+      <div class="proc-sq c"></div><div class="proc-sq d"></div>
+    </div>
+    <div class="proc-spinner"></div>
+    <div class="proc-title">Building your Digital Twin</div>
+    <div class="proc-sub">Synthesising structured answers, strategic context, and AI insights into your personalised intelligence report.</div>
+    <div class="proc-steps">
+      <div class="ps act" id="ps1"><div class="ps-dot"></div>Synthesising strategic context</div>
+      <div class="ps" id="ps2"><div class="ps-dot"></div>Classifying business model and sector</div>
+      <div class="ps" id="ps3"><div class="ps-dot"></div>Decomposing revenue engine</div>
+      <div class="ps" id="ps4"><div class="ps-dot"></div>Mapping constraints to pain areas</div>
+      <div class="ps" id="ps5"><div class="ps-dot"></div>Integrating AI follow-up insights</div>
+      <div class="ps" id="ps6"><div class="ps-dot"></div>Running 5-year simulation</div>
+      <div class="ps" id="ps7"><div class="ps-dot"></div>Building AS-IS vs TO-BE model</div>
+      <div class="ps" id="ps8"><div class="ps-dot"></div>Finalising context-aware report</div>
+    </div>
+    <div class="proc-context hidden" id="proc-context">
+      <div class="pc-label">Strategic Context · Integrated</div>
+      <div class="pc-tags" id="proc-tags"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     OUTPUT DASHBOARD
+═══════════════════════════════════════ -->
+<div id="page-output">
+  <div class="out-hero">
+    <div class="out-hero-inner">
+      <div class="oh-top">
+        <div>
+          <div class="oh-name" id="oh-name">Organisation</div>
+          <div class="oh-sub">Digital Twin Intelligence Report · <span id="oh-date"></span></div>
+        </div>
+        <div class="oh-badge" id="oh-badge">—</div>
+      </div>
+      <div class="oh-context" id="oh-context"></div>
+      <div class="out-scores">
+        <div class="out-score"><div class="out-score-val a" id="sc-rev">—</div><div class="out-score-label">Monthly Revenue</div></div>
+        <div class="out-score"><div class="out-score-val" id="sc-growth">—</div><div class="out-score-label">Growth Rate</div></div>
+        <div class="out-score"><div class="out-score-val" id="sc-margin">—</div><div class="out-score-label">Gross Margin</div></div>
+        <div class="out-score"><div class="out-score-val" id="sc-cust">—</div><div class="out-score-label">Active Customers</div></div>
+        <div class="out-score"><div class="out-score-val a" id="sc-constraint">—</div><div class="out-score-label">Primary Constraint</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="ai-insights-strip" id="ai-strip" style="display:none">
+    <div class="ai-insights-strip-inner">
+      <span class="ais-badge">AI Insights Active</span>
+      <span class="ais-text" id="ais-text">—</span>
+    </div>
+  </div>
+  <div class="out-tabs-bar">
+    <div class="out-tabs">
+      <button class="out-tab act" onclick="switchTab('exec',this)">Executive Summary</button>
+      <button class="out-tab" onclick="switchTab('revenue',this)">Revenue Engine</button>
+      <button class="out-tab" onclick="switchTab('funnel',this)">Funnel</button>
+      <button class="out-tab" onclick="switchTab('econ',this)">Customer Economics</button>
+      <button class="out-tab" onclick="switchTab('cost',this)">Cost & Profit</button>
+      <button class="out-tab" onclick="switchTab('constraints',this)">Constraints</button>
+      <button class="out-tab" onclick="switchTab('sim',this)">Simulator</button>
+      <button class="out-tab" onclick="switchTab('proj',this)">5-Year Projection</button>
+      <button class="out-tab" onclick="switchTab('val',this)">Valuation</button>
+      <button class="out-tab" onclick="switchTab('at',this)">AS-IS vs TO-BE</button>
+      <button class="out-tab" onclick="switchTab('insights',this)">Insights & Roadmap</button>
+    </div>
+  </div>
+  <div class="out-body">
+    <div class="tab-pane act" id="tp-exec">
+      <div id="exec-ai-card"></div>
+      <div style="display:grid;grid-template-columns:3fr 2fr;gap:20px;margin-bottom:20px">
+        <div class="exec-main-card"><div class="emc-label">Current State Assessment</div><div class="emc-h" id="emc-h">—</div><div class="emc-text" id="emc-text">—</div></div>
+        <div class="d-card"><div class="d-card-title">Business Classification</div><div id="exec-class">—</div></div>
+      </div>
+      <div class="sc-row">
+        <div class="sc-card str"><div class="sc-title">Top Strengths</div><div id="exec-str">—</div></div>
+        <div class="sc-card con"><div class="sc-title">Key Constraints</div><div id="exec-con">—</div></div>
+      </div>
+    </div>
+    <div class="tab-pane" id="tp-revenue">
+      <div id="rev-ai-card"></div>
+      <div class="rev-formula" id="rev-formula">—</div>
+      <div class="dash-grid dg-2">
+        <div class="d-card"><div class="d-card-title">Revenue Breakdown</div><canvas id="ch-rev" height="220"></canvas></div>
+        <div class="d-card"><div class="d-card-title">Improvement Potential</div><div id="rev-improve">—</div></div>
+      </div>
+    </div>
+    <div class="tab-pane" id="tp-funnel">
+      <div class="d-card" style="margin-bottom:20px"><div class="d-card-title">Conversion Funnel</div><div id="funnel-viz">—</div></div>
+      <div class="dash-grid dg-2">
+        <div class="d-card"><div class="d-card-title">Funnel Metrics</div><div id="funnel-metrics">—</div></div>
+        <div class="d-card"><div class="d-card-title">Biggest Leakage</div><div id="funnel-leak">—</div></div>
+      </div>
+    </div>
+    <div class="tab-pane" id="tp-econ">
+      <div class="dash-grid dg-2" style="margin-bottom:20px">
+        <div class="d-card"><div class="d-card-title">Customer Economics</div><div id="econ-gauge">—</div></div>
+        <div class="d-card"><div class="d-card-title">CAC vs LTV</div><canvas id="ch-cac" height="220"></canvas></div>
+      </div>
+      <div class="d-card"><div class="d-card-title">Economics Classification</div><div id="econ-class">—</div></div>
+    </div>
+    <div class="tab-pane" id="tp-cost">
+      <div class="dash-grid dg-2" style="margin-bottom:20px">
+        <div class="d-card"><div class="d-card-title">Cost Structure</div><div class="cost-wrap"><canvas id="ch-cost" width="160" height="160" style="max-width:160px;flex-shrink:0"></canvas><div class="cost-legend" id="cost-legend">—</div></div></div>
+        <div class="d-card"><div class="d-card-title">Profitability Analysis</div><div id="profit-analysis">—</div></div>
+      </div>
+      <div class="d-card"><div class="d-card-title">Profit vs Revenue Dynamics</div><canvas id="ch-profit" height="200"></canvas></div>
+    </div>
+    <div class="tab-pane" id="tp-constraints">
+      <div class="constraint-hero"><div class="ch-label">Primary Constraint</div><div class="ch-title" id="con-title">—</div><div class="ch-desc" id="con-desc">—</div></div>
+      <div class="con-sec-grid" id="con-secondary">—</div>
+    </div>
+    <div class="tab-pane" id="tp-sim">
+      <div class="sim-layout">
+        <div class="sim-controls">
+          <div class="sim-title">Scenario Simulator</div>
+          <div class="sim-sub">Adjust levers. Results update instantly.</div>
+          <div class="sim-slider-g"><div class="sl-header"><span class="sl-label">Monthly Leads</span><span class="sl-val" id="sv-l">500</span></div><input type="range" class="sl" id="sl-l" min="50" max="10000" value="500" oninput="updateSim()"></div>
+          <div class="sim-slider-g"><div class="sl-header"><span class="sl-label">Conversion Rate (%)</span><span class="sl-val" id="sv-c">5%</span></div><input type="range" class="sl" id="sl-c" min="1" max="60" value="5" oninput="updateSim()"></div>
+          <div class="sim-slider-g"><div class="sl-header"><span class="sl-label">ARPU (€/mo)</span><span class="sl-val" id="sv-a">€2,000</span></div><input type="range" class="sl" id="sl-a" min="100" max="50000" step="100" value="2000" oninput="updateSim()"></div>
+          <div class="sim-slider-g"><div class="sl-header"><span class="sl-label">Retention Rate (%)</span><span class="sl-val" id="sv-r">70%</span></div><input type="range" class="sl" id="sl-r" min="10" max="99" value="70" oninput="updateSim()"></div>
+          <div class="sim-slider-g"><div class="sl-header"><span class="sl-label">Monthly Costs (€)</span><span class="sl-val" id="sv-k">€30,000</span></div><input type="range" class="sl" id="sl-k" min="5000" max="500000" step="1000" value="30000" oninput="updateSim()"></div>
+          <hr class="sim-divider">
+          <button class="sim-reset-btn" onclick="resetSim()">↺ Reset to Baseline</button>
+        </div>
+        <div class="sim-results">
+          <div class="sim-metrics">
+            <div class="sim-m"><div class="sm-label">Monthly Revenue</div><div class="sm-val" id="sm-rev">—</div><div class="sm-delta" id="sm-rev-d"></div></div>
+            <div class="sim-m"><div class="sm-label">Annual Revenue</div><div class="sm-val" id="sm-ann">—</div><div class="sm-delta" id="sm-ann-d"></div></div>
+            <div class="sim-m"><div class="sm-label">Monthly Profit</div><div class="sm-val" id="sm-pro">—</div><div class="sm-delta" id="sm-pro-d"></div></div>
+          </div>
+          <div class="sim-metrics">
+            <div class="sim-m"><div class="sm-label">New Customers/Mo</div><div class="sm-val" id="sm-nc">—</div></div>
+            <div class="sim-m"><div class="sm-label">LTV per Customer</div><div class="sm-val" id="sm-ltv">—</div></div>
+            <div class="sim-m"><div class="sm-label">Profit Margin</div><div class="sm-val" id="sm-mg">—</div></div>
+          </div>
+          <div class="sim-chart-card"><div class="d-card-title">12-Month Trajectory</div><canvas id="ch-sim" height="220"></canvas></div>
+        </div>
+      </div>
+    </div>
+    <div class="tab-pane" id="tp-proj">
+      <div class="proj-card"><div class="d-card-title">5-Year Revenue &amp; Profit Projection</div><canvas id="ch-5y" height="300"></canvas></div>
+      <div class="dash-grid dg-2" style="margin-top:20px">
+        <div class="d-card"><div class="d-card-title">Current Trajectory</div><div id="proj-base">—</div></div>
+        <div class="d-card"><div class="d-card-title">Improved Trajectory</div><div id="proj-imp">—</div></div>
+      </div>
+    </div>
+    <div class="tab-pane" id="tp-val">
+      <div class="val-hero"><div class="vh-label">Estimated Company Valuation</div><div class="vh-range" id="vh-range">—</div><div class="vh-sub" id="vh-sub">—</div><div class="vh-grid"><div class="vh-cell"><div class="vh-cell-val" id="vh-arr">—</div><div class="vh-cell-label">Annual Revenue</div></div><div class="vh-cell"><div class="vh-cell-val" id="vh-mult">—</div><div class="vh-cell-label">Revenue Multiple</div></div><div class="vh-cell"><div class="vh-cell-val" id="vh-mg">—</div><div class="vh-cell-label">Gross Margin</div></div></div></div>
+      <div class="d-card"><div class="d-card-title">Valuation Driver Analysis</div><div id="val-drivers">—</div></div>
+    </div>
+    <div class="tab-pane" id="tp-at">
+      <div class="at-grid" style="margin-bottom:20px">
+        <div class="at-card"><span class="at-badge asis">AS-IS · Current</span><div id="at-asis">—</div></div>
+        <div class="vs-mid"><div class="vs-text">vs</div><div class="vs-arrow">→</div></div>
+        <div class="at-card tobe"><span class="at-badge tobe">TO-BE · Target</span><div id="at-tobe">—</div></div>
+      </div>
+      <div class="d-card"><div class="d-card-title">Transformation Required</div><div id="at-gap">—</div></div>
+    </div>
+    <div class="tab-pane" id="tp-insights">
+      <div id="ins-ai-card"></div>
+      <div class="ins-top">
+        <div class="ins-card lever"><div class="ins-tag" style="color:var(--gold-deep)">◆ Top Growth Lever</div><div class="ins-title" id="ins-lever-title">—</div><div class="ins-desc" id="ins-lever-desc">—</div></div>
+        <div class="ins-card battle"><div class="ins-tag" style="color:var(--rose)">⚑ Must-Win Battle</div><div class="ins-title" id="ins-battle-title">—</div><div class="ins-desc" id="ins-battle-desc">—</div></div>
+      </div>
+      <div class="d-card" style="margin-bottom:20px"><div class="d-card-title">Top 3 Immediate Actions</div><div class="action-list" id="ins-actions">—</div></div>
+      <div class="roadmap" id="ins-roadmap">—</div>
+      <div class="dec-card">
+        <div style="margin-bottom:24px"><div style="font-family:var(--f-mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">Decision Summary</div><div style="font-family:var(--f-display);font-size:1.8rem;font-weight:400;color:var(--bg)">Your next 90 days, clearly defined.</div></div>
+        <div class="dec-grid" id="dec-grid">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
