@@ -1,5 +1,12 @@
-import { PlatformDashboard } from '@/components/platform/PlatformDashboard';
+import { PlatformHtmlViewFrame } from '@/components/platform/PlatformHtmlViewFrame';
 
 export default function DashboardPage() {
-  return <PlatformDashboard />;
+  return (
+    <PlatformHtmlViewFrame
+      active="dashboard"
+      title="Growth Intelligence Dashboard"
+      loadingText="Loading Dashboard..."
+      viewName="dashboard"
+    />
+  );
 }

@@ -1,12 +1,5 @@
-import { PlatformHtmlViewFrame } from '@/components/platform/PlatformHtmlViewFrame';
+import { PlatformEco } from '@/components/platform/PlatformEco';
 
 export default function EcosystemPage() {
-  return (
-    <PlatformHtmlViewFrame
-      active="eco"
-      title="Ecosystem Partner Cloud"
-      loadingText="Loading Ecosystem Cloud..."
-      viewName="eco"
-    />
-  );
+  return <PlatformEco />;
 }

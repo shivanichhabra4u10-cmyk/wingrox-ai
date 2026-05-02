@@ -109,6 +109,261 @@ model TwinAssessment {
   @@index([email, status, createdAt])
 }
 
+// =============================================================
+// Global Expansion / Intelligence Engine (Layer II)
+// =============================================================
+
+// Reference: per-country market data used for scoring.
+model ExpansionCountry {
+  id            String   @id @default(cuid())
+  code          String   @unique // ISO-like short code: UAE, US, UK, DE, ...
+  name          String
+  flag          String
+  region        String?  // MENA, APAC, EU, NA, LATAM, AFR
+  currency      String
+  language      String
+  population    Decimal  @db.Decimal(10, 2) // millions
+  gdpUsdBn      Decimal  @db.Decimal(12, 2) // $ billions
+  gdpGrowthPct  Decimal  @db.Decimal(5, 2)
+  tradeScore    Int
+  demandScore   Int
+  easeScore     Int
+  riskBand      String   // Low | Low-Medium | Medium | Medium-High | High
+  regulatoryBand String  // Low | Medium | Medium-High | High
+  costBand      String   // Low | Medium | Medium-High | High
+  tariffBand    String   // free-text band e.g. "0-5%"
+  ceta          Boolean  @default(false)
+  industryFit   Json     // { FMCG: 1.35, SaaS: 1.10, ... }
+  metadata      Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("expansion_countries")
+  @@index([region])
+}
+
+// Anonymous lead-magnet assessments (no OTP - freemium funnel).
+model ExpansionAssessment {
+  id              String   @id @default(cuid())
+  email           String?  // optional; captured if user requests follow-up
+  companyName     String
+  hqCountry       String
+  industry        String
+  revenueBand     String
+  businessModel   String
+  goal            String
+  targetGeos      String[] // ["UAE","DE","US"]
+  readinessScore  Int
+  marketReady     Int
+  financialReady  Int
+  gtmReady        Int
+  cluster         String   // Foundation-Stage | Preparation-Stage | Expansion-Ready | Scale-Ready
+  topCountries    Json     // [{ code, name, score, ... }]
+  revenueLowUsdM  Decimal  @db.Decimal(10, 2)
+  revenueBaseUsdM Decimal  @db.Decimal(10, 2)
+  revenueHighUsdM Decimal  @db.Decimal(10, 2)
+  risks           Json     // [{ tag, text, severity }]
+  moves           Json     // [{ title, desc, when }]
+  report          Json     // full snapshot for re-render
+  entryModel       String?  @default("distributor")
+  entryCapitalUsdK Int?     @default(150)
+  metadata        Json?
+  ipAddress       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("expansion_assessments")
+  @@index([email])
+  @@index([industry])
+  @@index([createdAt])
+  @@index([industry, createdAt])
+}
+
+// Live intelligence signals fused from 10 API layers.
+model ExpansionSignal {
+  id           String   @id @default(cuid())
+  externalId   String   @unique // S001..S040
+  apiLayer     String   // news, markets, trends, trade, finance, company, talent, country, risk, ai
+  apiLabel     String   // GNEWS, UN COMTRADE, ...
+  industry     String   // FMCG, SaaS, ..., or 'global'
+  geo          String   // UAE, US, ..., or 'global' / 'MENA'
+  priority     String   // urgent | high | monitor
+  signalType   String   // opportunity | risk | regulatory | demand | competitive
+  ageDays      Int      // days since signal observed
+  signal       String   // headline (HTML allowed)
+  impact       String
+  action       String
+  source       String
+  metadata     Json?
+  publishedAt  DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("expansion_signals")
+  @@index([apiLayer])
+  @@index([industry])
+  @@index([geo])
+  @@index([priority])
+  @@index([signalType])
+  @@index([publishedAt])
+  @@index([priority, publishedAt])
+}
+
+// Demo / sample / strategy-call lead capture from intel modal.
+model ExpansionLead {
+  id           String   @id @default(cuid())
+  kind         String   // report | premium | playbook | call
+  name         String
+  email        String
+  company      String?
+  assessmentId String?
+  notes        String?
+  status       String   @default("NEW") // NEW | CONTACTED | QUALIFIED | CLOSED
+  metadata     Json?
+  ipAddress    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("expansion_leads")
+  @@index([kind])
+  @@index([status])
+  @@index([email])
+  @@index([createdAt])
+}
+
+// =============================================================
+// Match Intelligence Engine (Layer III)
+// =============================================================
+
+model MatchSession {
+  id              String   @id @default(cuid())
+  companyName     String
+  country         String
+  sector          String
+  stage           String
+  revenue         String
+  description     String?
+  notes           String?
+  intent          String[] // investor | distributor | jv | customer | advisor | hire | accel | gov
+  geos            String[] // DACH | BENELUX | UK | NORDICS | FR_IT_ES | NA | MENA | APAC
+  priorities      String[]
+  matchCount      Int
+  aiRead          String
+  geoDistribution Json     // [{ geo, label, flag, count, pct }]
+  typeBreakdown   Json     // [{ type, label, count, pct }]
+  topMatches      Json     // [{ type, role, mo, tags, score, av }]
+  ipAddress       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  discoveryCalls  MatchDiscoveryCall[]
+
+  @@map("match_sessions")
+  @@index([createdAt])
+  @@index([country])
+  @@index([sector])
+}
+
+model MatchDiscoveryCall {
+  id            String       @id @default(cuid())
+  sessionId     String
+  session       MatchSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  name          String
+  email         String
+  preferredTime String
+  status        String       @default("PENDING") // PENDING | CONFIRMED | CANCELLED
+  ipAddress     String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@map("match_discovery_calls")
+  @@index([sessionId])
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// =============================================================
+// Ecosystem Cloud (Layer VI)
+// =============================================================
+
+model EcoApplication {
+  id          String   @id @default(cuid())
+  name        String
+  email       String
+  company     String
+  website     String?
+  role        String   // founder | investor | distributor | advisor | operator | accelerator | other
+  partnerType String   // investor | distributor | jv | advisor | accelerator | operator
+  sector      String
+  stage       String?
+  reason      String?
+  status      String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  ipAddress   String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("eco_applications")
+  @@index([email])
+  @@index([status])
+  @@index([partnerType])
+  @@index([createdAt])
+}
+
+// =============================================================
+// Growth Simulator (Layer V)
+// =============================================================
+
+model SimRun {
+  id            String   @id @default(cuid())
+  sessionId     String
+  revenueK      Decimal  @db.Decimal(10, 2)  // monthly revenue in $K
+  growthPct     Decimal  @db.Decimal(6, 3)
+  marginPct     Decimal  @db.Decimal(6, 3)
+  burnK         Decimal  @db.Decimal(10, 2)
+  cashK         Decimal  @db.Decimal(10, 2)
+  cac           Decimal  @db.Decimal(10, 2)
+  ltm           Int                            // customer lifetime months
+  horizonMonths Int
+  outputs       Json                           // { endRevK, cumRevK, runwayMonths, breakevenMonth, ltvCac, scenario }
+  label         String?                        // user-given name e.g. "Base case Q2"
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("sim_runs")
+  @@index([sessionId])
+  @@index([sessionId, createdAt])
+}
+
+model SimUnlock {
+  id          String   @id @default(cuid())
+  sessionId   String   @unique
+  email       String?
+  paymentRef  String?
+  createdAt   DateTime @default(now())
+
+  @@map("sim_unlocks")
+  @@index([sessionId])
+}
+
+// =============================================================
+// Intelligence Hub (Layer IV)
+// =============================================================
+
+model HubSave {
+  id          String   @id @default(cuid())
+  articleSlug String
+  sessionId   String   // anonymous — localStorage key
+  email       String?
+  createdAt   DateTime @default(now())
+
+  @@map("hub_saves")
+  @@unique([articleSlug, sessionId])
+  @@index([sessionId])
+  @@index([articleSlug])
+}
+
 enum UserRole {
   ADMIN
   USER

@@ -534,11 +534,11 @@ footer{background:var(--bg-darker);padding:40px 0;border-top:1px solid rgba(255,
       </div>
 
       <div class="dash-metric-row">
-        <div class="dm-cell"><div class="dm-val a">64</div><div class="dm-lbl">Twin Score</div></div>
-        <div class="dm-cell"><div class="dm-val a" style="font-size:20px">Experimenter</div><div class="dm-lbl">Cluster Stage</div></div>
-        <div class="dm-cell"><div class="dm-val g">42</div><div class="dm-lbl">Matches</div></div>
-        <div class="dm-cell"><div class="dm-val">€180K</div><div class="dm-lbl">Pipeline Est.</div></div>
-        <div class="dm-cell"><div class="dm-val r" style="font-size:20px">Demand</div><div class="dm-lbl">Primary Constraint</div></div>
+        <div class="dm-cell"><div class="dm-val a" id="dash-twin-score">64</div><div class="dm-lbl">Twin Score</div></div>
+        <div class="dm-cell"><div class="dm-val a" id="dash-cluster-stage" style="font-size:20px">Experimenter</div><div class="dm-lbl">Cluster Stage</div></div>
+        <div class="dm-cell"><div class="dm-val g" id="dash-match-count">42</div><div class="dm-lbl">Matches</div></div>
+        <div class="dm-cell"><div class="dm-val" id="dash-pipeline-est">€180K</div><div class="dm-lbl">Pipeline Est.</div></div>
+        <div class="dm-cell"><div class="dm-val r" id="dash-primary-constraint" style="font-size:20px">Demand</div><div class="dm-lbl">Primary Constraint</div></div>
       </div>
 
       <div class="dash-grid">
@@ -548,29 +548,29 @@ footer{background:var(--bg-darker);padding:40px 0;border-top:1px solid rgba(255,
             <div class="score-big">
               <svg viewBox="0 0 160 160" width="160" height="160" style="transform:rotate(-90deg)">
                 <circle cx="80" cy="80" r="68" fill="none" stroke="var(--ink-08)" stroke-width="10"/>
-                <circle cx="80" cy="80" r="68" fill="none" stroke="url(#dg)" stroke-width="10" stroke-linecap="round" stroke-dasharray="427" stroke-dashoffset="154"/>
+                <circle cx="80" cy="80" r="68" fill="none" stroke="url(#dg)" stroke-width="10" stroke-linecap="round" stroke-dasharray="427" stroke-dashoffset="154" id="dash-score-ring"/>
                 <defs><linearGradient id="dg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#c9973a"/><stop offset="100%" stop-color="#e8b85a"/></linearGradient></defs>
               </svg>
-              <div class="score-big-val"><div class="sbv-num">64</div><div class="sbv-denom">/100</div></div>
+              <div class="score-big-val"><div class="sbv-num" id="dash-score-num">64</div><div class="sbv-denom">/100</div></div>
             </div>
             <div>
-              <h3 style="font-size:22px;margin-bottom:10px">You're at the <em style="color:var(--gold);font-style:italic">Experimenter</em> stage.</h3>
-              <p style="font-size:13.5px;color:var(--ink-70);line-height:1.7;margin-bottom:14px">Your Digital Twin is capable of entering Europe — but conversion depends on how structured your next 90 days are. Focus on demand pipeline, partner readiness, and value proposition sharpening.</p>
+              <h3 id="dash-headline" style="font-size:22px;margin-bottom:10px">You're at the <em style="color:var(--gold);font-style:italic">Experimenter</em> stage.</h3>
+              <p id="dash-summary" style="font-size:13.5px;color:var(--ink-70);line-height:1.7;margin-bottom:14px">Your Digital Twin is capable of entering Europe — but conversion depends on how structured your next 90 days are. Focus on demand pipeline, partner readiness, and value proposition sharpening.</p>
               <div style="display:flex;gap:8px;flex-wrap:wrap">
-                <span class="chip active" style="cursor:default">Primary Gap: Demand Pipeline</span>
-                <span class="chip active" style="cursor:default">Top Lever: Conversion</span>
+                <span id="dash-chip-gap" class="chip active" style="cursor:default">Primary Gap: Demand Pipeline</span>
+                <span id="dash-chip-lever" class="chip active" style="cursor:default">Top Lever: Conversion</span>
               </div>
             </div>
           </div>
           <div style="margin-top:28px;padding-top:24px;border-top:1px solid var(--ink-08)">
             <div class="dc-label" style="margin-bottom:14px">Readiness Dimensions</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 24px">
-              <div class="hc-bar-row"><span class="hc-bar-lbl" style="font-size:12.5px">Demand</span><div class="hc-bar-tr"><div class="hc-bar-fl" style="width:58%;background:var(--rose)"></div></div><span class="hc-bar-v">58</span></div>
-              <div class="hc-bar-row"><span class="hc-bar-lbl" style="font-size:12.5px">Strategy</span><div class="hc-bar-tr"><div class="hc-bar-fl" style="width:62%;background:var(--amber)"></div></div><span class="hc-bar-v">62</span></div>
-              <div class="hc-bar-row"><span class="hc-bar-lbl" style="font-size:12.5px">Competition</span><div class="hc-bar-tr"><div class="hc-bar-fl" style="width:60%;background:var(--amber)"></div></div><span class="hc-bar-v">60</span></div>
-              <div class="hc-bar-row"><span class="hc-bar-lbl" style="font-size:12.5px">Economics</span><div class="hc-bar-tr"><div class="hc-bar-fl" style="width:66%;background:var(--gold)"></div></div><span class="hc-bar-v">66</span></div>
-              <div class="hc-bar-row"><span class="hc-bar-lbl" style="font-size:12.5px">Customer</span><div class="hc-bar-tr"><div class="hc-bar-fl" style="width:59%;background:var(--rose)"></div></div><span class="hc-bar-v">59</span></div>
-              <div class="hc-bar-row"><span class="hc-bar-lbl" style="font-size:12.5px">Execution</span><div class="hc-bar-tr"><div class="hc-bar-fl" style="width:70%;background:var(--sage)"></div></div><span class="hc-bar-v">70</span></div>
+              <div class="hc-bar-row"><span class="hc-bar-lbl" style="font-size:12.5px">Demand</span><div class="hc-bar-tr"><div id="dash-bar-demand" class="hc-bar-fl" style="width:58%;background:var(--rose)"></div></div><span id="dash-val-demand" class="hc-bar-v">58</span></div>
+              <div class="hc-bar-row"><span class="hc-bar-lbl" style="font-size:12.5px">Strategy</span><div class="hc-bar-tr"><div id="dash-bar-strategy" class="hc-bar-fl" style="width:62%;background:var(--amber)"></div></div><span id="dash-val-strategy" class="hc-bar-v">62</span></div>
+              <div class="hc-bar-row"><span class="hc-bar-lbl" style="font-size:12.5px">Competition</span><div class="hc-bar-tr"><div id="dash-bar-competition" class="hc-bar-fl" style="width:60%;background:var(--amber)"></div></div><span id="dash-val-competition" class="hc-bar-v">60</span></div>
+              <div class="hc-bar-row"><span class="hc-bar-lbl" style="font-size:12.5px">Economics</span><div class="hc-bar-tr"><div id="dash-bar-economics" class="hc-bar-fl" style="width:66%;background:var(--gold)"></div></div><span id="dash-val-economics" class="hc-bar-v">66</span></div>
+              <div class="hc-bar-row"><span class="hc-bar-lbl" style="font-size:12.5px">Customer</span><div class="hc-bar-tr"><div id="dash-bar-customer" class="hc-bar-fl" style="width:59%;background:var(--rose)"></div></div><span id="dash-val-customer" class="hc-bar-v">59</span></div>
+              <div class="hc-bar-row"><span class="hc-bar-lbl" style="font-size:12.5px">Execution</span><div class="hc-bar-tr"><div id="dash-bar-execution" class="hc-bar-fl" style="width:70%;background:var(--sage)"></div></div><span id="dash-val-execution" class="hc-bar-v">70</span></div>
             </div>
           </div>
         </div>
@@ -580,7 +580,7 @@ footer{background:var(--bg-darker);padding:40px 0;border-top:1px solid rgba(255,
           <div class="qa-grid">
             <button class="qa-tile" onclick="showView('match')"><div class="qa-icon">🤝</div><div class="qa-title">Review 42 Matches</div><div class="qa-desc">Book Discovery Call</div></button>
             <button class="qa-tile" onclick="showView('sim')"><div class="qa-icon">📊</div><div class="qa-title">Model Revenue</div><div class="qa-desc">+2× scenario</div></button>
-            <button class="qa-tile" onclick="showView('expansion')"><div class="qa-icon">🌍</div><div class="qa-title">Enter Germany</div><div class="qa-desc">Top-ranked country</div></button>
+            <button class="qa-tile" onclick="showView('expansion')"><div class="qa-icon">🌍</div><div class="qa-title" id="dash-action-country">Enter Germany</div><div class="qa-desc">Top-ranked country</div></button>
             <button class="qa-tile" onclick="showView('hub')"><div class="qa-icon">📚</div><div class="qa-title">Read Playbook</div><div class="qa-desc">Distribution partnerships</div></button>
           </div>
         </div>
@@ -589,17 +589,19 @@ footer{background:var(--bg-darker);padding:40px 0;border-top:1px solid rgba(255,
       <div class="dash-grid">
         <div class="dash-card">
           <div class="dc-label">Personalised Insights Feed</div>
-          <div class="feed-item"><div class="fi-icon insight">◈</div><div><div class="fi-title">3 new playbooks matched to your GTM needs</div><div class="fi-desc">"Distribution-led entry for industrial SaaS in Germany" and 2 others just published in the Intelligence Hub.</div><div class="fi-time">15 minutes ago · Intelligence Hub</div></div></div>
-          <div class="feed-item"><div class="fi-icon match">◈</div><div><div class="fi-title">7 new matches added in last 48 hours</div><div class="fi-desc">Including 2 Tier-1 VCs in London and 3 industrial distributors in DACH region.</div><div class="fi-time">2 hours ago · Match Engine</div></div></div>
-          <div class="feed-item"><div class="fi-icon milestone">◈</div><div><div class="fi-title">You're now expansion-ready for Netherlands</div><div class="fi-desc">Your recent answers unlocked Netherlands as a viable secondary entry market (fit score: 78/100).</div><div class="fi-time">Yesterday · Expansion Engine</div></div></div>
-          <div class="feed-item"><div class="fi-icon alert">◈</div><div><div class="fi-title">Risk alert: Demand pipeline below threshold</div><div class="fi-desc">Your demand score of 58 is the #1 blocker to first deal. Recommendation: Run 15 structured EU prospect calls in next 30 days.</div><div class="fi-time">Yesterday · AI Advisor</div></div></div>
+          <div id="dash-feed">
+            <div class="feed-item"><div class="fi-icon insight">◈</div><div><div class="fi-title">3 new playbooks matched to your GTM needs</div><div class="fi-desc">"Distribution-led entry for industrial SaaS in Germany" and 2 others just published in the Intelligence Hub.</div><div class="fi-time">15 minutes ago · Intelligence Hub</div></div></div>
+            <div class="feed-item"><div class="fi-icon match">◈</div><div><div class="fi-title">7 new matches added in last 48 hours</div><div class="fi-desc">Including 2 Tier-1 VCs in London and 3 industrial distributors in DACH region.</div><div class="fi-time">2 hours ago · Match Engine</div></div></div>
+            <div class="feed-item"><div class="fi-icon milestone">◈</div><div><div class="fi-title">You're now expansion-ready for Netherlands</div><div class="fi-desc">Your recent answers unlocked Netherlands as a viable secondary entry market (fit score: 78/100).</div><div class="fi-time">Yesterday · Expansion Engine</div></div></div>
+            <div class="feed-item"><div class="fi-icon alert">◈</div><div><div class="fi-title">Risk alert: Demand pipeline below threshold</div><div class="fi-desc">Your demand score of 58 is the #1 blocker to first deal. Recommendation: Run 15 structured EU prospect calls in next 30 days.</div><div class="fi-time">Yesterday · AI Advisor</div></div></div>
+          </div>
         </div>
 
         <div class="dash-card">
           <div class="dc-label">AI Advisor · Ask Anything</div>
           <div style="background:var(--bg-warm);border-radius:var(--r);padding:20px;margin-bottom:14px">
             <div style="font-family:var(--f-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-deep);margin-bottom:8px">◈ This Week's AI Insight</div>
-            <p style="font-size:13.5px;line-height:1.65;color:var(--ink-70);font-style:italic">"Your conversion rate of 5% on 500 leads is leaving €180K/month on the table. Improving conversion by just 30% — from 5% to 6.5% — adds €54K monthly with zero new leads required. Focus here before spending more on acquisition."</p>
+            <p id="dash-ai-insight" style="font-size:13.5px;line-height:1.65;color:var(--ink-70);font-style:italic">"Your conversion rate of 5% on 500 leads is leaving €180K/month on the table. Improving conversion by just 30% — from 5% to 6.5% — adds €54K monthly with zero new leads required. Focus here before spending more on acquisition."</p>
           </div>
           <div style="display:flex;flex-direction:column;gap:8px">
             <button class="qa-tile" style="flex-direction:column;align-items:flex-start"><div class="qa-title">What should I do next?</div><div class="qa-desc">Top 3 prioritised actions</div></button>
@@ -872,27 +874,8 @@ footer{background:var(--bg-darker);padding:40px 0;border-top:1px solid rgba(255,
             <select style="padding:8px 14px;border:1px solid var(--ink-15);border-radius:var(--r-sm);background:var(--surface);font-size:13px"><option>Most relevant to you</option><option>Newest first</option><option>Most saved</option></select>
           </div>
 
-          <div class="dash-card" style="margin-bottom:16px">
-            <div style="display:flex;gap:10px;margin-bottom:12px"><span class="chip active" style="cursor:default;font-size:11px">PLAYBOOK</span><span class="chip active" style="cursor:default;font-size:11px;background:var(--teal-pale);color:var(--teal);border-color:var(--teal)">GLOBAL EXPANSION</span><span style="font-family:var(--f-mono);font-size:11px;color:var(--ink-40);margin-left:auto">18 min read · Updated 2d ago</span></div>
-            <h3 style="font-size:20px;margin-bottom:8px">Distribution-led entry for industrial SaaS in Germany: the 90-day playbook</h3>
-            <p style="font-size:13.5px;color:var(--ink-70);line-height:1.7;margin-bottom:16px">A structured framework covering partner identification, qualification, pilots, and contract structuring — built from 40+ successful entries in the DACH region. Includes a ready-to-use term sheet.</p>
-            <div style="background:var(--gold-mist);border-left:3px solid var(--gold);padding:14px 16px;border-radius:0 var(--r-sm) var(--r-sm) 0;margin-bottom:14px"><div style="font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-deep);margin-bottom:6px">◈ What This Means For You</div><p style="font-size:13px;color:var(--ink-70);line-height:1.6;font-style:italic">"You're within 2 weeks of being ready to execute steps 1–3 of this playbook. Your Distribution Fit score is 82 for Germany — above the threshold this framework assumes. Skip the pilot section on page 4; your unit economics already clear it."</p></div>
-            <div style="display:flex;gap:10px"><button class="btn-primary btn-sm">Open Playbook</button><button class="btn-outline btn-sm">Save</button></div>
-          </div>
-
-          <div class="dash-card" style="margin-bottom:16px">
-            <div style="display:flex;gap:10px;margin-bottom:12px"><span class="chip active" style="cursor:default;font-size:11px;background:var(--slate-pale);color:var(--slate);border-color:var(--slate)">MARKET INTEL</span><span class="chip active" style="cursor:default;font-size:11px">GO-TO-MARKET</span><span style="font-family:var(--f-mono);font-size:11px;color:var(--ink-40);margin-left:auto">8 min · 5d ago</span></div>
-            <h3 style="font-size:20px;margin-bottom:8px">DACH industrial automation buyers — what moved in Q1 2026</h3>
-            <p style="font-size:13.5px;color:var(--ink-70);line-height:1.7;margin-bottom:16px">Budget cycles, procurement shifts, and the 3 new regulatory triggers (EU AI Act enforcement, cybersecurity certifications, GDPR amendments) reshaping buyer behaviour this quarter.</p>
-            <div style="background:var(--gold-mist);border-left:3px solid var(--gold);padding:14px 16px;border-radius:0 var(--r-sm) var(--r-sm) 0;margin-bottom:14px"><div style="font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-deep);margin-bottom:6px">◈ What This Means For You</div><p style="font-size:13px;color:var(--ink-70);line-height:1.6;font-style:italic">"Your ICP overlaps 80% with the buyer profile in Section 2. The cybersecurity certification trigger is the single biggest near-term demand accelerator for your category — lean into this in your pitch deck."</p></div>
-            <div style="display:flex;gap:10px"><button class="btn-primary btn-sm">Read Intel</button><button class="btn-outline btn-sm">Save</button></div>
-          </div>
-
-          <div class="dash-card" style="margin-bottom:16px">
-            <div style="display:flex;gap:10px;margin-bottom:12px"><span class="chip active" style="cursor:default;font-size:11px">PLAYBOOK</span><span class="chip active" style="cursor:default;font-size:11px;background:var(--sage-pale);color:var(--sage);border-color:var(--sage)">UNIT ECONOMICS</span><span style="font-family:var(--f-mono);font-size:11px;color:var(--ink-40);margin-left:auto">12 min · 1w ago</span></div>
-            <h3 style="font-size:20px;margin-bottom:8px">The CAC:LTV conversation investors actually want at Seed→Series A</h3>
-            <p style="font-size:13.5px;color:var(--ink-70);line-height:1.7;margin-bottom:16px">Why most founders over-simplify this metric and what Tier-1 European VCs actually probe. With slide-ready charts and a cohort analysis template.</p>
-            <div style="background:var(--gold-mist);border-left:3px solid var(--gold);padding:14px 16px;border-radius:0 var(--r-sm) var(--r-sm) 0"><div style="font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-deep);margin-bottom:6px">◈ What This Means For You</div><p style="font-size:13px;color:var(--ink-70);line-height:1.6;font-style:italic">"Your current CAC:LTV story in your deck is a simplified ratio. Apply the cohort-layered framing on page 3 — it's what 2 of your 42 matched investors explicitly look for."</p></div>
+          <div id="hub-feed">
+            <div class="dash-card" style="margin-bottom:16px;padding:28px;text-align:center;color:var(--ink-50)">Loading your personalised feed…</div>
           </div>
         </div>
 
@@ -1087,6 +1070,7 @@ footer{background:var(--bg-darker);padding:40px 0;border-top:1px solid rgba(255,
             <span class="chip intel-goal" onclick="intelSelOne(this,'.intel-goal')">IPO / M&amp;A prep</span>
           </div>
         </div>
+        <div id="intel-error" style="display:none;margin-top:16px;padding:12px 16px;background:#fbe9e7;border:1px solid #d65a4f;border-radius:4px;color:#d65a4f;font-size:13px"></div>
         <div style="display:flex;justify-content:flex-end;margin-top:24px;padding-top:20px;border-top:1px solid var(--ink-08)">
           <button class="btn-gold" onclick="intelGenerate()">Generate My Intelligence Report <span class="arr">→</span></button>
         </div>
@@ -1625,6 +1609,7 @@ footer{background:var(--bg-darker);padding:40px 0;border-top:1px solid rgba(255,
           <input type="range" class="sim-slider" id="sim-horizon" min="6" max="60" step="3" value="36" oninput="simUpdate()">
 
           <button class="btn-outline btn-sm" style="width:100%;justify-content:center;margin-top:20px;color:#fff;border-color:rgba(255,255,255,.15)" onclick="simReset()">↺ Reset Inputs</button>
+          <button class="btn-outline btn-sm" style="width:100%;justify-content:center;margin-top:8px;color:var(--gold);border-color:rgba(201,151,58,.35)" onclick="simSaveScenario()">◈ Save Scenario</button>
         </div>
 
         <!-- RIGHT: scenario panes -->
@@ -1915,6 +1900,8 @@ function intelGenerate(){
     geos:[...document.querySelectorAll('.intel-geo.active')].map(c=>c.dataset.geo),
     goal:(document.querySelector('.intel-goal.active')||{}).textContent||'Revenue growth'
   };
+  const errEl=document.getElementById('intel-error');
+  if(errEl)errEl.style.display='none';
   document.getElementById('intel-step-input').style.display='none';
   document.getElementById('intel-step-compute').style.display='block';
   document.getElementById('intel-step-compute').scrollIntoView({behavior:'smooth',block:'center'});
@@ -1923,21 +1910,49 @@ function intelGenerate(){
     {pct:25,title:'Analysing World Bank & IMF data…',sub:'Cross-referencing GDP growth, trade volume, and market size…'},
     {pct:45,title:'Reading UN Comtrade flows…',sub:'Measuring import demand and export saturation for your industry…'},
     {pct:65,title:'Scanning Google Trends signals…',sub:'Detecting 12-month demand momentum across target markets…'},
-    {pct:82,title:'Computing readiness scores…',sub:'Market × financial × GTM readiness dimensions…'},
-    {pct:95,title:'Generating AI recommendations…',sub:'Synthesising insights into your Next 3 Moves…'},
-    {pct:100,title:'Report ready.',sub:'Rendering your intelligence report…'}
+    {pct:82,title:'Computing readiness scores…',sub:'Market × financial × GTM readiness dimensions…'}
   ];
   let i=0;
   const tick=()=>{
-    if(i>=stages.length){setTimeout(intelRenderReport,400);return;}
+    if(i>=stages.length)return;
     const s=stages[i++];
     document.getElementById('intel-progress').style.width=s.pct+'%';
     document.getElementById('intel-progress-txt').textContent=s.pct+'% · '+s.title;
     document.getElementById('intel-compute-title').textContent=s.title;
     document.getElementById('intel-compute-sub').textContent=s.sub;
-    setTimeout(tick,620);
+    setTimeout(tick,700);
   };
   tick();
+  const payload={
+    companyName:INTEL_STATE.company,
+    hqCountry:INTEL_STATE.hq,
+    industry:INTEL_STATE.industry,
+    revenueBand:INTEL_STATE.revenue,
+    businessModel:INTEL_STATE.model,
+    goal:INTEL_STATE.goal,
+    targetGeos:INTEL_STATE.geos
+  };
+  fetch('/api/expansion/assessment',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(payload)
+  })
+  .then(r=>r.json().then(j=>({ok:r.ok,j})))
+  .then(({ok,j})=>{
+    if(!ok||!j.success)throw new Error(j.message||'Request failed');
+    document.getElementById('intel-progress').style.width='100%';
+    document.getElementById('intel-progress-txt').textContent='100% · Report ready.';
+    document.getElementById('intel-compute-title').textContent='Report ready.';
+    document.getElementById('intel-compute-sub').textContent='Rendering your intelligence report…';
+    setTimeout(()=>intelRenderReport(j.data),400);
+  })
+  .catch(err=>{
+    document.getElementById('intel-step-compute').style.display='none';
+    document.getElementById('intel-step-input').style.display='block';
+    const e=document.getElementById('intel-error');
+    if(e){e.textContent=err.message||'Failed to generate report';e.style.display='block';}
+    document.getElementById('intel-assessment').scrollIntoView({behavior:'smooth',block:'start'});
+  });
 }
 
 function intelScoreCountry(code,industry,goal){
@@ -1953,26 +1968,16 @@ function intelScoreCountry(code,industry,goal){
   return Math.min(99,Math.max(45,final));
 }
 
-function intelRenderReport(){
+function intelRenderReport(data){
+  if(data?.assessmentId)localStorage.setItem('wg_assessment_id',data.assessmentId);
   document.getElementById('intel-step-compute').style.display='none';
   document.getElementById('intel-step-report').style.display='block';
 
-  const picks=INTEL_STATE.geos.length?INTEL_STATE.geos:['UAE','SG','VN','US'];
-  let scored=picks.map(code=>({code,score:intelScoreCountry(code,INTEL_STATE.industry,INTEL_STATE.goal)}))
-                    .sort((a,b)=>b.score-a.score);
-  if(scored.length<3){
-    const globalBest=Object.keys(INTEL_COUNTRIES).filter(c=>!scored.find(s=>s.code===c))
-                          .map(code=>({code,score:intelScoreCountry(code,INTEL_STATE.industry,INTEL_STATE.goal)}))
-                          .sort((a,b)=>b.score-a.score);
-    while(scored.length<3&&globalBest.length)scored.push(globalBest.shift());
-  }
-  const top3=scored.slice(0,3);
-
-  const revStageScore={'Pre-revenue':55,'< $500K':60,'$500K – $2M':68,'$2M – $10M':76,'$10M – $50M':84,'$50M+':90}[INTEL_STATE.revenue]||70;
-  const readiness=Math.round(top3[0].score*0.5+revStageScore*0.35+72*0.15);
-  const marketReady=Math.min(96,top3[0].score);
-  const finReady=Math.min(96,revStageScore+Math.floor(Math.random()*6));
-  const gtmReady=Math.min(96,Math.round((marketReady+finReady)/2-4+Math.random()*10));
+  const readiness=data.readinessScore;
+  const marketReady=data.marketReady;
+  const finReady=data.financialReady;
+  const gtmReady=data.gtmReady;
+  const top3=data.topCountries.slice(0,3);
 
   const ring=document.getElementById('intel-score-ring');
   const circ=540;
@@ -1981,61 +1986,48 @@ function intelRenderReport(){
   document.getElementById('intel-score').textContent=readiness;
   setTimeout(()=>{ring.style.transition='stroke-dashoffset 1.6s cubic-bezier(.4,0,.2,1)';ring.setAttribute('stroke-dashoffset',dash);},80);
 
-  const cluster=readiness>=80?'Scale-Ready':readiness>=65?'Expansion-Ready':readiness>=50?'Preparation-Stage':'Foundation-Stage';
-  const topCountry=INTEL_COUNTRIES[top3[0].code];
-  document.getElementById('intel-headline').innerHTML='You\'re <em style="color:var(--gold);font-style:italic">'+cluster+'</em>. Start with <em style="color:var(--gold);font-style:italic">'+topCountry.name+'</em>.';
-  const goalText={'Revenue growth':'prioritise revenue velocity','Find distributors':'lead with distributor partnerships','Raise capital':'align with fundraise-ready markets','De-risk domestic':'diversify geo concentration','IPO / M&A prep':'build multi-market credibility'}[INTEL_STATE.goal]||'prioritise revenue velocity';
-  document.getElementById('intel-subhead').innerHTML='Based on '+INTEL_STATE.industry+' fundamentals plus your profile, we recommend entering <strong>'+topCountry.name+'</strong> within 6 months to '+goalText+'. Expected first-deal timeline: <strong>4–7 months</strong>.';
+  document.getElementById('intel-headline').innerHTML=data.headline;
+  document.getElementById('intel-subhead').innerHTML=data.subhead;
 
   document.getElementById('intel-m1').textContent=marketReady+'/100';
   document.getElementById('intel-m2').textContent=finReady+'/100';
   document.getElementById('intel-m3').textContent=gtmReady+'/100';
 
   const cGrid=document.getElementById('intel-countries');
-  cGrid.innerHTML=top3.map((p,i)=>{
-    const c=INTEL_COUNTRIES[p.code];
+  cGrid.innerHTML=top3.map((c,i)=>{
     const hi=i===0;
-    const marketSizeStr='$'+(c.gdp>=1000?(c.gdp/1000).toFixed(1)+'T':c.gdp+'B');
+    const marketSizeStr='$'+(c.gdpUsdBn>=1000?(c.gdpUsdBn/1000).toFixed(1)+'T':c.gdpUsdBn+'B');
     return '<div style="padding:22px;background:'+(hi?'var(--gold-mist)':'var(--bg-warm)')+';border-radius:var(--r-lg);border:'+(hi?'2px solid var(--gold)':'1px solid var(--ink-08)')+'">'+
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">'+
       '<div><div style="font-size:34px;line-height:1;margin-bottom:4px">'+c.flag+'</div><div style="font-family:var(--f-display);font-size:20px;font-weight:500">'+c.name+'</div></div>'+
-      '<div style="text-align:right"><div style="font-family:var(--f-display);font-size:30px;color:'+(hi?'var(--gold-deep)':'var(--ink)')+';line-height:1">'+p.score+'</div><div style="font-family:var(--f-mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-50);margin-top:2px">Opp · Score</div></div>'+
+      '<div style="text-align:right"><div style="font-family:var(--f-display);font-size:30px;color:'+(hi?'var(--gold-deep)':'var(--ink)')+';line-height:1">'+c.score+'</div><div style="font-family:var(--f-mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-50);margin-top:2px">Opp · Score</div></div>'+
       '</div>'+
       '<div style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px;font-size:12px">'+
       '<div style="display:flex;justify-content:space-between"><span style="color:var(--ink-70)">Market size</span><span style="font-family:var(--f-mono);font-weight:600">'+marketSizeStr+'</span></div>'+
-      '<div style="display:flex;justify-content:space-between"><span style="color:var(--ink-70)">GDP growth</span><span style="font-family:var(--f-mono);font-weight:600">'+c.gdpGrowth+'%</span></div>'+
-      '<div style="display:flex;justify-content:space-between"><span style="color:var(--ink-70)">Ease of entry</span><span style="font-family:var(--f-mono);font-weight:600">'+c.ease+'/100</span></div>'+
-      '<div style="display:flex;justify-content:space-between"><span style="color:var(--ink-70)">Risk</span><span style="font-family:var(--f-mono);font-weight:600">'+c.risk+'</span></div>'+
-      '<div style="display:flex;justify-content:space-between"><span style="color:var(--ink-70)">Tariffs</span><span style="font-family:var(--f-mono);font-weight:600">'+c.tariffs+'</span></div>'+
+      '<div style="display:flex;justify-content:space-between"><span style="color:var(--ink-70)">GDP growth</span><span style="font-family:var(--f-mono);font-weight:600">'+c.gdpGrowthPct+'%</span></div>'+
+      '<div style="display:flex;justify-content:space-between"><span style="color:var(--ink-70)">Ease of entry</span><span style="font-family:var(--f-mono);font-weight:600">'+c.easeScore+'/100</span></div>'+
+      '<div style="display:flex;justify-content:space-between"><span style="color:var(--ink-70)">Risk</span><span style="font-family:var(--f-mono);font-weight:600">'+c.riskBand+'</span></div>'+
+      '<div style="display:flex;justify-content:space-between"><span style="color:var(--ink-70)">Tariffs</span><span style="font-family:var(--f-mono);font-weight:600">'+c.tariffBand+'</span></div>'+
       '</div>'+
-      '<div style="padding-top:12px;border-top:1px solid '+(hi?'rgba(201,151,58,.3)':'var(--ink-08)')+';font-size:11.5px;color:var(--ink-70);font-style:italic">'+intelWhyCountry(c,INTEL_STATE.industry,hi)+'</div>'+
+      '<div style="padding-top:12px;border-top:1px solid '+(hi?'rgba(201,151,58,.3)':'var(--ink-08)')+';font-size:11.5px;color:var(--ink-70);font-style:italic">'+c.why+'</div>'+
       '</div>';
   }).join('');
 
-  const revBands={'Pre-revenue':[0.5,1.2,2.5],'< $500K':[1,2.5,5],'$500K – $2M':[3,7.5,14],'$2M – $10M':[10,22,45],'$10M – $50M':[30,65,120],'$50M+':[80,180,350]};
-  const band=revBands[INTEL_STATE.revenue]||[3,7.5,14];
-  const fitMult=(INTEL_INDUSTRY_FIT[INTEL_STATE.industry]||{})[top3[0].code]||1.0;
-  const low=(band[0]*fitMult).toFixed(1),base=(band[1]*fitMult).toFixed(1),high=(band[2]*fitMult).toFixed(1);
-  document.getElementById('intel-rev-proj').textContent='$'+base+'M';
-  document.getElementById('intel-rev-low').textContent='$'+low+'M';
-  document.getElementById('intel-rev-base').textContent='$'+base+'M';
-  document.getElementById('intel-rev-high').textContent='$'+high+'M';
+  const rev=data.revenueProjectionUsdM;
+  document.getElementById('intel-rev-proj').textContent='$'+rev.base+'M';
+  document.getElementById('intel-rev-low').textContent='$'+rev.low+'M';
+  document.getElementById('intel-rev-base').textContent='$'+rev.base+'M';
+  document.getElementById('intel-rev-high').textContent='$'+rev.high+'M';
 
   setTimeout(()=>intelRenderRadar(top3[0]),100);
   setTimeout(()=>intelRenderDemandChart(top3),150);
 
-  const risks=[
-    {tag:'REG',text:'Local entity formation takes '+(topCountry.regulatory==='High'?'3–6 months':'4–8 weeks')+' — plan capital lock-up.',sev:topCountry.regulatory==='High'?'rose':'amber'},
-    {tag:'FX',text:'Currency exposure in '+topCountry.fxCode+' — hedge first $500K+ revenue flows.',sev:'amber'},
-    {tag:'COMP',text:INTEL_STATE.industry+' has '+(fitMult>1.2?'high':'moderate')+' local competition — clear differentiation required.',sev:fitMult>1.2?'amber':'rose'}
-  ];
-  document.getElementById('intel-risks').innerHTML=risks.map(r=>
+  document.getElementById('intel-risks').innerHTML=data.risks.map(r=>
     '<div style="display:flex;gap:10px;align-items:flex-start;font-size:12.5px;line-height:1.55">'+
-    '<span style="font-family:var(--f-mono);font-size:9.5px;letter-spacing:.12em;padding:3px 8px;border-radius:4px;background:var(--'+r.sev+'-pale);color:var(--'+r.sev+');font-weight:600;flex-shrink:0">'+r.tag+'</span>'+
+    '<span style="font-family:var(--f-mono);font-size:9.5px;letter-spacing:.12em;padding:3px 8px;border-radius:4px;background:var(--'+r.severity+'-pale);color:var(--'+r.severity+');font-weight:600;flex-shrink:0">'+r.tag+'</span>'+
     '<span style="color:var(--ink-70)">'+r.text+'</span></div>').join('');
 
-  const moves=intelGenerateMoves(top3[0],INTEL_STATE);
-  document.getElementById('intel-moves').innerHTML=moves.map((m,i)=>
+  document.getElementById('intel-moves').innerHTML=data.moves.map((m,i)=>
     '<div style="display:flex;gap:16px;align-items:flex-start;padding:14px;background:rgba(255,255,255,.04);border-radius:var(--r);border-left:3px solid var(--gold)">'+
     '<div style="font-family:var(--f-display);font-size:26px;color:var(--gold);line-height:1;flex-shrink:0;width:34px">'+(i+1)+'</div>'+
     '<div>'+
@@ -2080,12 +2072,11 @@ function intelRenderRadar(top){
   const canvas=document.getElementById('intel-radar');
   if(!canvas||typeof Chart==='undefined'){setTimeout(()=>intelRenderRadar(top),200);return;}
   if(window._intelRadarChart)window._intelRadarChart.destroy();
-  const c=INTEL_COUNTRIES[top.code];
-  const fitMult=(INTEL_INDUSTRY_FIT[INTEL_STATE.industry]||{})[top.code]||1.0;
+  const fitMult=top.fitMultiplier||1.0;
   window._intelRadarChart=new Chart(canvas,{
     type:'radar',
-    data:{labels:['Growth','Trade','Demand','Ease','Talent'],datasets:[{label:c.name,
-      data:[Math.min(100,c.gdpGrowth*12+50),c.tradeScore,Math.round(c.demand*fitMult),c.ease,Math.round(70+fitMult*15)],
+    data:{labels:['Growth','Trade','Demand','Ease','Talent'],datasets:[{label:top.name,
+      data:[Math.min(100,top.gdpGrowthPct*12+50),Math.round(top.score*0.8),Math.round(top.score*fitMult),top.easeScore,Math.round(70+fitMult*15)],
       backgroundColor:'rgba(201,151,58,.2)',borderColor:'#c9973a',borderWidth:2,pointBackgroundColor:'#c9973a',pointRadius:3}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{r:{beginAtZero:true,max:100,grid:{color:'rgba(26,24,20,.08)'},angleLines:{color:'rgba(26,24,20,.08)'},pointLabels:{font:{family:'Outfit',size:10},color:'#1a1814'},ticks:{display:false}}}}
   });
@@ -2097,10 +2088,9 @@ function intelRenderDemandChart(top3){
   if(window._intelDemandChart)window._intelDemandChart.destroy();
   const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const colors=['#c9973a','#2d6b6b','#3a4f6b'];
-  const datasets=top3.map((p,i)=>{
-    const c=INTEL_COUNTRIES[p.code];
-    const fit=(INTEL_INDUSTRY_FIT[INTEL_STATE.industry]||{})[p.code]||1.0;
-    const base=50+p.score*0.4;
+  const datasets=top3.map((c,i)=>{
+    const fit=c.fitMultiplier||1.0;
+    const base=50+c.score*0.4;
     const data=months.map((_,m)=>Math.round(base+m*(fit-0.9)*8+Math.random()*8));
     return {label:c.flag+' '+c.name,data,borderColor:colors[i],backgroundColor:colors[i]+'22',fill:false,tension:.4,borderWidth:2.5,pointRadius:0,pointHoverRadius:5};
   });
@@ -2809,7 +2799,7 @@ setTimeout(()=>{
 
 /* ═══════════════════════════════════════════════════════════
    MATCHMAKING STATE & LOGIC */
-const MM_STATE={step:1,profile:{},intent:[],geos:[],priorities:[]};
+const MM_STATE={step:1,profile:{},intent:[],geos:[],priorities:[],sessionId:null,_matchPromise:null};
 
 function mmSelectOne(el,selector){
   const group=el.closest('.chip-group');
@@ -2844,6 +2834,13 @@ function mmRunMatch(){
   MM_STATE.geos=[...document.querySelectorAll('.mm-geo.active')].map(c=>c.dataset.geo);
   MM_STATE.priorities=[...document.querySelectorAll('.mm-prio.active')].map(c=>c.textContent.trim());
   if(MM_STATE.intent.length===0){alert('Please select at least one partner type you\'re looking for.');return;}
+  MM_STATE._matchPromise=fetch('/api/match/run',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({profile:MM_STATE.profile,intent:MM_STATE.intent,geos:MM_STATE.geos,priorities:MM_STATE.priorities})
+  }).then(r=>r.json()).then(res=>{
+    if(res.success&&res.data){MM_STATE.sessionId=res.data.sessionId;return res.data;}
+    throw new Error('Match API error');
+  }).catch(err=>{console.error('[match/run]',err);return null;});
   mmNext(3);
   mmAnimateMatching();
 }
@@ -2859,7 +2856,12 @@ function mmAnimateMatching(){
   ];
   let i=0;
   const step=()=>{
-    if(i>=stages.length){setTimeout(()=>{mmNext(4);mmRenderResults()},500);return;}
+    if(i>=stages.length){
+      setTimeout(()=>{
+        Promise.resolve(MM_STATE._matchPromise).then(data=>{mmNext(4);mmRenderResults(data);});
+      },500);
+      return;
+    }
     const s=stages[i++];
     const bar=document.getElementById('mm-progress-bar');
     const txt=document.getElementById('mm-progress-txt');
@@ -2872,39 +2874,42 @@ function mmAnimateMatching(){
   step();
 }
 
-function mmRenderResults(){
-  const baseMatches=Math.max(12,MM_STATE.intent.length*8+MM_STATE.geos.length*3);
-  const count=Math.min(84,baseMatches+Math.floor(Math.random()*10));
+function mmRenderResults(data){
+  const count=data?data.matchCount:Math.min(84,Math.max(12,MM_STATE.intent.length*8+MM_STATE.geos.length*3)+10);
   const cnt=document.getElementById('mm-count');
   if(cnt)cnt.textContent=count;
 
-  const flagMap={DACH:'🇩🇪',BENELUX:'🇳🇱',UK:'🇬🇧',NORDICS:'🇸🇪',FR_IT_ES:'🇫🇷',NA:'🇺🇸',MENA:'🇦🇪',APAC:'🇸🇬'};
-  const labelMap={DACH:'DACH',BENELUX:'Benelux',UK:'UK',NORDICS:'Nordics',FR_IT_ES:'France/IT/ES',NA:'N. America',MENA:'Middle East',APAC:'APAC'};
-  const geoList=MM_STATE.geos.length?MM_STATE.geos:['DACH','BENELUX','UK'];
-  const perGeo=Math.max(3,Math.floor(count/Math.max(geoList.length,1)));
   const geoGrid=document.getElementById('mm-geo-grid');
   if(geoGrid){
-    geoGrid.innerHTML=geoList.map((g,i)=>{
-      const n=Math.max(2,perGeo+Math.floor(Math.random()*6)-3);
+    const geoItems=data?data.geoDistribution:(()=>{
+      const flagMap={DACH:'🇩🇪',BENELUX:'🇳🇱',UK:'🇬🇧',NORDICS:'🇸🇪',FR_IT_ES:'🇫🇷',NA:'🇺🇸',MENA:'🇦🇪',APAC:'🇸🇬'};
+      const labelMap={DACH:'DACH',BENELUX:'Benelux',UK:'UK',NORDICS:'Nordics',FR_IT_ES:'France/IT/ES',NA:'N. America',MENA:'Middle East',APAC:'APAC'};
+      const geoList=MM_STATE.geos.length?MM_STATE.geos:['DACH','BENELUX','UK'];
+      const perGeo=Math.max(3,Math.floor(count/Math.max(geoList.length,1)));
+      return geoList.map((g,i)=>({geo:g,label:labelMap[g]||g,flag:flagMap[g]||'🌍',count:Math.max(2,perGeo-i),pct:80-i*10}));
+    })();
+    geoGrid.innerHTML=geoItems.map((g,i)=>{
       const hi=i===0;
       return '<div style="padding:18px;background:'+(hi?'var(--gold-mist)':'var(--bg-warm)')+';border-radius:var(--r);text-align:center;border:'+(hi?'1.5px solid var(--gold)':'1px solid var(--ink-08)')+'">'+
-        '<div style="font-size:28px;margin-bottom:4px">'+(flagMap[g]||'🌍')+'</div>'+
-        '<div style="font-family:var(--f-display);font-size:24px;color:'+(hi?'var(--gold-deep)':'var(--ink)')+'">'+n+'</div>'+
-        '<div style="font-size:11px;color:var(--ink-70);margin-top:2px">'+(labelMap[g]||g)+'</div></div>';
+        '<div style="font-size:28px;margin-bottom:4px">'+g.flag+'</div>'+
+        '<div style="font-family:var(--f-display);font-size:24px;color:'+(hi?'var(--gold-deep)':'var(--ink)')+'">'+g.count+'</div>'+
+        '<div style="font-size:11px;color:var(--ink-70);margin-top:2px">'+g.label+'</div></div>';
     }).join('');
   }
 
-  const typeMap={investor:'Investors',distributor:'Distributors',jv:'JV Partners',customer:'Enterprise Customers',advisor:'Advisors',hire:'Senior Hires',accel:'Accelerators',gov:'Government / Trade'};
   const typeList=document.getElementById('mm-type-list');
   if(typeList){
-    typeList.innerHTML=MM_STATE.intent.map((t,i)=>{
-      const n=Math.max(2,Math.floor(count/MM_STATE.intent.length)+Math.floor(Math.random()*6)-2);
-      const pct=Math.min(98,40+i*8+Math.floor(Math.random()*20));
-      return '<div><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px;font-weight:500">'+(typeMap[t]||t)+'</span><span style="font-family:var(--f-mono);font-size:12px;color:var(--gold-deep);font-weight:600">'+n+' matches</span></div><div style="height:6px;background:var(--ink-08);border-radius:3px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-2))"></div></div></div>';
+    const typeItems=data?data.typeBreakdown:(()=>{
+      const typeMap={investor:'Investors',distributor:'Distributors',jv:'JV Partners',customer:'Enterprise Customers',advisor:'Advisors',hire:'Senior Hires',accel:'Accelerators',gov:'Government / Trade'};
+      const intent=MM_STATE.intent.length?MM_STATE.intent:['investor'];
+      return intent.map((t,i)=>({type:t,label:typeMap[t]||t,count:Math.max(2,Math.floor(count/intent.length)),pct:Math.min(98,60-i*8)}));
+    })();
+    typeList.innerHTML=typeItems.map(t=>{
+      return '<div><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px;font-weight:500">'+t.label+'</span><span style="font-family:var(--f-mono);font-size:12px;color:var(--gold-deep);font-weight:600">'+t.count+' matches</span></div><div style="height:6px;background:var(--ink-08);border-radius:3px;overflow:hidden"><div style="width:'+t.pct+'%;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-2))"></div></div></div>';
     }).join('');
   }
 
-  const archetypes=[
+  const archetypes=data?data.topMatches:[
     {type:'Investor',role:'Series A Lead · European Industrial Tech Fund',mo:'€80M AUM · Portfolio in DACH industrial SaaS',tags:['Series A','DACH','Industrial'],score:94,av:'var(--slate)'},
     {type:'Distributor',role:'Mid-Market Industrial Distributor · DACH',mo:'€40M revenue · 65+ customers · Active for new SaaS',tags:['Distributor','DACH','Industrial'],score:89,av:'var(--teal)'},
     {type:'Investor',role:'Seed Fund · B2B Vertical SaaS',mo:'£120M AUM · 15 active positions · Thesis-fit: HIGH',tags:['Seed','B2B SaaS','EU'],score:87,av:'var(--gold)'},
@@ -2928,22 +2933,37 @@ function mmRenderResults(){
 
   const read=document.getElementById('mm-ai-read');
   if(read){
-    const primaryGeo=labelMap[MM_STATE.geos[0]||'DACH']||'European';
-    const primaryType=(typeMap[MM_STATE.intent[0]]||'investors').toLowerCase();
-    read.innerHTML='"Your profile resonates most strongly with '+primaryGeo+' '+primaryType+'. <strong style="color:var(--gold)">3 of your top 5</strong> matches have previously backed companies at your exact stage + sector. We see '+(MM_STATE.intent.includes('hire')?'strong density for senior hires':'room to expand geographic coverage')+' — consider refining once you close a signature milestone."';
+    read.innerHTML=data?data.aiRead:(()=>{
+      const labelMap={DACH:'DACH',BENELUX:'Benelux',UK:'UK',NORDICS:'Nordics',FR_IT_ES:'France/IT/ES',NA:'N. American',MENA:'Middle East',APAC:'APAC'};
+      const typeMap={investor:'investors',distributor:'distributors',jv:'JV partners',customer:'enterprise customers',advisor:'advisors',hire:'senior hires',accel:'accelerators',gov:'trade partners'};
+      const primaryGeo=labelMap[MM_STATE.geos[0]||'DACH']||'European';
+      const primaryType=typeMap[MM_STATE.intent[0]]||'investors';
+      return '"Your profile resonates most strongly with '+primaryGeo+' '+primaryType+'. <strong style="color:var(--gold)">3 of your top 5</strong> matches have previously backed companies at your exact stage + sector. We see '+(MM_STATE.intent.includes('hire')?'strong density for senior hires':'room to expand geographic coverage')+' — consider refining once you close a signature milestone."';
+    })();
   }
 }
 
 function mmBookCall(){
   const name=(document.getElementById('mm-modal-name')||{}).value||'';
   const email=(document.getElementById('mm-modal-email')||{}).value||'';
+  const timeEl=document.querySelector('#mm-discovery-modal select');
+  const preferredTime=timeEl?timeEl.value:'Flexible';
   if(!name.trim()||!email.trim()){alert('Please enter your name and email');return;}
   const modal=document.getElementById('mm-discovery-modal');
   if(!modal)return;
-  const inner=modal.querySelector('div>div');
-  if(inner){
+  const inner=modal.querySelector(':scope > div');
+  if(!inner)return;
+  const btn=inner.querySelector('.btn-gold');
+  if(btn){btn.textContent='Booking…';btn.disabled=true;}
+  fetch('/api/match/book-call',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({sessionId:MM_STATE.sessionId||'',name,email,preferredTime})
+  }).then(r=>r.json()).then(res=>{
+    const msg=res.success&&res.data?res.data.message:'We\'ll email <strong>'+email+'</strong> within 12 hours to confirm.';
+    inner.innerHTML='<div style="text-align:center;padding:20px"><div style="font-size:54px;margin-bottom:14px">✓</div><h3 style="font-family:var(--f-display);font-size:28px;font-weight:400;margin-bottom:8px">Discovery Call <em style="color:var(--gold);font-style:italic">booked.</em></h3><p style="font-size:14px;color:var(--ink-70);line-height:1.7;margin-bottom:20px">'+msg+'</p><button class="btn-primary btn-sm" onclick="document.getElementById(\'mm-discovery-modal\').style.display=\'none\'">Close</button></div>';
+  }).catch(()=>{
     inner.innerHTML='<div style="text-align:center;padding:20px"><div style="font-size:54px;margin-bottom:14px">✓</div><h3 style="font-family:var(--f-display);font-size:28px;font-weight:400;margin-bottom:8px">Discovery Call <em style="color:var(--gold);font-style:italic">booked.</em></h3><p style="font-size:14px;color:var(--ink-70);line-height:1.7;margin-bottom:20px">We\'ll email <strong>'+email+'</strong> within 12 hours to confirm. Your Match Director will come prepped with the top 5 warm intros.</p><button class="btn-primary btn-sm" onclick="document.getElementById(\'mm-discovery-modal\').style.display=\'none\'">Close</button></div>';
-  }
+  });
 }
 
 /* BECOME A PARTNER — STEP NAVIGATION */
@@ -2990,6 +3010,170 @@ function showView(name){
   if(name==='sim') setTimeout(initSimCharts,200);
   /* trigger bar fill animation for home hero */
   if(name==='home') setTimeout(fillHomeBars,300);
+  /* load live dashboard data */
+  if(name==='dashboard') setTimeout(dashboardLoad,100);
+  /* load personalised hub feed */
+  if(name==='hub') setTimeout(hubLoad,100);
+  /* restore last sim run */
+  if(name==='sim') setTimeout(simLoadLast,150);
+}
+
+function dashboardLoad(){
+  const aid=localStorage.getItem('wg_assessment_id');
+  const url='/api/dashboard/overview'+(aid?'?assessmentId='+aid:'');
+  fetch(url).then(r=>r.json()).then(({data:d})=>{
+    if(!d)return;
+    const el=id=>document.getElementById(id);
+    /* metric row */
+    if(el('dash-twin-score'))el('dash-twin-score').textContent=d.metrics[0]?.value??'—';
+    if(el('dash-cluster-stage'))el('dash-cluster-stage').textContent=d.metrics[1]?.value??'—';
+    if(el('dash-match-count'))el('dash-match-count').textContent=d.metrics[2]?.value??'—';
+    if(el('dash-pipeline-est'))el('dash-pipeline-est').textContent=d.metrics[3]?.value??'—';
+    if(el('dash-primary-constraint'))el('dash-primary-constraint').textContent=d.metrics[4]?.value??'—';
+    /* score ring */
+    if(d.overallScore!=null){
+      const circ=427,offset=circ-(circ*d.overallScore/100);
+      const ring=el('dash-score-ring');
+      if(ring){setTimeout(()=>{ring.style.transition='stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1)';ring.setAttribute('stroke-dashoffset',offset);},80);}
+      if(el('dash-score-num'))el('dash-score-num').textContent=d.overallScore;
+    }
+    /* headline + summary + chips */
+    if(el('dash-headline')&&d.headline)el('dash-headline').innerHTML=d.headline;
+    if(el('dash-summary')&&d.summary)el('dash-summary').textContent=d.summary;
+    if(el('dash-chip-gap')&&d.primaryGap)el('dash-chip-gap').textContent='Primary Gap: '+d.primaryGap;
+    if(el('dash-chip-lever')&&d.topLever)el('dash-chip-lever').textContent='Top Lever: '+d.topLever;
+    /* readiness bars */
+    (d.readiness||[]).forEach(dim=>{
+      const key=dim.name.toLowerCase();
+      const bar=el('dash-bar-'+key),val=el('dash-val-'+key);
+      if(bar){bar.style.width=dim.score+'%';bar.style.background=dim.color;}
+      if(val)val.textContent=dim.score;
+    });
+    /* feed */
+    if(el('dash-feed')&&Array.isArray(d.feed)){
+      el('dash-feed').innerHTML=d.feed.map(f=>`<div class="feed-item"><div class="fi-icon ${f.type}">◈</div><div><div class="fi-title">${f.title}</div><div class="fi-desc">${f.description}</div><div class="fi-time">${f.time} · ${f.source}</div></div></div>`).join('');
+    }
+    /* AI insight */
+    if(el('dash-ai-insight')&&d.weeklyInsight)el('dash-ai-insight').textContent='"'+d.weeklyInsight+'"';
+    /* top country action tile */
+    if(el('dash-action-country')&&d.topCountry)el('dash-action-country').textContent='Enter '+d.topCountry;
+  }).catch(err=>console.error('[dashboard]',err));
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INTELLIGENCE HUB FEED */
+function hubGetSessionId(){
+  let sid=localStorage.getItem('wg_hub_session');
+  if(!sid){sid='hs_'+Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.setItem('wg_hub_session',sid);}
+  return sid;
+}
+
+function hubLoad(){
+  const aid=localStorage.getItem('wg_assessment_id');
+  const sid=hubGetSessionId();
+  const url='/api/hub/feed?sessionId='+sid+(aid?'&assessmentId='+aid:'');
+  fetch(url).then(r=>r.json()).then(({data:d})=>{
+    if(!d||!d.articles)return;
+    const feed=document.getElementById('hub-feed');
+    if(!feed)return;
+    feed.innerHTML=d.articles.map(a=>hubArticleCard(a,sid)).join('');
+  }).catch(err=>console.error('[hub]',err));
+}
+
+function hubArticleCard(a,sid){
+  const openLabel=a.type==='MARKET_INTEL'?'Read Intel':'Open Playbook';
+  const saveLabel=a.saved?'Saved ✓':'Save';
+  return '<div class="dash-card" style="margin-bottom:16px" id="hub-card-'+a.slug+'">'+
+    '<div style="display:flex;gap:10px;margin-bottom:12px">'+
+    '<span class="chip active" style="cursor:default;font-size:11px;background:'+a.typeBg+';color:'+a.typeColor+';border-color:'+a.typeBorder+'">'+a.typeLabel+'</span>'+
+    '<span class="chip active" style="cursor:default;font-size:11px;background:'+a.topicBg+';color:'+a.topicColor+';border-color:'+a.topicBorder+'">'+a.topicLabel+'</span>'+
+    '<span style="font-family:var(--f-mono);font-size:11px;color:var(--ink-40);margin-left:auto">'+a.readTimeMin+' min · '+a.ageLabel+'</span>'+
+    '</div>'+
+    '<h3 style="font-size:20px;margin-bottom:8px">'+a.title+'</h3>'+
+    '<p style="font-size:13.5px;color:var(--ink-70);line-height:1.7;margin-bottom:16px">'+a.description+'</p>'+
+    '<div style="background:var(--gold-mist);border-left:3px solid var(--gold);padding:14px 16px;border-radius:0 var(--r-sm) var(--r-sm) 0;margin-bottom:14px">'+
+    '<div style="font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-deep);margin-bottom:6px">◈ What This Means For You</div>'+
+    '<p style="font-size:13px;color:var(--ink-70);line-height:1.6;font-style:italic">"'+a.whatThisMeansForYou+'"</p>'+
+    '</div>'+
+    '<div style="display:flex;gap:10px">'+
+    '<button class="btn-primary btn-sm">'+openLabel+'</button>'+
+    '<button class="btn-outline btn-sm" id="hub-save-'+a.slug+'" onclick="hubToggleSave(\''+a.slug+'\',\''+sid+'\',this)">'+saveLabel+'</button>'+
+    '</div>'+
+    '</div>';
+}
+
+function hubToggleSave(slug,sid,btn){
+  btn.disabled=true;
+  fetch('/api/hub/save',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({articleSlug:slug,sessionId:sid})
+  }).then(r=>r.json()).then(res=>{
+    if(res.success)btn.textContent=res.data.saved?'Saved ✓':'Save';
+    btn.disabled=false;
+  }).catch(()=>{btn.disabled=false;});
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SIMULATOR PERSISTENCE */
+function simGetSessionId(){
+  let sid=localStorage.getItem('wg_sim_session');
+  if(!sid){sid='ss_'+Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.setItem('wg_sim_session',sid);}
+  return sid;
+}
+
+function simCollectOutputs(){
+  const I=simReadInputs();
+  const rev=simGenRevSeries(I);
+  const endRevK=rev[rev.length-1];
+  const cumRevK=rev.reduce((a,b)=>a+b,0);
+  const runwayMonths=I.rev>0?Math.round(I.cash/(I.burn-I.rev*I.margin)):Math.round(I.cash/I.burn);
+  const breakevenMonth=(()=>{let bal=I.cash;for(let m=1;m<=I.horizonMonths;m++){bal+=rev[m]*I.margin-I.burn;if(bal>0)return m;}return null;})();
+  const ltvCac=+(I.cac>0?(I.rev*I.margin*I.ltm)/I.cac:0).toFixed(2);
+  const active=document.querySelector('#view-sim .sim-pane.active');
+  const scenario=active?active.id.replace('sim-pane-',''):'topline';
+  return {endRevK:+endRevK.toFixed(2),cumRevK:+cumRevK.toFixed(2),runwayMonths,breakevenMonth,ltvCac,scenario};
+}
+
+function simSaveScenario(){
+  const sid=simGetSessionId();
+  const inputs=simReadInputs();
+  const outputs=simCollectOutputs();
+  fetch('/api/sim/run',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({sessionId:sid,inputs,outputs})
+  }).then(r=>r.json()).then(res=>{
+    if(res.success){
+      const btn=document.querySelector('.sim-slider+.sim-slider')?.parentElement?.querySelector('[onclick*="simSaveScenario"]');
+      /* Flash the save button */
+      const btns=[...document.querySelectorAll('#view-sim button')].find(b=>b.textContent.includes('Save Scenario'));
+      if(btns){const orig=btns.textContent;btns.textContent='◈ Saved!';setTimeout(()=>btns.textContent=orig,1800);}
+    }
+  }).catch(()=>{});
+}
+
+function simLoadLast(){
+  const sid=simGetSessionId();
+  fetch('/api/sim/last?sessionId='+sid).then(r=>r.json()).then(({data:d})=>{
+    if(!d||!d.found)return;
+    /* Restore inputs */
+    const I=d.inputs;
+    const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v;};
+    set('sim-rev',I.revenueK);
+    set('sim-growth',I.growthPct);
+    set('sim-margin',I.marginPct);
+    set('sim-burn',I.burnK);
+    set('sim-cash',I.cashK);
+    set('sim-cac',I.cac);
+    set('sim-ltm',I.ltm);
+    set('sim-horizon',I.horizonMonths);
+    /* If backend says unlocked, honour it */
+    if(d.unlocked&&!SIM_UNLOCKED){
+      SIM_UNLOCKED=true;
+      localStorage.setItem('wx_sim_unlocked','1');
+    }
+    /* Re-render with restored values */
+    if(simChartsInitialised)simUpdate();
+  }).catch(()=>{});
 }
 
 function loadPlatformFrame(name){
@@ -3237,6 +3421,7 @@ function simUpdateIterBadge(){
 function simUnlock(){
   SIM_UNLOCKED=true;
   if(typeof localStorage!=='undefined')localStorage.setItem('wx_sim_unlocked','1');
+  fetch('/api/sim/unlock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:simGetSessionId()})}).catch(()=>{});
   const modal=document.getElementById('sim-paywall-modal');
   if(modal){
     /* Confirmation state */

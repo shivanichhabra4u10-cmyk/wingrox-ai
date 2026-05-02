@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { PlatformNav } from './PlatformNav';
 import styles from './PlatformView.module.css';
 
-const PlatformViewNameSchema = z.enum(['twin', 'expansion', 'match', 'hub', 'sim', 'eco']);
+const PlatformViewNameSchema = z.enum(['dashboard', 'intel', 'match', 'hub', 'sim']);
 
 const PlatformHtmlViewFramePropsSchema = z.object({
   active: PlatformViewNameSchema,

@@ -10,6 +10,11 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { AccountsModule } from './modules/accounts/accounts.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { TwinAssessmentModule } from './modules/twin-assessment/twin-assessment.module';
+import { ExpansionModule } from './modules/expansion/expansion.module';
+import { MatchModule } from './modules/match/match.module';
+import { HubModule } from './modules/hub/hub.module';
+import { SimModule } from './modules/sim/sim.module';
+import { EcoModule } from './modules/eco/eco.module';
 
 const jwtExpiration = process.env.JWT_EXPIRATION ?? '24h';
 
@@ -29,6 +34,11 @@ const jwtExpiration = process.env.JWT_EXPIRATION ?? '24h';
     AccountsModule,
     ReportsModule,
     TwinAssessmentModule,
+    ExpansionModule,
+    MatchModule,
+    HubModule,
+    SimModule,
+    EcoModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

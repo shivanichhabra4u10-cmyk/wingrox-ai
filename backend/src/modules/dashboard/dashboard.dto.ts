@@ -10,13 +10,6 @@ export interface ReadinessDimension {
   color: string;
 }
 
-export interface ActionTile {
-  icon: string;
-  title: string;
-  description: string;
-  href: string;
-}
-
 export interface FeedItem {
   type: 'insight' | 'match' | 'milestone' | 'alert';
   title: string;
@@ -25,11 +18,16 @@ export interface FeedItem {
   source: string;
 }
 
-export interface DashboardOverviewResponse {
-  greeting: string;
-  stage: string;
+export interface DashboardSummaryResponse {
+  overallScore: number;
+  clusterStage: string;
+  headline: string;
+  summary: string;
+  primaryGap: string;
+  topLever: string;
+  topCountry: string;
+  weeklyInsight: string;
   metrics: DashboardMetric[];
   readiness: ReadinessDimension[];
-  actions: ActionTile[];
   feed: FeedItem[];
 }
