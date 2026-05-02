@@ -134,14 +134,14 @@ Register the module in `backend/src/app.module.ts`.
 | Route | Backend | DB Table | Notes |
 |---|---|---|---|
 | `/` | — | — | Static marketing, no backend needed |
-| `/dashboard` | ❌ pending | — | Aggregates data from other modules |
-| `/twin` | ❌ pending | — | Digital twin assessment flow |
+| `/dashboard` | ✅ done | `expansion_assessments` (read) | `GET /api/dashboard/overview?assessmentId=` |
+| `/twin` | ✅ done | `twin_assessments` | OTP + progress + complete via `TwinAssessmentModule` |
 | `/expansion` | ✅ done | `expansion_assessments` | Full readiness assessment API |
 | `/intel` | ✅ done | `expansion_assessments` | Reuses `/api/expansion/assessment` |
-| `/match` | ❌ pending | — | Matchmaking session + results |
-| `/hub` | ❌ pending | — | Insights hub, saved reports |
-| `/sim` | ❌ pending | — | Simulator runs + projections |
-| `/eco` | ❌ pending | — | Ecosystem membership + matches |
+| `/match` | ✅ done | `match_sessions`, `match_discovery_calls` | `POST /api/match/run`, `POST /api/match/book-call` |
+| `/hub` | ✅ done | `hub_saves` | `GET /api/hub/feed`, `POST /api/hub/save`, `GET /api/hub/saves` |
+| `/sim` | ✅ done | `sim_runs`, `sim_unlocks` | `POST /api/sim/run`, `GET /api/sim/last`, `POST /api/sim/unlock` |
+| `/eco` | ✅ done | `eco_applications` | `POST /api/eco/apply`, `GET /api/eco/status`, `GET /api/eco/stats` |
 
 ---
 
@@ -197,7 +197,7 @@ backend/
 cd frontend && npm run dev
 
 # Backend (port 3001)
-cd backend && npm run start:dev
+cd backend && npm run dev
 ```
 
 ---
@@ -207,11 +207,11 @@ cd backend && npm run start:dev
 | Route | HTML view ID | UI Approach | Backend |
 |---|---|---|---|
 | `/` | — | Custom (`PlatformHome`) | none |
-| `/dashboard` | `#view-dashboard` | `PlatformHtmlViewFrame` | ❌ pending |
-| `/twin` | stub | Custom (`PlatformTwin`) | ❌ pending |
+| `/dashboard` | `#view-dashboard` | `PlatformHtmlViewFrame` | ✅ done |
+| `/twin` | stub | Custom (`PlatformTwin`) | ✅ done |
 | `/expansion` | stub | Custom (`ExpansionNavigator`) | ✅ done |
 | `/intel` | `#view-intel` | `PlatformHtmlViewFrame` | ✅ done |
-| `/match` | `#view-match` | `PlatformHtmlViewFrame` | ❌ pending |
-| `/hub` | `#view-hub` | `PlatformHtmlViewFrame` | ❌ pending |
-| `/sim` | `#view-sim` | `PlatformHtmlViewFrame` | ❌ pending |
-| `/eco` | stub | Custom (`PlatformEco`) | ❌ pending |
+| `/match` | `#view-match` | `PlatformHtmlViewFrame` | ✅ done |
+| `/hub` | `#view-hub` | `PlatformHtmlViewFrame` | ✅ done |
+| `/sim` | `#view-sim` | `PlatformHtmlViewFrame` | ✅ done |
+| `/eco` | stub | Custom (`PlatformEco`) | ✅ done |
