@@ -1,12 +1,5 @@
-import { PlatformHtmlViewFrame } from '@/components/platform/PlatformHtmlViewFrame';
+import { PlatformHub } from '@/components/platform/PlatformHub';
 
 export default function HubPage() {
-  return (
-    <PlatformHtmlViewFrame
-      active="hub"
-      title="Signal Hub"
-      loadingText="Loading Signal Hub..."
-      viewName="hub"
-    />
-  );
+  return <PlatformHub />;
 }

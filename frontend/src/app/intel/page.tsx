@@ -1,12 +1,5 @@
-import { PlatformHtmlViewFrame } from '@/components/platform/PlatformHtmlViewFrame';
+import { PlatformIntel } from '@/components/platform/PlatformIntel';
 
 export default function IntelligenceEnginePage() {
-  return (
-    <PlatformHtmlViewFrame
-      active="intel"
-      title="Global Expansion Intelligence Engine"
-      loadingText="Loading Intelligence Engine..."
-      viewName="intel"
-    />
-  );
+  return <PlatformIntel />;
 }

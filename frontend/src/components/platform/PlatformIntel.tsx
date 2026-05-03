@@ -2,6 +2,12 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { PlatformNav } from './PlatformNav';
+import {
+  Chart as ChartJS, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend,
+} from 'chart.js';
+import { Radar } from 'react-chartjs-2';
+
+ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
 // â”€â”€ Static data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -27,65 +33,106 @@ const MARKETS    = [
 ];
 const GOALS = ['Revenue growth', 'Find distributors', 'Raise capital', 'De-risk domestic', 'IPO / M&A prep'];
 
-const MOCK_REPORT = {
-  score: 74,
-  headline: 'Strong expansion candidate &mdash; UAE and Germany are your top-2 markets.',
-  subhead: 'Your profile scores above-average on demand fit and trade openness. Primary gap: team readiness and local partner access.',
-  marketReady: '74%', financiallyReady: '68%', gtmReady: '61%',
-  countries: [
-    { name: 'Germany',   flag: 'DE', score: 81, signal: 'B2B SaaS demand &#8593; 38% YoY. Strong mid-market SME base.' },
-    { name: 'UAE',       flag: 'AE', score: 78, signal: 'CEPA trade corridor open. Rapid enterprise adoption.' },
-    { name: 'Singapore', flag: 'SG', score: 71, signal: 'ASEAN HQ hub. Best route into Southeast Asia.' },
-  ],
-  revProj: '$1.2M', revLow: '$380K', revBase: '$820K', revHigh: '$1.9M',
-  risks: [
-    { label: 'Regulatory',  level: 'Medium', color: 'var(--amber)' },
-    { label: 'FX volatility', level: 'Low', color: 'var(--sage)' },
-    { label: 'Competition', level: 'High',   color: 'var(--rose)' },
-  ],
-  moves: [
-    { step: '01 &middot; Next 30 Days', title: 'Validate demand with 10 discovery calls in Germany',   desc: 'Focus on industrial SaaS decision-makers. Use LinkedIn Sales Navigator + warm intros via DACH accelerators.' },
-    { step: '02 &middot; Days 30&ndash;75',   title: 'Shortlist 3 distributor candidates in DACH',           desc: 'Prioritise partners with 50+ active customer accounts. Request referrals from existing network.' },
-    { step: '03 &middot; Days 60&ndash;90',   title: 'Localise pricing and commercial terms',                desc: 'Add EUR invoicing and structured tiered pricing. Benchmark against 3 local competitors.' },
-  ],
+interface TopCountry {
+  code: string; name: string; flag: string; score: number;
+  gdpUsdBn: number; gdpGrowthPct: number; easeScore: number;
+  riskBand: string; tariffBand: string; why: string;
+  fitMultiplier?: number;
+}
+interface IntelRisk  { tag: string; severity: string; text: string; }
+interface IntelMove  { title: string; desc: string; when: string; }
+interface IntelReport {
+  assessmentId: string; readinessScore: number;
+  marketReady: number; financialReady: number; gtmReady: number;
+  headline: string; subhead: string; cluster: string;
+  topCountries: TopCountry[];
+  revenueProjectionUsdM: { low: number; base: number; high: number };
+  risks: IntelRisk[]; moves: IntelMove[];
+}
+
+const INDUSTRY_API: Record<string, string> = {
+  'FMCG': 'FMCG', 'B2B SaaS': 'SaaS', 'Healthcare / Pharma': 'Healthcare',
+  'Fintech': 'Fintech', 'Industrial / Manufacturing': 'Industrial',
+  'Climate / Energy': 'Climate', 'Consumer / D2C': 'Consumer',
+  'Agri / Food': 'Agri', 'EV / Mobility': 'EV',
+};
+
+const REVENUE_OPTIONS = [
+  'Pre-revenue', '< $500K', '$500K – $2M', '$2M – $10M', '$10M – $50M', '$50M+',
+];
+
+const SEVERITY_COLOR: Record<string, string> = {
+  rose: 'var(--rose)', amber: 'var(--amber)', sage: 'var(--sage)',
 };
 
 type Step = 'input' | 'computing' | 'report';
 
 export function PlatformIntel() {
-  const [step, setStep]           = useState<Step>('input');
+  const [step, setStep]               = useState<Step>('input');
   const [companyName, setCompanyName] = useState('');
-  const [hqCountry, setHqCountry] = useState('India');
-  const [industry, setIndustry]   = useState('B2B SaaS');
-  const [revenue, setRevenue]     = useState('$500K &ndash; $2M');
-  const [model, setModel]         = useState('B2B');
-  const [markets, setMarkets]     = useState<string[]>([]);
-  const [goal, setGoal]           = useState('Revenue growth');
-  const [progress, setProgress]   = useState(0);
+  const [hqCountry, setHqCountry]     = useState('India');
+  const [industry, setIndustry]       = useState('B2B SaaS');
+  const [revenue, setRevenue]         = useState('$500K – $2M');
+  const [model, setModel]             = useState('B2B');
+  const [markets, setMarkets]         = useState<string[]>([]);
+  const [goal, setGoal]               = useState('Revenue growth');
+  const [progress, setProgress]       = useState(0);
+  const [report, setReport]           = useState<IntelReport | null>(null);
+  const [apiError, setApiError]       = useState('');
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const toggleMarket = (geo: string) =>
     setMarkets((prev) => prev.includes(geo) ? prev.filter((m) => m !== geo) : prev.length < 3 ? [...prev, geo] : prev);
 
-  const generate = () => {
+  const generate = async () => {
     setStep('computing');
     setProgress(0);
+    setApiError('');
     let p = 0;
     timerRef.current = setInterval(() => {
-      p += Math.random() * 12 + 3;
-      if (p >= 100) { p = 100; clearInterval(timerRef.current!); setTimeout(() => setStep('report'), 400); }
-      setProgress(Math.min(p, 100));
-    }, 320);
+      p += Math.random() * 8 + 2;
+      if (p < 90) setProgress(Math.round(p));
+    }, 400);
+
+    try {
+      const payload = {
+        companyName: companyName || 'Your Company',
+        hqCountry,
+        industry: INDUSTRY_API[industry] ?? 'SaaS',
+        revenueBand: revenue,
+        businessModel: model,
+        goal,
+        targetGeos: markets,
+      };
+      const res = await fetch('/api/expansion/assessment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }).then(r => r.json());
+
+      clearInterval(timerRef.current!);
+
+      if (!res.success) throw new Error(res.message ?? 'Request failed');
+      if (res.data?.assessmentId) localStorage.setItem('wg_assessment_id', res.data.assessmentId);
+
+      setProgress(100);
+      setReport(res.data as IntelReport);
+      setTimeout(() => setStep('report'), 400);
+    } catch (err) {
+      clearInterval(timerRef.current!);
+      setApiError(err instanceof Error ? err.message : 'Failed to generate report');
+      setStep('input');
+    }
   };
 
   useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current); }, []);
 
   const progressLabel =
-    progress < 20 ? '0% &middot; Initialising APIs' :
-    progress < 40 ? '20% &middot; Pulling trade signals' :
-    progress < 60 ? '40% &middot; Fusing demand data' :
-    progress < 80 ? '65% &middot; Running AI scoring' :
-    progress < 100 ? '85% &middot; Building your report' : '100% &middot; Complete';
+    progress < 20 ? '0% · Initialising APIs' :
+    progress < 40 ? '20% · Pulling trade signals' :
+    progress < 60 ? '40% · Fusing demand data' :
+    progress < 80 ? '65% · Running AI scoring' :
+    progress < 100 ? '85% · Building your report' : '100% · Complete';
 
   return (
     <main style={{ minHeight: '100vh', background: 'var(--bg)' }}>
@@ -290,7 +337,7 @@ export function PlatformIntel() {
                 <div className="field">
                   <label>Annual Revenue (USD)</label>
                   <select value={revenue} onChange={(e) => setRevenue(e.target.value)}>
-                    {['Pre-revenue','< $500K','$500K &ndash; $2M','$2M &ndash; $10M','$10M &ndash; $50M','$50M+'].map((r) => <option key={r}>{r}</option>)}
+                    {REVENUE_OPTIONS.map((r) => <option key={r} value={r}>{r}</option>)}
                   </select>
                 </div>
                 <div className="field">
@@ -314,6 +361,11 @@ export function PlatformIntel() {
                   {GOALS.map((g) => <span key={g} className={`chip${goal === g ? ' active' : ''}`} onClick={() => setGoal(g)}>{g}</span>)}
                 </div>
               </div>
+              {apiError && (
+                <div style={{ marginTop: 16, padding: '12px 16px', background: '#fbe9e7', border: '1px solid #d65a4f', borderRadius: 4, color: '#d65a4f', fontSize: 13 }}>
+                  {apiError}
+                </div>
+              )}
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--ink-08)' }}>
                 <button className="btn-gold" onClick={generate}>Generate My Intelligence Report <span className="arr">&#8594;</span></button>
               </div>
@@ -337,7 +389,7 @@ export function PlatformIntel() {
           )}
 
           {/* REPORT */}
-          {step === 'report' && (
+          {step === 'report' && report && (
             <div style={{ maxWidth: 960, margin: '0 auto' }}>
               {/* Headline */}
               <div className="dash-card" style={{ padding: 40, marginBottom: 24, background: 'linear-gradient(135deg,var(--gold-mist),var(--bg-warm))', borderColor: 'var(--gold)' }}>
@@ -346,7 +398,7 @@ export function PlatformIntel() {
                     <div style={{ position: 'relative', width: 200, height: 200, margin: '0 auto' }}>
                       <svg viewBox="0 0 200 200" width="200" height="200" style={{ transform: 'rotate(-90deg)' }}>
                         <circle cx="100" cy="100" r="86" fill="none" stroke="rgba(26,24,20,.1)" strokeWidth="14" />
-                        <circle cx="100" cy="100" r="86" fill="none" stroke="url(#intelGrad)" strokeWidth="14" strokeLinecap="round" strokeDasharray="540" strokeDashoffset={540 - (540 * MOCK_REPORT.score) / 100} />
+                        <circle cx="100" cy="100" r="86" fill="none" stroke="url(#intelGrad)" strokeWidth="14" strokeLinecap="round" strokeDasharray="540" strokeDashoffset={540 - (540 * report.readinessScore) / 100} />
                         <defs>
                           <linearGradient id="intelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" stopColor="#c9973a" /><stop offset="100%" stopColor="#e8b85a" />
@@ -354,20 +406,20 @@ export function PlatformIntel() {
                         </defs>
                       </svg>
                       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-                        <div style={{ fontFamily: 'var(--f-display)', fontSize: 56, fontWeight: 500, lineHeight: 1 }}>{MOCK_REPORT.score}</div>
+                        <div style={{ fontFamily: 'var(--f-display)', fontSize: 56, fontWeight: 500, lineHeight: 1 }}>{report.readinessScore}</div>
                         <div style={{ fontFamily: 'var(--f-mono)', fontSize: 10, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--ink-50)', marginTop: 4 }}>Readiness Score</div>
                       </div>
                     </div>
                   </div>
                   <div>
                     <div className="eyebrow" style={{ marginBottom: 14 }}>&#9672; Your Intelligence Report</div>
-                    <h3 style={{ fontFamily: 'var(--f-display)', fontSize: 28, fontWeight: 400, marginBottom: 10, lineHeight: 1.25 }}>{MOCK_REPORT.headline}</h3>
-                    <p style={{ fontSize: 15, color: 'var(--ink-70)', lineHeight: 1.7, marginBottom: 16 }}>{MOCK_REPORT.subhead}</p>
+                    <h3 style={{ fontFamily: 'var(--f-display)', fontSize: 28, fontWeight: 400, marginBottom: 10, lineHeight: 1.25 }}>{report.headline}</h3>
+                    <p style={{ fontSize: 15, color: 'var(--ink-70)', lineHeight: 1.7, marginBottom: 16 }}>{report.subhead}</p>
                     <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-                      {([['Market Ready', MOCK_REPORT.marketReady], ['Financially Ready', MOCK_REPORT.financiallyReady], ['GTM Ready', MOCK_REPORT.gtmReady]] as [string,string][]).map(([lbl, val]) => (
+                      {([['Market Ready', report.marketReady], ['Financially Ready', report.financialReady], ['GTM Ready', report.gtmReady]] as [string, number][]).map(([lbl, val]) => (
                         <div key={lbl}>
                           <div style={{ fontFamily: 'var(--f-mono)', fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--ink-50)', marginBottom: 4 }}>{lbl}</div>
-                          <div style={{ fontFamily: 'var(--f-display)', fontSize: 22 }}>{val}</div>
+                          <div style={{ fontFamily: 'var(--f-display)', fontSize: 22 }}>{val}/100</div>
                         </div>
                       ))}
                     </div>
@@ -379,17 +431,33 @@ export function PlatformIntel() {
               <div className="dash-card" style={{ marginBottom: 24 }}>
                 <div className="dc-label">&#9672; Top 3 Countries To Expand &mdash; ranked for you</div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginTop: 14 }}>
-                  {MOCK_REPORT.countries.map((c, i) => (
-                    <div key={c.name} style={{ background: i === 0 ? 'linear-gradient(135deg,var(--gold-mist),var(--bg-warm))' : 'var(--bg-warm)', border: `1.5px solid ${i === 0 ? 'var(--gold)' : 'var(--ink-08)'}`, borderRadius: 'var(--r-lg)', padding: 20 }}>
-                      <div style={{ fontSize: 28, marginBottom: 8 }}>{c.flag}</div>
-                      <div style={{ fontFamily: 'var(--f-display)', fontSize: 20, marginBottom: 4 }}>{c.name}</div>
-                      <div style={{ fontFamily: 'var(--f-mono)', fontSize: 11, color: 'var(--gold-deep)', marginBottom: 10 }}>Score: {c.score}/100</div>
-                      <div style={{ fontSize: 12.5, color: 'var(--ink-70)', lineHeight: 1.55 }}>{c.signal}</div>
+                  {report.topCountries.slice(0, 3).map((c, i) => (
+                    <div key={c.code} style={{ background: i === 0 ? 'linear-gradient(135deg,var(--gold-mist),var(--bg-warm))' : 'var(--bg-warm)', border: `1.5px solid ${i === 0 ? 'var(--gold)' : 'var(--ink-08)'}`, borderRadius: 'var(--r-lg)', padding: 20 }}>
+                      {/* Header: flag code + score */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                        <div style={{ fontFamily: 'var(--f-display)', fontSize: 28, lineHeight: 1 }}>{c.code}</div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontFamily: 'var(--f-display)', fontSize: 28, color: i === 0 ? 'var(--gold)' : 'var(--ink)', lineHeight: 1 }}>{c.score}</div>
+                          <div style={{ fontFamily: 'var(--f-mono)', fontSize: 9, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--ink-40)', marginTop: 2 }}>OPP · SCORE</div>
+                        </div>
+                      </div>
+                      {/* Country name */}
+                      <div style={{ fontFamily: 'var(--f-display)', fontSize: 18, marginBottom: 14 }}>{c.name}</div>
+                      {/* Stats */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 12, color: 'var(--ink-70)', marginBottom: 12 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Market size</span><span style={{ fontFamily: 'var(--f-mono)', fontWeight: 600 }}>${c.gdpUsdBn}B</span></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>GDP growth</span><span style={{ fontFamily: 'var(--f-mono)', fontWeight: 600, color: 'var(--gold-deep)' }}>{c.gdpGrowthPct}%</span></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Ease of entry</span><span style={{ fontFamily: 'var(--f-mono)', fontWeight: 600 }}>{c.easeScore}/100</span></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Risk</span><span style={{ fontFamily: 'var(--f-mono)', fontWeight: 600 }}>{c.riskBand}</span></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Tariffs</span><span style={{ fontFamily: 'var(--f-mono)', fontWeight: 600 }}>{c.tariffBand}</span></div>
+                      </div>
+                      {/* Why */}
+                      <div style={{ fontSize: 11.5, color: 'var(--ink-70)', fontStyle: 'italic', borderTop: '1px solid var(--ink-08)', paddingTop: 10 }}>{c.why}</div>
                     </div>
                   ))}
                 </div>
                 <div style={{ fontFamily: 'var(--f-mono)', fontSize: 10.5, letterSpacing: '.08em', color: 'var(--ink-50)', marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--ink-08)' }}>
-                  Sources: World Bank Open Data &middot; UN Comtrade &middot; IMF &middot; Google Trends &middot; OECD
+                  Sources: World Bank Open Data · UN Comtrade · IMF · Google Trends · OECD
                 </div>
               </div>
 
@@ -397,10 +465,10 @@ export function PlatformIntel() {
               <div className="dash-grid-3">
                 <div className="dash-card">
                   <div className="dc-label">&#9672; Revenue Opportunity</div>
-                  <div style={{ fontFamily: 'var(--f-display)', fontSize: 38, color: 'var(--gold)', lineHeight: 1, marginTop: 4 }}>{MOCK_REPORT.revProj}</div>
-                  <div style={{ fontSize: 12, color: 'var(--ink-70)', marginTop: 4 }}>Year-2 projection &middot; top market</div>
+                  <div style={{ fontFamily: 'var(--f-display)', fontSize: 38, color: 'var(--gold)', lineHeight: 1, marginTop: 4 }}>${report.revenueProjectionUsdM.base}M</div>
+                  <div style={{ fontSize: 12, color: 'var(--ink-70)', marginTop: 4 }}>Year-2 projection · top market</div>
                   <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--ink-08)' }}>
-                    {([['Conservative', MOCK_REPORT.revLow], ['Base case', MOCK_REPORT.revBase], ['Aggressive', MOCK_REPORT.revHigh]] as [string,string][]).map(([lbl, val]) => (
+                    {([['Conservative', `$${report.revenueProjectionUsdM.low}M`], ['Base case', `$${report.revenueProjectionUsdM.base}M`], ['Aggressive', `$${report.revenueProjectionUsdM.high}M`]] as [string, string][]).map(([lbl, val]) => (
                       <div key={lbl} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 6 }}>
                         <span style={{ color: 'var(--ink-70)' }}>{lbl}</span>
                         <span style={{ fontFamily: 'var(--f-mono)', fontWeight: 600 }}>{val}</span>
@@ -411,35 +479,72 @@ export function PlatformIntel() {
                 <div className="dash-card">
                   <div className="dc-label">&#9672; Key Risks</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
-                    {MOCK_REPORT.risks.map((r) => (
-                      <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: 'var(--bg-warm)', borderRadius: 'var(--r-sm)' }}>
-                        <span style={{ fontSize: 13 }}>{r.label}</span>
-                        <span style={{ fontFamily: 'var(--f-mono)', fontSize: 11, fontWeight: 600, color: r.color }}>{r.level}</span>
+                    {report.risks.map((r, i) => (
+                      <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 12.5, lineHeight: 1.55 }}>
+                        <span style={{ fontFamily: 'var(--f-mono)', fontSize: 9.5, letterSpacing: '.12em', padding: '3px 8px', borderRadius: 4, background: SEVERITY_COLOR[r.severity] ? `${SEVERITY_COLOR[r.severity]}22` : 'var(--bg-warm)', color: SEVERITY_COLOR[r.severity] ?? 'var(--ink)', fontWeight: 600, flexShrink: 0, whiteSpace: 'nowrap' }}>{r.tag}</span>
+                        <span style={{ color: 'var(--ink-70)' }}>{r.text}</span>
                       </div>
                     ))}
                   </div>
                 </div>
                 <div className="dash-card">
-                  <div className="dc-label">&#9672; Profile Match</div>
-                  <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    {([['Demand fit', 82], ['Trade openness', 76], ['Talent access', 58], ['Regulatory', 64]] as [string,number][]).map(([lbl, val]) => (
-                      <div key={lbl} className="hc-bar-row">
-                        <div className="hc-bar-lbl">{lbl}</div>
-                        <div className="hc-bar-tr"><div className="hc-bar-fl" style={{ width: `${val}%`, background: 'var(--gold)' }} /></div>
-                        <div className="hc-bar-v">{val}</div>
+                  <div className="dc-label">&#9672; Industry Radar</div>
+                  {(() => {
+                    const top = report.topCountries[0];
+                    const fitMult = top?.fitMultiplier ?? 1.0;
+                    const radarData = top ? [
+                      Math.min(100, top.gdpGrowthPct * 12 + 50),
+                      Math.round(top.score * 0.8),
+                      Math.round(top.score * fitMult),
+                      top.easeScore,
+                      Math.round(70 + fitMult * 15),
+                    ] : [60, 60, 60, 60, 60];
+                    return (
+                      <div style={{ height: 180, marginTop: 8 }}>
+                        <Radar
+                          data={{
+                            labels: ['Growth', 'Trade', 'Demand', 'Ease', 'Talent'],
+                            datasets: [{
+                              label: top?.name ?? '',
+                              data: radarData,
+                              backgroundColor: 'rgba(201,151,58,.2)',
+                              borderColor: '#c9973a',
+                              borderWidth: 2,
+                              pointBackgroundColor: '#c9973a',
+                              pointRadius: 3,
+                            }],
+                          }}
+                          options={{
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                              r: {
+                                beginAtZero: true, max: 100,
+                                grid: { color: 'rgba(26,24,20,.08)' },
+                                angleLines: { color: 'rgba(26,24,20,.08)' },
+                                pointLabels: { font: { family: 'Outfit', size: 10 }, color: '#1a1814' },
+                                ticks: { display: false },
+                              },
+                            },
+                          }}
+                        />
                       </div>
-                    ))}
+                    );
+                  })()}
+                  <div style={{ fontSize: 11, color: 'var(--ink-50)', fontFamily: 'var(--f-mono)', marginTop: 8 }}>
+                    Growth · Trade flow · Demand · Talent
                   </div>
                 </div>
               </div>
 
               {/* Next 3 moves */}
               <div className="dash-card" style={{ marginBottom: 24, background: 'var(--bg-dark)', color: 'var(--bg)', border: 'none' }}>
-                <div className="dc-label" style={{ color: 'var(--gold)' }}>&#9672; Your Next 3 Moves &middot; AI-generated from your profile</div>
+                <div className="dc-label" style={{ color: 'var(--gold)' }}>&#9672; Your Next 3 Moves · AI-generated from your profile</div>
                 <div style={{ marginTop: 14 }}>
-                  {MOCK_REPORT.moves.map((m) => (
-                    <div key={m.step} className="intel-move">
-                      <div className="im-step">{m.step}</div>
+                  {report.moves.map((m, i) => (
+                    <div key={i} className="intel-move">
+                      <div className="im-step">{String(i + 1).padStart(2, '0')} · {m.when}</div>
                       <div className="im-title">{m.title}</div>
                       <div className="im-desc">{m.desc}</div>
                     </div>

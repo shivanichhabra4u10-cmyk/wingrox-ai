@@ -1,147 +1,229 @@
 # WinGroX AI — Claude Code Instructions
 
-## Golden Rule: HTML Prototype is the Source of Truth
+## The Two Laws
 
-The file `frontend/public/wingrox-os.html` is the authoritative visual reference for all UI work. Every platform view **must match the HTML prototype pixel-for-pixel**. Do not invent layouts, components, or styles that are not already present in the HTML.
+1. **`frontend/public/wingrox-os.html` is the visual source of truth.** Every view must match it exactly — structure, copy, CSS variables, spacing. Never invent UI.
+2. **No iframes in production.** The `PlatformHtmlViewFrame` iframe approach was a prototype shortcut. All views must be proper React components before shipping.
 
 ---
 
-## UI Alignment Strategy
+## Prompt Conventions
 
-### 1. Always check `wingrox-os.html` first
+Use these exact phrases to trigger work. Claude executes the full workflow without asking for clarification.
 
-Before building or modifying any platform view, read the relevant `#view-<name>` section in `wingrox-os.html`. Extract:
-- Exact HTML structure (tags, class names, nesting)
-- All CSS class names — map them directly, never rename
-- All text labels, copy, and placeholder values
-- All interactive elements and their IDs
-
-### 2. Use `PlatformHtmlViewFrame` for views with full HTML content
-
-`frontend/src/components/platform/PlatformHtmlViewFrame.tsx` fetches `wingrox-os.html`, injects a CSS override to show only `#view-${viewName}`, and renders it in an `<iframe srcDoc>`. This gives an **exact pixel match at zero cost** — no custom React needed.
-
-**Use this approach whenever `#view-<name>` has real content in the HTML.**
-
-Current routes using this approach (do not replace with custom React):
-| Route | viewName |
+| Phrase | What happens |
 |---|---|
-| `/dashboard` | `dashboard` |
-| `/intel` | `intel` |
-| `/match` | `match` |
-| `/hub` | `hub` |
-| `/sim` | `sim` |
+| `view: /[route]` | Full stack: read HTML → build React component → wire to API → TypeScript check |
+| `frontend: /[route]` | React component only (backend already exists) |
+| `backend: /[route]` | NestJS module only (schema → migration → module → wire HTML) |
+| `fix: /[route]` | Debug and fix a specific view's current issues |
 
-To add a new iframe-backed route:
-```tsx
-import { PlatformHtmlViewFrame } from '@/components/platform/PlatformHtmlViewFrame';
-export default function MyPage() {
-  return (
-    <PlatformHtmlViewFrame
-      active="<nav-key>"
-      title="<page title>"
-      loadingText="Loading..."
-      viewName="<view-name>"
-    />
-  );
-}
-```
-Also add `viewName` to the `PlatformViewNameSchema` Zod enum in `PlatformHtmlViewFrame.tsx`.
-
-### 3. Build custom React only for empty iframe stubs
-
-Some views in `wingrox-os.html` are empty `<iframe>` stubs with no content. For these, build a custom React component that **visually replicates the intended design** using the surrounding HTML context, color palette, and UI patterns from the prototype.
-
-Current custom components for stub views:
-| Route | Component | Reason |
-|---|---|---|
-| `/` | `PlatformHome` | Marketing/landing page |
-| `/twin` | `PlatformTwin` | OTP + phase-step flow |
-| `/expansion` | `ExpansionNavigator` | Stub in HTML |
-| `/eco` | `PlatformEco` | Stub in HTML |
-
-### 4. Never diverge from the HTML design
-
-- Do not add UI elements, sections, or panels that are not in `wingrox-os.html`
-- Do not rename CSS classes or change layout structure
-- Do not introduce a UI library (Tailwind, MUI, Chakra) that conflicts with the existing CSS
-- Do not invent data or metrics — use the same placeholder values from the HTML
+**Iteration order for `view:` prompts (do one at a time, confirm before next):**
+1. `view: /dashboard`
+2. `view: /intel`
+3. `view: /match`
+4. `view: /hub`
+5. `view: /sim`
+6. `view: /expansion`
+7. `view: /twin`
+8. `view: /eco`
+9. `view: /` (landing)
 
 ---
 
-## Backend-Per-View Workflow
+## View Workflow — `view: /[route]`
 
-**Trigger phrase:** `"backend: /[route]"` — e.g. `"backend: /dashboard"`
+Execute all steps in order. No skipping.
 
-When you receive this prompt, execute the full process below without asking for clarification.
+### Step 1 — Read the HTML prototype
 
-### Step 1 — Audit the UI
+Open `frontend/public/wingrox-os.html`. Find `#view-[route]`.
 
-Read the view's content to identify every piece of data the UI needs:
-- **iframe views** (`/dashboard`, `/intel`, `/match`, `/hub`, `/sim`): read `#view-<name>` in `frontend/public/wingrox-os.html` — look at every element with an `id`, every `fetch()` call in inline `<script>` tags, every form field, and every data value rendered in the HTML
-- **Custom React views** (`/twin`, `/expansion`, `/eco`): read the component file in `frontend/src/components/platform/`
+Extract exactly:
+- Every HTML tag, class name, nesting level
+- All text copy and placeholder values
+- All `id=` attributes (these are data-binding points)
+- All `fetch()` calls and their request/response shapes
+- All form inputs and their types
 
-Extract:
-1. All form inputs → DTO request fields
-2. All displayed data (metrics, lists, cards) → response fields + DB columns
-3. All existing `fetch()` / API calls already in the HTML → keep those exact URL paths
+If the view is an iframe stub (no content in HTML), read the existing React component and surrounding HTML context for design language.
 
-### Step 2 — Design the data model
+### Step 2 — Build the React component
 
-Add new tables or columns to `backend/prisma/schema.prisma`. Rules:
-- One table per logical entity (e.g. `twin_assessments`, `match_sessions`)
-- Use snake_case for table and column names
-- Always include `id String @id @default(uuid())`, `createdAt DateTime @default(now())`, `updatedAt DateTime @updatedAt`
-- Add `sessionId String?` on assessment tables so anonymous users can retrieve their result
+**File:** `frontend/src/components/platform/Platform[View].tsx`
 
-### Step 3 — Create and apply the migration
+Rules:
+- `'use client'` only if the component has user interaction (forms, sliders, clicks)
+- Pure display components should be Server Components (no directive)
+- Replicate the HTML structure in JSX — same element types, same class hierarchy
+- Map HTML class names to CSS Module classes in `Platform[View].module.css`
+- All CSS variable references (`var(--gold)`, `var(--ink-08)`, etc.) work as-is — they are defined globally in `wingrox-os.html`'s `<style>` block and must be added to `frontend/src/app/globals.css` if not already there
+- No inline styles except where the HTML prototype uses them explicitly
+- Props interface must have a Zod schema
+
+### Step 3 — Add loading and error states
+
+Every component that fetches data must have:
+- A skeleton placeholder that matches the layout (use `background: var(--ink-08); border-radius: var(--r-sm); animation: shimmer 1.5s infinite` on placeholder divs)
+- A silent error fallback (log to console, show last known data or empty state — never crash)
+
+### Step 4 — Wire API calls
+
+- Server Components: use `fetch('/api/...')` directly with `{ cache: 'no-store' }` for live data or `{ next: { revalidate: 60 } }` for semi-static data
+- Client Components: use `useEffect` + `fetch` on mount; store in `useState`; show skeleton while loading
+- All API base URLs are relative (`/api/...`) — Next.js proxies to backend on port 3001 (see `next.config.js`)
+- Pass `assessmentId` from `localStorage.getItem('wg_assessment_id')` where views need personalisation
+
+### Step 5 — TypeScript check
 
 ```bash
-# From backend/
-npx prisma migrate dev --name <migration_name>
-# If DLL lock error on Windows, first run:
-Stop-Process -Name node -Force   # in PowerShell
+cd frontend && npx tsc --noEmit   # must return zero errors
+cd backend  && npx tsc --noEmit   # must return zero errors
 ```
 
-Then regenerate the client: `npx prisma generate`
-
-### Step 4 — Build the NestJS module
-
-Create `backend/src/modules/<view>/` with:
-- `<view>.module.ts` — imports PrismaModule
-- `<view>.controller.ts` — defines routes, uses class-validator decorators
-- `<view>.service.ts` — all business logic, calls PrismaService
-- `dto/<action>.dto.ts` — one DTO per request body, all fields decorated with `class-validator`
-
-**URL convention:** all endpoints under `/api/<view>/...`
-
-Register the module in `backend/src/app.module.ts`.
-
-### Step 5 — Wire the frontend
-
-- **iframe views**: the `wingrox-os.html` JS calls the API directly. Update the inline `<script>` in `wingrox-os.html` to call the correct `/api/<view>/...` endpoint, passing the right payload and rendering the response. Mirror the pattern used in `intelGenerate()` / `intelRenderReport()` for the intel view.
-- **Custom React views**: update the component's `fetch()` call to hit the new endpoint. Update types to match the response shape.
-
-### Step 6 — Verify
-
-1. `npx tsc --noEmit` in `frontend/` — zero errors
-2. Restart backend, call the endpoint with `curl` or describe the test
-3. Confirm DB row is created via Prisma Studio or a SELECT query
+Fix every error before marking the view done.
 
 ---
 
-## Backend Status per View
+## Backend Standards (apply to all modules)
 
-| Route | Backend | DB Table | Notes |
+### DTOs — always use class-validator
+
+```typescript
+import { IsString, IsEmail, IsOptional, IsInt, Min, Max } from 'class-validator';
+
+export class RunMatchDto {
+  @IsString() @IsNotEmpty() company: string;
+  @IsEmail() email: string;
+  @IsOptional() @IsString() notes?: string;
+}
+```
+
+Add `ValidationPipe` globally in `main.ts` (already configured).
+
+### Services — no `any` types
+
+```typescript
+// ✗ wrong
+async getSummary(id: string): Promise<any> { ... }
+
+// ✓ correct
+async getSummary(id: string): Promise<DashboardSummaryDto> { ... }
+```
+
+### HTTP responses — use correct status codes
+
+```typescript
+@Post()               // → 201 Created
+@Get()                // → 200 OK
+throw new NotFoundException()    // → 404
+throw new BadRequestException()  // → 400
+```
+
+### DB queries — select only what you need
+
+```typescript
+// ✗ wrong — fetches entire row
+const a = await this.prisma.expansionAssessment.findUnique({ where: { id } });
+
+// ✓ correct — fetches only needed columns
+const a = await this.prisma.expansionAssessment.findUnique({
+  where: { id },
+  select: { readinessScore: true, cluster: true, topCountries: true },
+});
+```
+
+### Pagination — all list endpoints
+
+```typescript
+async list(page = 1, limit = 20) {
+  const [items, total] = await Promise.all([
+    this.prisma.model.findMany({ skip: (page - 1) * limit, take: limit }),
+    this.prisma.model.count(),
+  ]);
+  return { items, total, page, limit };
+}
+```
+
+---
+
+## Frontend Standards
+
+### Component file structure
+
+```
+frontend/src/
+  app/[route]/
+    page.tsx              ← thin wrapper: import + return one component, no logic
+  components/platform/
+    Platform[View].tsx    ← the actual component
+    Platform[View].module.css  ← view-specific CSS (extends shared vars)
+```
+
+### CSS — source from HTML prototype
+
+Before writing any CSS:
+1. Read `#view-[name]` in `wingrox-os.html`
+2. Copy the exact class names used in that view
+3. Create matching rules in `Platform[View].module.css`
+4. CSS variables (`--gold`, `--ink-08`, etc.) need no redefinition — they're global
+
+Never use Tailwind, MUI, Chakra, or any external CSS library.
+
+### Data fetching pattern — Client Component
+
+```typescript
+const [data, setData] = useState<ResponseType | null>(null);
+const [loading, setLoading] = useState(true);
+
+useEffect(() => {
+  fetch('/api/[view]/[endpoint]')
+    .then(r => r.json())
+    .then(res => { if (res.success) setData(res.data); })
+    .catch(() => {}) // silent — show stale/default data
+    .finally(() => setLoading(false));
+}, []);
+
+if (loading) return <SkeletonLayout />;
+```
+
+### Skeleton pattern
+
+```tsx
+const Skeleton = ({ w = '100%', h = 20 }: { w?: string; h?: number }) => (
+  <div style={{ width: w, height: h, background: 'var(--ink-08)', borderRadius: 'var(--r-sm)', animation: 'shimmer 1.5s infinite' }} />
+);
+```
+
+---
+
+## Backend Status
+
+| Route | Backend | DB Tables | Key Endpoints |
 |---|---|---|---|
-| `/` | — | — | Static marketing, no backend needed |
-| `/dashboard` | ✅ done | `expansion_assessments` (read) | `GET /api/dashboard/overview?assessmentId=` |
-| `/twin` | ✅ done | `twin_assessments` | OTP + progress + complete via `TwinAssessmentModule` |
-| `/expansion` | ✅ done | `expansion_assessments` | Full readiness assessment API |
-| `/intel` | ✅ done | `expansion_assessments` | Reuses `/api/expansion/assessment` |
-| `/match` | ✅ done | `match_sessions`, `match_discovery_calls` | `POST /api/match/run`, `POST /api/match/book-call` |
-| `/hub` | ✅ done | `hub_saves` | `GET /api/hub/feed`, `POST /api/hub/save`, `GET /api/hub/saves` |
-| `/sim` | ✅ done | `sim_runs`, `sim_unlocks` | `POST /api/sim/run`, `GET /api/sim/last`, `POST /api/sim/unlock` |
-| `/eco` | ✅ done | `eco_applications` | `POST /api/eco/apply`, `GET /api/eco/status`, `GET /api/eco/stats` |
+| `/` | — | — | none |
+| `/dashboard` | ✅ | `expansion_assessments` (read) | `GET /api/dashboard/overview?assessmentId=` |
+| `/twin` | ✅ | `twin_assessments` | `POST /api/twin-assessment/otp/send`, `/verify`, `/progress`, `/complete` |
+| `/expansion` | ✅ | `expansion_assessments`, `expansion_countries` | `POST /api/expansion/assessment` |
+| `/intel` | ✅ | `expansion_assessments` | Reuses expansion assessment endpoint |
+| `/match` | ✅ | `match_sessions`, `match_discovery_calls` | `POST /api/match/run`, `POST /api/match/book-call` |
+| `/hub` | ✅ | `hub_saves` | `GET /api/hub/feed`, `POST /api/hub/save` |
+| `/sim` | ✅ | `sim_runs`, `sim_unlocks` | `POST /api/sim/run`, `GET /api/sim/last`, `POST /api/sim/unlock` |
+| `/eco` | ✅ | `eco_applications` | `POST /api/eco/apply`, `GET /api/eco/status`, `GET /api/eco/stats` |
+
+## Frontend Status
+
+| Route | Approach | Status | Notes |
+|---|---|---|---|
+| `/` | Custom (`PlatformHome`) | ✅ | Static marketing |
+| `/dashboard` | Custom (`PlatformDashboard`) | ✅ | API-wired, score ring animation |
+| `/twin` | Custom (`PlatformTwin`) | ✅ | OTP + assessment flow |
+| `/expansion` | Custom (`ExpansionNavigator`) | ✅ | Full readiness flow |
+| `/intel` | Custom (`PlatformIntel`) | ✅ | API-wired, score ring, async generate |
+| `/match` | Custom (`PlatformMatch`) | ✅ | 4-step stepper, async match, discovery call modal |
+| `/hub` | Custom (`PlatformHub`) | ✅ | Sidebar filters, personalised feed, save toggle |
+| `/sim` | Custom (`PlatformSim`) | ✅ | 6-tab simulator, live sliders, Chart.js, paywall gate |
+| `/eco` | Custom (`PlatformEco`) | ✅ | Application form |
 
 ---
 
@@ -149,69 +231,28 @@ Register the module in `backend/src/app.module.ts`.
 
 | Layer | Technology |
 |---|---|
-| Frontend | Next.js 15 (App Router), React 19, TypeScript |
-| Styling | CSS Modules (`*.module.css`) + inline classes from HTML prototype |
-| Validation | Zod (all component props and API payloads) |
-| Backend | NestJS, global prefix `api`, port 3001 |
+| Frontend | Next.js 15 (App Router), React 19, TypeScript strict |
+| Styling | CSS Modules + CSS variables from `wingrox-os.html` |
+| Validation | Zod (component props) + class-validator (API DTOs) |
+| Backend | NestJS, global prefix `/api`, port 3001 |
 | ORM | Prisma + PostgreSQL (`wingrox_db`) |
 | Auth | JWT (access + refresh tokens) |
 
----
-
-## Project Structure
-
-```
-frontend/
-  public/wingrox-os.html          ← HTML prototype (source of truth)
-  src/
-    app/                          ← Next.js route pages (thin wrappers only)
-    components/platform/          ← All platform UI components
-      PlatformHtmlViewFrame.tsx   ← iframe-based exact HTML renderer
-      PlatformNav.tsx             ← Top navigation bar
-      Platform*.tsx               ← Per-view custom components (stubs only)
-
-backend/
-  src/modules/                    ← NestJS feature modules
-    expansion/                    ← ✅ done — readiness assessment
-  prisma/schema.prisma            ← Database schema
-  prisma/migrations/              ← Applied migrations
-```
-
----
-
-## Code Conventions
-
-- **Page files are thin**: `app/*/page.tsx` files only import and return one component — no logic
-- **Props validated with Zod**: every component's props object must have a Zod schema
-- **No comments on obvious code**: only add comments for non-obvious constraints or workarounds
-- **No extra abstractions**: solve the problem directly, do not over-engineer
-- **TypeScript strict**: run `npx tsc --noEmit` in `frontend/` after any change to verify zero errors
-- **After Prisma schema changes**: kill the backend Node process first (`Stop-Process -Name node -Force` in PowerShell), then run `npx prisma generate` and `npx prisma migrate deploy` from `backend/`
-
----
-
-## Development Servers
+## Development
 
 ```bash
-# Frontend (port 3000)
-cd frontend && npm run dev
+cd frontend && npm run dev    # port 3000
+cd backend  && npm run dev    # port 3001
 
-# Backend (port 3001)
-cd backend && npm run dev
+# After Prisma schema change (kill node first):
+Stop-Process -Name node -Force
+cd backend && npx prisma migrate dev --name [name] --skip-seed
 ```
 
----
+## Performance Targets (production)
 
-## View Inventory (all 9 views)
-
-| Route | HTML view ID | UI Approach | Backend |
-|---|---|---|---|
-| `/` | — | Custom (`PlatformHome`) | none |
-| `/dashboard` | `#view-dashboard` | `PlatformHtmlViewFrame` | ✅ done |
-| `/twin` | stub | Custom (`PlatformTwin`) | ✅ done |
-| `/expansion` | stub | Custom (`ExpansionNavigator`) | ✅ done |
-| `/intel` | `#view-intel` | `PlatformHtmlViewFrame` | ✅ done |
-| `/match` | `#view-match` | `PlatformHtmlViewFrame` | ✅ done |
-| `/hub` | `#view-hub` | `PlatformHtmlViewFrame` | ✅ done |
-| `/sim` | `#view-sim` | `PlatformHtmlViewFrame` | ✅ done |
-| `/eco` | stub | Custom (`PlatformEco`) | ✅ done |
+- API response p95: < 200ms
+- Frontend skeleton visible: < 100ms (instant — no API wait)
+- Data populated: < 500ms
+- No N+1 queries — use Prisma `select` + `include`, not separate calls
+- No blocking serial fetches — use `Promise.all` for parallel queries
