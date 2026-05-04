@@ -23733,5 +23733,19 @@ function gcUpdateProgress() {
   window.WINGROX_API_BASE = 'https://wingrox-ai.onrender.com/api';
 </script>
 <script src="wingrox-api-adapter.js"></script>
+<button onclick="testAPI()">Test API</button>
+
+<script>
+function testAPI() {
+  console.log("Clicked");
+
+  fetch(window.WINGROX_API_BASE + "/health")
+    .then(res => res.json())
+    .then(data => {
+      console.log("Response:", data);
+    })
+    .catch(err => console.error(err));
+}
+</script>
 </body>
 </html>
