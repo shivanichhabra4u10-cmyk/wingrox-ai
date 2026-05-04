@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WinGroX Digital Twin · System Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F5F2EB;
+    --surface: #FAF8F2;
+    --ink: #1A1814;
+    --ink-70: rgba(26,24,20,0.7);
+    --ink-50: rgba(26,24,20,0.5);
+    --ink-08: rgba(26,24,20,0.08);
+    --gold: #C9973A;
+    --gold-deep: #A07A2C;
+    --gold-light: #E5B64A;
+    --sage: #6B8E5A;
+    --red: #C26A62;
+    --blue: #5A7B9C;
+    --purple: #8B7BA8;
+    --f-display: 'Playfair Display', serif;
+    --f-body: 'Outfit', system-ui, sans-serif;
+    --f-mono: 'JetBrains Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--f-body);
+    background: var(--cream);
+    color: var(--ink);
+    padding: 48px 24px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1280px; margin: 0 auto; }
+  
+  .head {
+    text-align: center;
+    margin-bottom: 64px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--ink-08);
+  }
+  .eyebrow {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    color: var(--gold-deep);
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-family: var(--f-display);
+    font-size: 56px;
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+  }
+  h1 em { color: var(--gold); font-style: italic; }
+  .subtitle { font-size: 17px; color: var(--ink-70); max-width: 720px; margin: 0 auto; }
+  
+  .section {
+    margin-bottom: 80px;
+  }
+  .section-eb {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    color: var(--gold-deep);
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  h2 {
+    font-family: var(--f-display);
+    font-size: 36px;
+    font-weight: 400;
+    margin-bottom: 12px;
+  }
+  h2 em { color: var(--gold); font-style: italic; }
+  .section-sub { font-size: 16px; color: var(--ink-70); margin-bottom: 32px; max-width: 720px; }
+  
+  /* Layered architecture diagram */
+  .arch {
+    border: 1px solid var(--ink-08);
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .layer {
+    padding: 32px;
+    border-bottom: 1px solid var(--ink-08);
+    position: relative;
+  }
+  .layer:last-child { border-bottom: none; }
+  .layer-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .layer-num {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    color: var(--gold-deep);
+    font-weight: 700;
+  }
+  .layer-title {
+    font-family: var(--f-display);
+    font-size: 22px;
+    font-style: italic;
+  }
+  .layer-tag {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    background: var(--ink);
+    color: #fff;
+    padding: 5px 11px;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+  
+  .layer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+  }
+  .box {
+    background: #fff;
+    border: 1px solid var(--ink-08);
+    border-radius: 10px;
+    padding: 16px 18px;
+    transition: 0.2s;
+    border-left: 3px solid var(--gold);
+  }
+  .box:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(26,24,20,0.06); }
+  .box.sage { border-left-color: var(--sage); }
+  .box.red { border-left-color: var(--red); }
+  .box.blue { border-left-color: var(--blue); }
+  .box.purple { border-left-color: var(--purple); }
+  .box-name {
+    font-family: var(--f-display);
+    font-size: 16px;
+    font-style: italic;
+    margin-bottom: 4px;
+  }
+  .box-desc { font-size: 12.5px; color: var(--ink-70); line-height: 1.5; }
+  .box-meta {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    color: var(--ink-50);
+    margin-top: 6px;
+    letter-spacing: 0.06em;
+  }
+  
+  /* Flow arrow between layers */
+  .flow-arrow {
+    text-align: center;
+    padding: 14px 0;
+    color: var(--gold);
+    font-size: 24px;
+    background: var(--cream);
+    border-top: 1px dashed var(--gold);
+    border-bottom: 1px dashed var(--gold);
+  }
+  .flow-arrow span {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    color: var(--gold-deep);
+    font-weight: 700;
+    display: block;
+    margin-top: 4px;
+  }
+  
+  /* Stack visualization */
+  .stack-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 32px;
+  }
+  .stack-card {
+    background: #fff;
+    border: 1px solid var(--ink-08);
+    border-radius: 14px;
+    padding: 28px;
+    border-top: 4px solid var(--gold);
+  }
+  .stack-card.right { border-top-color: var(--blue); }
+  .stack-card h3 {
+    font-family: var(--f-display);
+    font-size: 22px;
+    margin-bottom: 4px;
+  }
+  .stack-card .tag {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--gold-deep);
+    font-weight: 700;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+  .stack-card.right .tag { color: var(--blue); }
+  .stack-list {
+    list-style: none;
+    margin-top: 14px;
+  }
+  .stack-list li {
+    padding: 8px 0;
+    font-size: 13.5px;
+    border-bottom: 1px solid var(--ink-08);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .stack-list li:last-child { border-bottom: none; }
+  .stack-list strong { font-weight: 600; }
+  .stack-list em {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    color: var(--ink-50);
+    font-style: normal;
+    letter-spacing: 0.04em;
+  }
+  
+  /* Data flow */
+  .flow-steps {
+    counter-reset: step;
+  }
+  .flow-step {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 24px;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--ink-08);
+    counter-increment: step;
+  }
+  .flow-step:last-child { border-bottom: none; }
+  .flow-step::before {
+    content: counter(step, decimal-leading-zero);
+    font-family: var(--f-display);
+    font-size: 48px;
+    font-style: italic;
+    color: var(--gold);
+    line-height: 1;
+    grid-column: 1;
+  }
+  .flow-step-content { grid-column: 2; }
+  .flow-step h4 {
+    font-family: var(--f-display);
+    font-size: 19px;
+    margin-bottom: 4px;
+  }
+  .flow-step p { color: var(--ink-70); font-size: 14px; line-height: 1.6; }
+  .flow-step code {
+    background: var(--cream);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: var(--f-mono);
+    font-size: 12px;
+    color: var(--ink);
+  }
+  
+  /* Endpoint table */
+  .endpoint-table {
+    border-collapse: collapse;
+    width: 100%;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(26,24,20,0.04);
+  }
+  .endpoint-table th {
+    text-align: left;
+    padding: 14px 18px;
+    background: var(--ink);
+    color: #fff;
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    font-weight: 700;
+  }
+  .endpoint-table td {
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--ink-08);
+    font-size: 13px;
+  }
+  .endpoint-table tbody tr:last-child td { border-bottom: none; }
+  .endpoint-table .method {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gold-deep);
+    letter-spacing: 0.08em;
+  }
+  .endpoint-table .path {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    color: var(--ink);
+  }
+  
+  .footer {
+    margin-top: 80px;
+    padding-top: 32px;
+    border-top: 1px solid var(--ink-08);
+    text-align: center;
+    color: var(--ink-50);
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="head">
+  <div class="eyebrow">◆ TECH SOLUTION · SYSTEM ARCHITECTURE</div>
+  <h1>WinGroX Digital Twin <em>—</em> end-to-end stack.</h1>
+  <p class="subtitle">A single-file frontend, a Node + Postgres backend, and the integration glue between them. Built for speed of iteration today and predictable scale tomorrow.</p>
+</div>
+
+<div class="section">
+  <div class="section-eb">SECTION 01 · LAYERED ARCHITECTURE</div>
+  <h2>Five layers. Each with one <em>job</em>.</h2>
+  <p class="section-sub">Data flows top-down on writes (user input → persistence) and bottom-up on reads (database → UI hydration). Each layer is independently deployable and replaceable.</p>
+
+  <div class="arch">
+    
+    <div class="layer">
+      <div class="layer-head">
+        <div>
+          <div class="layer-num">LAYER 01 · CLIENT</div>
+          <div class="layer-title">User browser</div>
+        </div>
+        <div class="layer-tag">SINGLE FILE · 2.3 MB</div>
+      </div>
+      <div class="layer-grid">
+        <div class="box">
+          <div class="box-name">Quant Diagnostic</div>
+          <div class="box-desc">7 stages, 100 questions across 17 modules, 4 strategic engines, master score, 8-section report, 32-slide PPTX export.</div>
+          <div class="box-meta">wingrox-os.html · 23,713 lines</div>
+        </div>
+        <div class="box blue">
+          <div class="box-name">Guided Chatbot</div>
+          <div class="box-desc">13 conversational sections, ~45 questions, confidence layer, smart follow-ups, document uploads, mini-checkpoints.</div>
+          <div class="box-meta">guided_engine.js · embedded</div>
+        </div>
+        <div class="box sage">
+          <div class="box-name">API Adapter</div>
+          <div class="box-desc">Drop-in script that wraps the engine functions to add auth, persistence, file upload, and lead capture without touching UI code.</div>
+          <div class="box-meta">wingrox-api-adapter.js · 12 KB</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="flow-arrow">↓<span>HTTPS · JSON · JWT BEARER TOKEN</span></div>
+    
+    <div class="layer">
+      <div class="layer-head">
+        <div>
+          <div class="layer-num">LAYER 02 · API GATEWAY</div>
+          <div class="layer-title">Express + middleware</div>
+        </div>
+        <div class="layer-tag">NODE 18 · ESM</div>
+      </div>
+      <div class="layer-grid">
+        <div class="box">
+          <div class="box-name">Helmet</div>
+          <div class="box-desc">CSP, HSTS, X-Frame-Options, X-Content-Type-Options. Default-deny security headers.</div>
+        </div>
+        <div class="box">
+          <div class="box-name">CORS</div>
+          <div class="box-desc">Allowlist via FRONTEND_URL env var. Refuses cross-origin requests from unknown domains.</div>
+        </div>
+        <div class="box">
+          <div class="box-name">Rate Limit</div>
+          <div class="box-desc">10 auth/15min · 200 API/15min per IP. Prevents brute-force and abuse.</div>
+        </div>
+        <div class="box">
+          <div class="box-name">JWT Verify</div>
+          <div class="box-desc">requireAuth middleware decodes Bearer token, attaches req.user. Fresh DB lookup ensures tier changes propagate.</div>
+        </div>
+        <div class="box">
+          <div class="box-name">Zod Validate</div>
+          <div class="box-desc">Schema-validate every request body before it reaches a route handler. 400 on invalid shape.</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="flow-arrow">↓<span>VALIDATED · AUTHENTICATED REQUESTS</span></div>
+    
+    <div class="layer">
+      <div class="layer-head">
+        <div>
+          <div class="layer-num">LAYER 03 · ROUTES</div>
+          <div class="layer-title">Business logic</div>
+        </div>
+        <div class="layer-tag">14 ENDPOINTS</div>
+      </div>
+      <div class="layer-grid">
+        <div class="box">
+          <div class="box-name">Auth routes</div>
+          <div class="box-desc">Signup, login, /me. Bcrypt cost factor 12. JWT with 30-day expiry by default.</div>
+          <div class="box-meta">routes/auth.js</div>
+        </div>
+        <div class="box">
+          <div class="box-name">Session routes</div>
+          <div class="box-desc">Diagnostic CRUD. Tier-gated creation. Debounced auto-save via PATCH. Profile + answers + results all stored as JSON.</div>
+          <div class="box-meta">routes/sessions.js</div>
+        </div>
+        <div class="box">
+          <div class="box-name">File routes</div>
+          <div class="box-desc">Multipart upload via Multer. MIME allowlist (PDF/PPTX/DOCX/XLSX). 20MB cap. Local disk for dev, S3-ready for prod.</div>
+          <div class="box-meta">routes/files.js</div>
+        </div>
+        <div class="box sage">
+          <div class="box-name">Lead routes</div>
+          <div class="box-desc">Captures every advisor CTA + chatbot submission. Optional auth. Slack webhook fire-and-forget.</div>
+          <div class="box-meta">routes/leads.js</div>
+        </div>
+        <div class="box red">
+          <div class="box-name">Payment routes</div>
+          <div class="box-desc">Stripe Checkout session creation. Customer creation + lookup. Pre-records pending payment row.</div>
+          <div class="box-meta">routes/payments.js</div>
+        </div>
+        <div class="box red">
+          <div class="box-name">Stripe webhook</div>
+          <div class="box-desc">Signature-verified raw-body handler. Updates payment + flips user tier on checkout.session.completed.</div>
+          <div class="box-meta">routes/webhooks.js</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="flow-arrow">↓<span>PRISMA ORM · TYPE-SAFE QUERIES</span></div>
+    
+    <div class="layer">
+      <div class="layer-head">
+        <div>
+          <div class="layer-num">LAYER 04 · PERSISTENCE</div>
+          <div class="layer-title">PostgreSQL</div>
+        </div>
+        <div class="layer-tag">5 TABLES · JSON COLUMNS</div>
+      </div>
+      <div class="layer-grid">
+        <div class="box">
+          <div class="box-name">users</div>
+          <div class="box-desc">id, email, passwordHash, name, tier (NUCLEUS/VANGUARD/APEX), stripeCustomerId, timestamps.</div>
+        </div>
+        <div class="box blue">
+          <div class="box-name">diagnostic_sessions</div>
+          <div class="box-desc">profile (jsonb), answers (jsonb), results (jsonb). Tier-locked. Status: IN_PROGRESS / COMPLETED / ABANDONED.</div>
+        </div>
+        <div class="box">
+          <div class="box-name">uploaded_files</div>
+          <div class="box-desc">filename, mimeType, sizeBytes, storageKey, storageDriver. Cascades on user delete.</div>
+        </div>
+        <div class="box sage">
+          <div class="box-name">advisor_leads</div>
+          <div class="box-desc">context, email, message, masterScore snapshot, tier snapshot. Status: NEW / CONTACTED / CONVERTED / CLOSED.</div>
+        </div>
+        <div class="box red">
+          <div class="box-name">payments</div>
+          <div class="box-desc">stripePaymentIntentId, amountCents, tier, status. Idempotent updates from webhook.</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="flow-arrow">↓<span>ASYNC SIDE EFFECTS</span></div>
+    
+    <div class="layer">
+      <div class="layer-head">
+        <div>
+          <div class="layer-num">LAYER 05 · EXTERNAL SERVICES</div>
+          <div class="layer-title">Integrations</div>
+        </div>
+        <div class="layer-tag">3 SERVICES</div>
+      </div>
+      <div class="layer-grid">
+        <div class="box red">
+          <div class="box-name">Stripe</div>
+          <div class="box-desc">Checkout sessions, webhooks, customer profiles. Test mode for QA, live mode for production. PCI-compliant.</div>
+        </div>
+        <div class="box sage">
+          <div class="box-name">Slack</div>
+          <div class="box-desc">Incoming webhook for instant lead notifications. Channel-based routing for advisor team.</div>
+        </div>
+        <div class="box blue">
+          <div class="box-name">S3 / R2 / Disk</div>
+          <div class="box-desc">File storage. Local for dev, Cloudflare R2 recommended for production (cheaper than S3, no egress fees).</div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-eb">SECTION 02 · TECHNOLOGY STACK</div>
+  <h2>Conservative choices. <em>Built to last.</em></h2>
+  <p class="section-sub">Every dependency was chosen for maturity over novelty. Express not Fastify. Postgres not MongoDB. Vanilla JS not React. Each pick is one less thing to debug at 2 AM.</p>
+  
+  <div class="stack-section">
+    <div class="stack-card">
+      <div class="tag">FRONTEND STACK</div>
+      <h3>Vanilla, fast, single-file</h3>
+      <ul class="stack-list">
+        <li><strong>HTML5 + CSS3</strong> <em>no framework</em></li>
+        <li><strong>Vanilla JavaScript</strong> <em>ES2020+</em></li>
+        <li><strong>PptxGenJS</strong> <em>3.12 · CDN</em></li>
+        <li><strong>Playfair Display</strong> <em>typography</em></li>
+        <li><strong>Outfit + JetBrains Mono</strong> <em>body + mono</em></li>
+        <li><strong>SVG charts</strong> <em>hand-rolled</em></li>
+        <li><strong>localStorage</strong> <em>JWT storage</em></li>
+      </ul>
+    </div>
+    
+    <div class="stack-card right">
+      <div class="tag">BACKEND STACK</div>
+      <h3>Node 18 + Postgres + Stripe</h3>
+      <ul class="stack-list">
+        <li><strong>Node.js</strong> <em>18+ · ESM</em></li>
+        <li><strong>Express</strong> <em>4.21</em></li>
+        <li><strong>Prisma</strong> <em>5.22 · type-safe ORM</em></li>
+        <li><strong>PostgreSQL</strong> <em>16 · jsonb</em></li>
+        <li><strong>Stripe</strong> <em>17 · webhooks</em></li>
+        <li><strong>Zod</strong> <em>request validation</em></li>
+        <li><strong>Multer</strong> <em>multipart upload</em></li>
+        <li><strong>Helmet + rate-limit</strong> <em>security</em></li>
+        <li><strong>Bcrypt</strong> <em>cost factor 12</em></li>
+        <li><strong>JWT</strong> <em>30-day expiry</em></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-eb">SECTION 03 · API ENDPOINTS</div>
+  <h2>14 endpoints. <em>One responsibility</em> each.</h2>
+  <p class="section-sub">REST conventions. JSON in, JSON out. Bearer-token auth where required.</p>
+  
+  <table class="endpoint-table">
+    <thead>
+      <tr><th style="width:80px">METHOD</th><th>PATH</th><th>PURPOSE</th><th style="width:100px">AUTH</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="method">POST</td><td class="path">/api/auth/signup</td><td>Create user, return JWT</td><td>—</td></tr>
+      <tr><td class="method">POST</td><td class="path">/api/auth/login</td><td>Verify credentials, return JWT</td><td>—</td></tr>
+      <tr><td class="method">GET</td><td class="path">/api/auth/me</td><td>Return current user object</td><td>Required</td></tr>
+      <tr><td class="method">POST</td><td class="path">/api/sessions</td><td>Start new diagnostic session</td><td>Required</td></tr>
+      <tr><td class="method">GET</td><td class="path">/api/sessions</td><td>List user's sessions</td><td>Required</td></tr>
+      <tr><td class="method">GET</td><td class="path">/api/sessions/:id</td><td>Full session detail + files</td><td>Required</td></tr>
+      <tr><td class="method">PATCH</td><td class="path">/api/sessions/:id</td><td>Save profile or answers (debounced)</td><td>Required</td></tr>
+      <tr><td class="method">POST</td><td class="path">/api/sessions/:id/complete</td><td>Finalize with computed results</td><td>Required</td></tr>
+      <tr><td class="method">DELETE</td><td class="path">/api/sessions/:id</td><td>Soft-delete (mark abandoned)</td><td>Required</td></tr>
+      <tr><td class="method">POST</td><td class="path">/api/files</td><td>Multipart upload (PDF/PPTX/DOCX/XLSX)</td><td>Required</td></tr>
+      <tr><td class="method">GET</td><td class="path">/api/files</td><td>List user's files</td><td>Required</td></tr>
+      <tr><td class="method">DELETE</td><td class="path">/api/files/:id</td><td>Delete file from storage + DB</td><td>Required</td></tr>
+      <tr><td class="method">POST</td><td class="path">/api/leads</td><td>Capture advisor lead + Slack ping</td><td>Optional</td></tr>
+      <tr><td class="method">POST</td><td class="path">/api/payments/checkout</td><td>Create Stripe Checkout session</td><td>Required</td></tr>
+      <tr><td class="method">POST</td><td class="path">/api/webhooks/stripe</td><td>Stripe webhook → tier upgrade</td><td>Stripe sig</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="section">
+  <div class="section-eb">SECTION 04 · DATA FLOW</div>
+  <h2>What happens when a user <em>answers a question</em>.</h2>
+  <p class="section-sub">From click to durable storage in 6 steps. Total user-perceived latency: 0ms (UI is optimistic). Total time to durability: ~800ms-1.5s.</p>
+  
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="flow-step-content">
+        <h4>User clicks an option</h4>
+        <p>In any of the 100 quantitative questions, user taps one of the answer buttons. UI button gets a gold border, ready state changes.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-content">
+        <h4>State updates instantly</h4>
+        <p><code>dtAnswer1Q(qId, optIdx)</code> fires. <code>DT_STATE.answers[qId] = optIdx</code> in memory. Live master score recalculates in the header.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-content">
+        <h4>Auto-advance after 250ms</h4>
+        <p>Next question slides in. Module gating logic checks if current module is complete to enable Continue button.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-content">
+        <h4>Adapter queues a save</h4>
+        <p>API adapter wraps <code>dtAnswer1Q</code> and calls <code>wingroxSession.queueSave({answers: {[qId]: optIdx}})</code>. Save coalesces into a single batched request after 800ms of inactivity.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-content">
+        <h4>PATCH request fires</h4>
+        <p><code>PATCH /api/sessions/:id</code> with batched answers. JWT verified. Session ownership checked. Zod validates that answer values are integers between 0 and 10.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-content">
+        <h4>Postgres write</h4>
+        <p>Prisma merges new answers into the existing <code>answers</code> jsonb column. Single row update. <code>updatedAt</code> bumped. Response returns updated session to client (which discards it — adapter only cares about success/failure).</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-eb">SECTION 05 · DEPLOYMENT TOPOLOGY</div>
+  <h2>Three platforms. <em>Five DNS records</em>.</h2>
+  <p class="section-sub">Recommended production setup. Total cost ~$5-15/month for first 1000 users. Scales linearly to $100/month at 10k users.</p>
+  
+  <table class="endpoint-table">
+    <thead>
+      <tr><th style="width:160px">COMPONENT</th><th>PLATFORM</th><th>DNS</th><th style="width:120px">COST</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Frontend</strong></td><td>Vercel (or Netlify)</td><td class="path">app.wingrox.ai → cname.vercel-dns.com</td><td class="path">Free</td></tr>
+      <tr><td><strong>Backend API</strong></td><td>Railway (Node service)</td><td class="path">api.wingrox.ai → *.up.railway.app</td><td class="path">$5/mo</td></tr>
+      <tr><td><strong>Database</strong></td><td>Railway Postgres add-on</td><td class="path">internal · not exposed</td><td class="path">included</td></tr>
+      <tr><td><strong>File storage</strong></td><td>Cloudflare R2</td><td class="path">files.wingrox.ai → R2 bucket</td><td class="path">$0-5/mo</td></tr>
+      <tr><td><strong>Domain</strong></td><td>Cloudflare Registrar</td><td class="path">wingrox.ai (root)</td><td class="path">$12/yr</td></tr>
+      <tr><td><strong>Payments</strong></td><td>Stripe</td><td class="path">webhook → api.wingrox.ai/api/webhooks/stripe</td><td class="path">2.9% + ₹3/txn</td></tr>
+      <tr><td><strong>Notifications</strong></td><td>Slack incoming webhook</td><td class="path">hooks.slack.com → #wingrox-leads</td><td class="path">Free</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="footer">
+  WinGroX Digital Twin · Tech Solution v3 · 4 May 2026<br>
+  Refer to <strong>TECH_SOLUTION.md</strong> for complete details and <strong>DEPLOYMENT_RUNBOOK.md</strong> for step-by-step setup.
+</div>
+
+</div>
+</body>
+</html>

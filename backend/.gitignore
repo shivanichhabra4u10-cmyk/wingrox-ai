@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.local
+.env.*.local
+uploads/
+*.log
+.DS_Store
+dist/
+build/
+.vscode/
+.idea/
+prisma/migrations/
