@@ -242,35 +242,73 @@
       }
     };
     
-    // 3. Wrap dtBeginDiagnostic to create a backend session first
+    // 3. Wrap dtBeginDiagnostic to create a backend session first (only if none exists)
     const origBegin = window.dtBeginDiagnostic;
     window.dtBeginDiagnostic = async function() {
       // Run original validation/state setup
       origBegin();
       
-      // Create backend session if user is logged in
-      if (getToken() && window.DT_STATE?.tier) {
+      // Create backend session only if logged in and no active session already
+      if (getToken() && window.DT_STATE?.tier && !getSessionId()) {
         try {
           const { files, ...profileToSave } = window.DT_STATE.profile || {};
           await window.wingroxSession.create(window.DT_STATE.tier, profileToSave);
         } catch (err) {
           console.warn('Could not create backend session:', err.message);
-          // UI still works — user just won't have persistence
         }
       }
     };
     
-    // 4. Wrap dtFinishDiagnostic to mark session complete
+    // 4. Wrap dtFinishDiagnostic to mark session complete with user feedback
     const origFinish = window.dtFinishDiagnostic;
-    window.dtFinishDiagnostic = async function() {
-      origFinish();
-      // If we have a session and results, persist completion
-      if (getSessionId() && getToken() && window.DT_STATE?.results) {
-        try {
-          await window.wingroxSession.complete(window.DT_STATE.results);
-        } catch (err) {
-          console.warn('Could not mark session complete:', err.message);
+
+    async function attemptSave() {
+      const banner = document.getElementById('dt-save-banner');
+      if (banner) { banner.className = 'dt-save-banner dt-save-saving'; banner.innerHTML = '⏳ Saving diagnostic to your account…'; }
+      try {
+        await window.wingroxSession.complete(window.DT_STATE.results);
+        if (banner) { banner.className = 'dt-save-banner dt-save-ok'; banner.innerHTML = '✓ Diagnostic saved to your account.'; setTimeout(() => { if (banner) banner.style.display = 'none'; }, 4000); }
+        if (window.dtToast) window.dtToast('✓ Diagnostic saved to your account.');
+      } catch (err) {
+        console.warn('Could not save session:', err.message);
+        if (banner) {
+          banner.className = 'dt-save-banner dt-save-err';
+          banner.textContent = `⚠ Save failed: ${err.message}. Please check your connection and try again later.`;
         }
+        if (window.dtToast) window.dtToast('⚠ Save failed — check your connection.');
+      }
+    }
+    window.attemptSave = attemptSave;
+
+    window.dtFinishDiagnostic = async function() {
+      origFinish(); // navigates to report and sets DT_STATE.results synchronously via dtRenderReport
+
+      if (!getSessionId() || !getToken()) return; // not logged in — silent
+
+      // Inject a save-status banner at the top of the report content
+      await new Promise(r => setTimeout(r, 120)); // wait for dtRenderReport to finish painting
+      const reportContent = document.getElementById('dt-report-content');
+      if (reportContent && !document.getElementById('dt-save-banner')) {
+        if (!document.getElementById('dt-save-banner-styles')) {
+          const s = document.createElement('style');
+          s.id = 'dt-save-banner-styles';
+          s.textContent = [
+            '.dt-save-banner{padding:12px 20px;border-radius:var(--r-sm);font-family:var(--f-mono);font-size:12px;font-weight:600;letter-spacing:0.04em;margin-bottom:20px;transition:all .3s}',
+            '.dt-save-saving{background:#FFF9EC;color:#8A6A1A;border:1px solid #E8C96A}',
+            '.dt-save-ok{background:#EFF9F0;color:#2E7D32;border:1px solid #81C784}',
+            '.dt-save-err{background:#FEF0F0;color:#C0392B;border:1px solid #EF9A9A;display:flex;align-items:center}',
+          ].join('');
+          document.head.appendChild(s);
+        }
+        const banner = document.createElement('div');
+        banner.id = 'dt-save-banner';
+        banner.className = 'dt-save-banner dt-save-saving';
+        banner.textContent = '⏳ Saving diagnostic to your account…';
+        reportContent.insertBefore(banner, reportContent.firstChild);
+      }
+
+      if (window.DT_STATE?.results) {
+        await attemptSave();
       }
     };
     

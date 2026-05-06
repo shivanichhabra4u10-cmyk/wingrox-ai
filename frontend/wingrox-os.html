@@ -20602,7 +20602,13 @@ function dtRenderProfile() {
         <h2 class="dt-section-h">Tell us about <em>your business</em>.</h2>
         <p class="dt-section-sub">This context anchors your diagnosis. Strategic priorities, pain areas, growth obstacles, key opportunities, and focus areas — enter as chips (click to add or type + Enter).</p>
       </div>
-      <div class="dt-tier-status">${tierLabel}</div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+        <div class="dt-tier-status">${tierLabel}</div>
+        ${window.wingroxAuth?.isLoggedIn()
+          ? `<button class="dt-btn dt-btn-ghost" style="font-size:11px;padding:6px 14px;opacity:0.7" onclick="if(confirm('Start a new assessment? Current session will be preserved in your account history.')) dtNewAssessment()">↺ New assessment</button>`
+          : `<button class="dt-btn dt-btn-ghost" style="font-size:11px;padding:6px 14px;opacity:0.7" onclick="dtShowAuthModal(null)">🔒 Sign in to save</button>`
+        }
+      </div>
     </div>
     <div class="dt-profile-grid">
       <div class="dt-profile-card"><label class="dt-label">Company name *</label>
@@ -20757,7 +20763,27 @@ function dtSaveProfile() {
 function dtBeginDiagnostic() {
   dtSaveProfile();
   if (!DT_STATE.tier) { dtToast('Pick a tier first.'); dtStage('tier'); return; }
-  if (!DT_STATE.profile.name) { dtToast('Company name required.'); return; }
+  // Mandatory field validation
+  const p = DT_STATE.profile;
+  const highlight = (id) => {
+    const el = document.getElementById(id);
+    if (el) { el.style.borderColor = '#C0392B'; el.focus(); setTimeout(() => { el.style.borderColor = ''; }, 2500); }
+  };
+  if (!p.name?.trim()) { dtToast('Company name is required.'); dtStage('profile'); highlight('dt-pf-name'); return; }
+  if (!p.email?.trim()) { dtToast('Email is required.'); dtStage('profile'); highlight('dt-pf-email'); return; }
+  if (!p.industry?.trim() || p.industry === '') { dtToast('Industry / sector is required.'); dtStage('profile'); highlight('dt-pf-industry'); return; }
+  // Auth gate — prompt sign-in so data is saved to database for all tiers
+  if (window.wingroxAuth && typeof window.wingroxAuth.isLoggedIn === 'function' && !window.wingroxAuth.isLoggedIn()) {
+    dtShowAuthModal(() => {
+      if (_dtAuthSkipped) { _dtAuthSkipped = false; dtAuthGatedBegin(); }
+      else { window.dtBeginDiagnostic(); }
+    });
+    return;
+  }
+  dtAuthGatedBegin();
+}
+
+function dtAuthGatedBegin() {
   DT_STATE.flow = dtBuildModuleFlow();
   if (DT_STATE.tier === 'nucleus') {
     DT_STATE.flow = DT_STATE.flow.map(m => ({
@@ -21934,10 +21960,191 @@ function dtBuildPPTXInternal() {
   }
 }
 
+// ═══ AUTH MODULE · sign-in gate for DB persistence (all tiers) ═══
+let _dtAuthCallback = null;
+let _dtAuthSkipped = false;
+
+function dtShowAuthModal(onSuccess) {
+  _dtAuthCallback = onSuccess;
+  let modal = document.getElementById('dt-auth-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'dt-auth-modal';
+    modal.innerHTML = `
+      <div class="dt-auth-backdrop" onclick="dtCloseAuthModal()"></div>
+      <div class="dt-auth-box">
+        <div class="dt-auth-close" onclick="dtCloseAuthModal()">×</div>
+        <div class="dt-auth-logo">◈</div>
+        <h2 class="dt-auth-h">Save your diagnostic <em>to your account</em></h2>
+        <p class="dt-auth-sub">Create a free account to save all diagnostic data to the database — works for all tiers: Nucleus, Vanguard and Apex. Resume any time from any device.</p>
+        <div class="dt-auth-tabs">
+          <button class="dt-auth-tab active" id="dt-auth-tab-login" onclick="dtAuthSwitchTab('login')">Sign in</button>
+          <button class="dt-auth-tab" id="dt-auth-tab-signup" onclick="dtAuthSwitchTab('signup')">Create account</button>
+        </div>
+        <div id="dt-auth-form-login">
+          <input class="dt-input" id="dt-auth-email" type="email" placeholder="your@email.com" />
+          <input class="dt-input" id="dt-auth-pass" type="password" placeholder="Password" style="margin-top:12px" />
+          <div id="dt-auth-err" class="dt-auth-err"></div>
+          <button class="dt-btn dt-btn-dark" style="width:100%;margin-top:16px" onclick="dtAuthDoLogin()">Sign in →</button>
+        </div>
+        <div id="dt-auth-form-signup" style="display:none">
+          <input class="dt-input" id="dt-auth-name" type="text" placeholder="Your name" />
+          <input class="dt-input" id="dt-auth-email2" type="email" placeholder="your@email.com" style="margin-top:12px" />
+          <input class="dt-input" id="dt-auth-pass2" type="password" placeholder="Password (min 8 chars)" style="margin-top:12px" />
+          <div id="dt-auth-err2" class="dt-auth-err"></div>
+          <button class="dt-btn dt-btn-dark" style="width:100%;margin-top:16px" onclick="dtAuthDoSignup()">Create account →</button>
+        </div>
+        <div class="dt-auth-skip" onclick="dtAuthSkip()">Continue without saving — data stays in memory only</div>
+      </div>`;
+    document.body.appendChild(modal);
+    if (!document.getElementById('dt-auth-styles')) {
+      const s = document.createElement('style');
+      s.id = 'dt-auth-styles';
+      s.textContent = [
+        '#dt-auth-modal{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center}',
+        '.dt-auth-backdrop{position:absolute;inset:0;background:rgba(26,24,20,0.72);backdrop-filter:blur(4px)}',
+        '.dt-auth-box{position:relative;z-index:1;background:var(--surface);border:1px solid var(--gold);border-radius:var(--r-lg);padding:44px 40px;max-width:460px;width:calc(100% - 40px);box-shadow:0 24px 64px rgba(26,24,20,0.28)}',
+        '.dt-auth-close{position:absolute;top:16px;right:20px;font-size:22px;cursor:pointer;color:var(--ink-50);line-height:1}',
+        '.dt-auth-close:hover{color:var(--ink)}',
+        '.dt-auth-logo{font-size:28px;color:var(--gold);margin-bottom:12px}',
+        '.dt-auth-h{font-family:var(--f-display);font-size:24px;font-weight:400;color:var(--ink);margin:0 0 10px;letter-spacing:-0.015em;line-height:1.25}',
+        '.dt-auth-h em{font-style:italic;color:var(--gold-deep)}',
+        '.dt-auth-sub{font-size:13.5px;color:var(--ink-70);line-height:1.6;margin:0 0 24px}',
+        '.dt-auth-tabs{display:flex;border-bottom:1px solid var(--ink-08);margin-bottom:20px}',
+        '.dt-auth-tab{background:none;border:none;padding:10px 20px 12px;font-family:var(--f-mono);font-size:11.5px;font-weight:600;letter-spacing:0.06em;color:var(--ink-50);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:.15s}',
+        '.dt-auth-tab.active{color:var(--gold-deep);border-bottom-color:var(--gold)}',
+        '.dt-auth-err{font-size:12.5px;color:#C0392B;margin-top:10px;min-height:18px;line-height:1.4}',
+        '.dt-auth-skip{font-family:var(--f-mono);font-size:11px;color:var(--ink-50);text-align:center;margin-top:18px;cursor:pointer;letter-spacing:0.04em}',
+        '.dt-auth-skip:hover{color:var(--ink-70);text-decoration:underline}',
+      ].join('');
+      document.head.appendChild(s);
+    }
+  }
+  modal.style.display = 'flex';
+}
+
+function dtAuthSkip() {
+  _dtAuthSkipped = true;
+  dtCloseAuthModal();
+  if (_dtAuthCallback) { const cb = _dtAuthCallback; _dtAuthCallback = null; cb(); }
+}
+
+function dtAuthSwitchTab(tab) {
+  document.getElementById('dt-auth-form-login').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('dt-auth-form-signup').style.display = tab === 'signup' ? 'block' : 'none';
+  document.getElementById('dt-auth-tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('dt-auth-tab-signup').classList.toggle('active', tab === 'signup');
+}
+
+async function dtAuthDoLogin() {
+  const email = document.getElementById('dt-auth-email')?.value?.trim();
+  const pass = document.getElementById('dt-auth-pass')?.value;
+  const errEl = document.getElementById('dt-auth-err');
+  if (!email || !pass) { errEl.textContent = 'Email and password required.'; return; }
+  errEl.textContent = '';
+  try {
+    if (!window.wingroxAuth) throw new Error('Auth service unavailable — is the backend running?');
+    await window.wingroxAuth.login(email, pass);
+    dtCloseAuthModal();
+    dtToast('Signed in — your data will be saved to the database.');
+    if (_dtAuthCallback) { const cb = _dtAuthCallback; _dtAuthCallback = null; cb(); }
+  } catch (err) {
+    errEl.textContent = err.message || 'Sign in failed.';
+  }
+}
+
+async function dtAuthDoSignup() {
+  const name = document.getElementById('dt-auth-name')?.value?.trim();
+  const email = document.getElementById('dt-auth-email2')?.value?.trim();
+  const pass = document.getElementById('dt-auth-pass2')?.value;
+  const errEl = document.getElementById('dt-auth-err2');
+  if (!name || !email || !pass) { errEl.textContent = 'All fields required.'; return; }
+  if (pass.length < 8) { errEl.textContent = 'Password must be at least 8 characters.'; return; }
+  errEl.textContent = '';
+  try {
+    if (!window.wingroxAuth) throw new Error('Auth service unavailable — is the backend running?');
+    await window.wingroxAuth.signup(email, pass, name);
+    dtCloseAuthModal();
+    dtToast('Account created — your data will be saved to the database.');
+    if (_dtAuthCallback) { const cb = _dtAuthCallback; _dtAuthCallback = null; cb(); }
+  } catch (err) {
+    errEl.textContent = err.message || 'Signup failed.';
+  }
+}
+
+function dtCloseAuthModal() {
+  const m = document.getElementById('dt-auth-modal');
+  if (m) m.style.display = 'none';
+}
+
+// ═══ RESET · clears session and auth ═══
+function dtReset() {
+  if (window.wingroxAuth) window.wingroxAuth.logout();
+  window.DT_STATE = {
+    tier: null,
+    profile: { chips: { priorities: [], pains: [], obstacles: [], opps: [], focus: [] }, files: [] },
+    answers: {},
+    flow: null,
+    currentModuleIdx: 0,
+    currentQIdx: 0,
+    results: null,
+    sim: null,
+    simLevers: {},
+    showingMotivation: false,
+    _inited: true,
+  };
+  dtStage('tier');
+  dtToast('Session reset — choose your tier.');
+}
+
+// Start a new assessment while staying logged in (clears session ID + state, keeps auth)
+function dtNewAssessment() {
+  if (window.wingroxSession) {
+    try { localStorage.removeItem('wingrox_session_id'); } catch(e) {}
+  }
+  window.DT_STATE = {
+    tier: null,
+    profile: { chips: { priorities: [], pains: [], obstacles: [], opps: [], focus: [] }, files: [] },
+    answers: {},
+    flow: null,
+    currentModuleIdx: 0,
+    currentQIdx: 0,
+    results: null,
+    sim: null,
+    simLevers: {},
+    showingMotivation: false,
+    _inited: true,
+  };
+  dtStage('tier');
+  dtToast('New assessment started.');
+}
+
+// ═══ INIT · hydrate from DB via adapter ═══
 function dtInit() {
   if (!DT_STATE._inited) {
     DT_STATE._inited = true;
     dtRenderTier();
+    // adapter's hydrate() runs async on DOM ready; wait for it then navigate to saved stage
+    if (window.wingroxAuth?.isLoggedIn()) {
+      setTimeout(() => {
+        const hasAnswers = Object.keys(DT_STATE.answers).length > 0;
+        const r = hasAnswers ? twinComputeAll(DT_STATE.answers) : null;
+        if (r?.masterScore != null) {
+          dtStage('report');
+        } else if (hasAnswers) {
+          DT_STATE.flow = dtBuildModuleFlow();
+          if (DT_STATE.tier === 'nucleus') {
+            DT_STATE.flow = DT_STATE.flow.map(m => ({
+              ...m,
+              questions: m.questions.filter(q => TWIN_FREE_QUESTIONS.includes(q.id))
+            })).filter(m => m.questions.length > 0);
+          }
+          dtStage('diagnose');
+        } else if (DT_STATE.tier) {
+          dtStage('profile');
+        }
+      }, 1200);
+    }
   }
 }
 
@@ -21946,6 +22153,7 @@ window.dtStage = dtStage;
 window.dtSelectTier = dtSelectTier;
 window.dtSaveProfile = dtSaveProfile;
 window.dtBeginDiagnostic = dtBeginDiagnostic;
+window.dtAuthGatedBegin = dtAuthGatedBegin;
 window.dtAnswer1Q = dtAnswer1Q;
 window.dtPrevQ = dtPrevQ;
 window.dtCompleteModule = dtCompleteModule;
@@ -21964,6 +22172,14 @@ window.dtUpdateLever = dtUpdateLever;
 window.dtResetSim = dtResetSim;
 window.dtPresetAggressive = dtPresetAggressive;
 window.dtBuildPPTX = dtBuildPPTX;
+window.dtShowAuthModal = dtShowAuthModal;
+window.dtAuthSkip = dtAuthSkip;
+window.dtAuthSwitchTab = dtAuthSwitchTab;
+window.dtAuthDoLogin = dtAuthDoLogin;
+window.dtAuthDoSignup = dtAuthDoSignup;
+window.dtCloseAuthModal = dtCloseAuthModal;
+window.dtReset = dtReset;
+window.dtNewAssessment = dtNewAssessment;
 window.dtInit = dtInit;
 
 </script>
@@ -23731,7 +23947,10 @@ function gcUpdateProgress() {
 
 </script>
 <script>
-  window.WINGROX_API_BASE = 'https://wingrox-ai.onrender.com/api';
+  // Auto-detect: use local backend when running on localhost, production otherwise
+  window.WINGROX_API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? 'http://localhost:4000/api'
+    : 'https://wingrox-ai.onrender.com/api';
 </script>
 <script src="wingrox-api-adapter.js"></script>
 <button onclick="testAPI()">Test API</button>
