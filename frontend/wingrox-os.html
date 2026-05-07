@@ -4284,7 +4284,7 @@ setTimeout(()=>{
 
 /* ═══════════════════════════════════════════════════════════
    MATCHMAKING STATE & LOGIC */
-const MM_STATE={step:1,profile:{},intent:[],geos:[],priorities:[]};
+const MM_STATE={step:1,profile:{},intent:[],geos:[],priorities:[],matchRequestId:null};
 
 function mmSelectOne(el,selector){
   const group=el.closest('.chip-group');
@@ -4306,21 +4306,51 @@ function mmNext(step){
 }
 
 function mmRunMatch(){
+  const company=(document.getElementById('mm-company')||{}).value||'';
+  if(!company.trim()){alert('Please enter your company name.');return;}
+  const sector=(document.querySelector('.mm-sector.active')||{}).textContent||'';
+  if(!sector.trim()){alert('Please select a sector.');return;}
+  const intents=[...document.querySelectorAll('.mm-intent.active')].map(c=>c.dataset.intent);
+  const geos=[...document.querySelectorAll('.mm-geo.active')].map(c=>c.dataset.geo);
+  if(intents.length===0){alert('Please select at least one partner type you\'re looking for.');return;}
+  if(geos.length===0){alert('Please select at least one target geography.');return;}
+
   MM_STATE.profile={
-    company:(document.getElementById('mm-company')||{}).value||'Anonymous Co.',
+    company,
     country:(document.getElementById('mm-country')||{}).value||'India',
-    sector:(document.querySelector('.mm-sector.active')||{}).textContent||'Industrial',
+    sector,
     stage:(document.getElementById('mm-stage')||{}).value||'Seed',
     revenue:(document.getElementById('mm-revenue')||{}).value||'$250K – $1M',
     desc:(document.getElementById('mm-desc')||{}).value||'',
     notes:(document.getElementById('mm-notes')||{}).value||''
   };
-  MM_STATE.intent=[...document.querySelectorAll('.mm-intent.active')].map(c=>c.dataset.intent);
-  MM_STATE.geos=[...document.querySelectorAll('.mm-geo.active')].map(c=>c.dataset.geo);
+  MM_STATE.intent=intents;
+  MM_STATE.geos=geos;
   MM_STATE.priorities=[...document.querySelectorAll('.mm-prio.active')].map(c=>c.textContent.trim());
-  if(MM_STATE.intent.length===0){alert('Please select at least one partner type you\'re looking for.');return;}
+
   mmNext(3);
   mmAnimateMatching();
+
+  // Fire-and-forget API save — UI continues regardless
+  if(window.wingroxMatch){
+    window.wingroxMatch.run({
+      company:MM_STATE.profile.company,
+      hq:MM_STATE.profile.country,
+      sector:MM_STATE.profile.sector,
+      stage:MM_STATE.profile.stage,
+      revenue:MM_STATE.profile.revenue,
+      description:MM_STATE.profile.desc,
+      intents,
+      geos,
+      priorities:MM_STATE.priorities,
+      notes:MM_STATE.profile.notes
+    }).then(function(d){
+      if(d&&d.matchRequest){
+        MM_STATE.matchRequestId=d.matchRequest.id;
+        localStorage.setItem('wg_match_id',d.matchRequest.id);
+      }
+    }).catch(function(err){console.warn('Match save failed:',err.message);});
+  }
 }
 
 function mmAnimateMatching(){
@@ -4412,10 +4442,23 @@ function mmRenderResults(){
 function mmBookCall(){
   const name=(document.getElementById('mm-modal-name')||{}).value||'';
   const email=(document.getElementById('mm-modal-email')||{}).value||'';
+  const timeEl=document.querySelector('#mm-discovery-modal select');
+  const preferredTime=timeEl?timeEl.value:'Flexible';
   if(!name.trim()||!email.trim()){alert('Please enter your name and email');return;}
   const modal=document.getElementById('mm-discovery-modal');
   if(!modal)return;
   const inner=modal.querySelector('div>div');
+
+  // Persist to DB
+  if(window.wingroxMatch){
+    window.wingroxMatch.bookCall({
+      matchRequestId:MM_STATE.matchRequestId||localStorage.getItem('wg_match_id')||undefined,
+      name:name.trim(),
+      email:email.trim(),
+      preferredTime
+    }).catch(function(err){console.warn('Discovery call save failed:',err.message);});
+  }
+
   if(inner){
     inner.innerHTML='<div style="text-align:center;padding:20px"><div style="font-size:54px;margin-bottom:14px">✓</div><h3 style="font-family:var(--f-display);font-size:28px;font-weight:400;margin-bottom:8px">Discovery Call <em style="color:var(--gold);font-style:italic">booked.</em></h3><p style="font-size:14px;color:var(--ink-70);line-height:1.7;margin-bottom:20px">We\'ll email <strong>'+email+'</strong> within 12 hours to confirm. Your Match Director will come prepped with the top 5 warm intros.</p><button class="btn-primary btn-sm" onclick="document.getElementById(\'mm-discovery-modal\').style.display=\'none\'">Close</button></div>';
   }

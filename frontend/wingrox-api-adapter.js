@@ -589,6 +589,25 @@
     },
   };
 
+  window.wingroxMatch = {
+    /** Run AI matchmaking — returns { matchRequest: { id, matchCount, aiRead, geoBreakdown, typeBreakdown, matches } } */
+    async run(payload) {
+      return api('/match', { method: 'POST', body: JSON.stringify(payload) });
+    },
+    /** List previous match runs (requires auth). */
+    async list(page) {
+      return api('/match?page=' + (page || 1));
+    },
+    /** Get a specific match run by id (requires auth). */
+    async get(id) {
+      return api('/match/' + id);
+    },
+    /** Book a discovery call. */
+    async bookCall(payload) {
+      return api('/match/book-call', { method: 'POST', body: JSON.stringify(payload) });
+    },
+  };
+
   // Wire up after DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
