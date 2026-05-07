@@ -2,8 +2,8 @@
 
 ## The Two Laws
 
-1. **`frontend/public/wingrox-os.html` is the visual source of truth.** Every view must match it exactly — structure, copy, CSS variables, spacing. Never invent UI.
-2. **No iframes in production.** The `PlatformHtmlViewFrame` iframe approach was a prototype shortcut. All views must be proper React components before shipping.
+1. **`frontend/wingrox-os.html` is the visual source of truth.** Every view must match it exactly — structure, copy, CSS variables, spacing. Never invent UI.
+2. **No iframes in production.** The iframe stubs in `wingrox-os.html` (e.g. `#view-expansion`, `#view-eco`) are prototype shortcuts. All views must be implemented as native HTML sections (or future React components) before shipping.
 
 ---
 
@@ -15,7 +15,7 @@ Use these exact phrases to trigger work. Claude executes the full workflow witho
 |---|---|
 | `view: /[route]` | Full stack: read HTML → build React component → wire to API → TypeScript check |
 | `frontend: /[route]` | React component only (backend already exists) |
-| `backend: /[route]` | NestJS module only (schema → migration → module → wire HTML) |
+| `backend: /[route]` | Express route only (schema → migration → route file → wire HTML) |
 | `fix: /[route]` | Debug and fix a specific view's current issues |
 
 **Iteration order for `view:` prompts (do one at a time, confirm before next):**
@@ -37,7 +37,7 @@ Execute all steps in order. No skipping.
 
 ### Step 1 — Read the HTML prototype
 
-Open `frontend/public/wingrox-os.html`. Find `#view-[route]`.
+Open `frontend/wingrox-os.html`. Find `#view-[route]` (or the matching `<section id="view-[route]">`).
 
 Extract exactly:
 - Every HTML tag, class name, nesting level
@@ -46,88 +46,88 @@ Extract exactly:
 - All `fetch()` calls and their request/response shapes
 - All form inputs and their types
 
-If the view is an iframe stub (no content in HTML), read the existing React component and surrounding HTML context for design language.
+If the view is an iframe stub (`<div class="view view-iframe" id="view-[route]">`), expand it in-place: replace the iframe with a full `<section>` matching the design language of adjacent views.
 
-### Step 2 — Build the React component
+### Step 2 — Build the view section
 
-**File:** `frontend/src/components/platform/Platform[View].tsx`
+**Current approach: native HTML + vanilla JS inside `frontend/wingrox-os.html`**
 
 Rules:
-- `'use client'` only if the component has user interaction (forms, sliders, clicks)
-- Pure display components should be Server Components (no directive)
-- Replicate the HTML structure in JSX — same element types, same class hierarchy
-- Map HTML class names to CSS Module classes in `Platform[View].module.css`
-- All CSS variable references (`var(--gold)`, `var(--ink-08)`, etc.) work as-is — they are defined globally in `wingrox-os.html`'s `<style>` block and must be added to `frontend/src/app/globals.css` if not already there
-- No inline styles except where the HTML prototype uses them explicitly
-- Props interface must have a Zod schema
+- Add the view's full HTML inside `<div class="view" id="view-[route]">` (replacing any iframe stub)
+- Reuse existing CSS classes from the `<style>` block at the top of `wingrox-os.html`
+- CSS variables (`var(--gold)`, `var(--ink-08)`, etc.) are globally defined — never redefine them
+- All API calls go in `frontend/wingrox-api-adapter.js` as a named function on `window`
+- No inline `<script>` blocks inside view divs — all JS goes in the adapter or the existing `<script>` at the bottom of the HTML
+
+**Future React approach (when framework is added):**
+- File: `frontend/src/components/platform/Platform[View].jsx`
+- Directory `frontend/src/components/platform/` exists but is currently empty — no framework is installed yet
 
 ### Step 3 — Add loading and error states
 
-Every component that fetches data must have:
-- A skeleton placeholder that matches the layout (use `background: var(--ink-08); border-radius: var(--r-sm); animation: shimmer 1.5s infinite` on placeholder divs)
-- A silent error fallback (log to console, show last known data or empty state — never crash)
+Every section that fetches data must have:
+- A skeleton placeholder div shown while the API call is in flight (use `background: var(--ink-08); border-radius: var(--r-sm); animation: shimmer 1.5s infinite`)
+- A silent error fallback — catch all fetch errors, log to console, show last known data or empty state, never crash or show a blank view
 
 ### Step 4 — Wire API calls
 
-- Server Components: use `fetch('/api/...')` directly with `{ cache: 'no-store' }` for live data or `{ next: { revalidate: 60 } }` for semi-static data
-- Client Components: use `useEffect` + `fetch` on mount; store in `useState`; show skeleton while loading
-- All API base URLs are relative (`/api/...`) — Next.js proxies to backend on port 3001 (see `next.config.js`)
+- All API calls use the `api()` helper in `frontend/wingrox-api-adapter.js` — never call `fetch` directly in HTML
+- The base URL is configured via `window.WINGROX_API_BASE` (defaults to `http://localhost:4000/api`)
+- Auth token is automatically injected by the `api()` helper from `localStorage`
 - Pass `assessmentId` from `localStorage.getItem('wg_assessment_id')` where views need personalisation
+- Expose new API methods as properties of `window.wingroxExpansion`, `window.wingroxIntel`, etc. — one namespace per view
 
-### Step 5 — TypeScript check
+### Step 5 — Smoke test
 
 ```bash
-cd frontend && npx tsc --noEmit   # must return zero errors
-cd backend  && npx tsc --noEmit   # must return zero errors
+# Start backend, then open the HTML file in browser
+cd backend && npm run dev   # port 4000
+# Open frontend/wingrox-os.html in browser (or via live-server)
+# Navigate to the view, fill the form, verify network tab shows API call and 201 response
 ```
 
-Fix every error before marking the view done.
+Verify: form submits → backend receives request → DB row created → result renders correctly.
 
 ---
 
-## Backend Standards (apply to all modules)
+## Backend Standards (apply to all Express routes)
 
-### DTOs — always use class-validator
+### Validation — always use Zod
 
-```typescript
-import { IsString, IsEmail, IsOptional, IsInt, Min, Max } from 'class-validator';
+```javascript
+import { z } from 'zod';
 
-export class RunMatchDto {
-  @IsString() @IsNotEmpty() company: string;
-  @IsEmail() email: string;
-  @IsOptional() @IsString() notes?: string;
+const runMatchSchema = z.object({
+  company: z.string().min(1).max(200),
+  email:   z.string().email(),
+  notes:   z.string().max(1000).optional(),
+});
+
+// In route handler:
+const parsed = runMatchSchema.safeParse(req.body);
+if (!parsed.success) {
+  return res.status(400).json({ error: parsed.error.issues[0]?.message || 'Invalid input' });
 }
-```
-
-Add `ValidationPipe` globally in `main.ts` (already configured).
-
-### Services — no `any` types
-
-```typescript
-// ✗ wrong
-async getSummary(id: string): Promise<any> { ... }
-
-// ✓ correct
-async getSummary(id: string): Promise<DashboardSummaryDto> { ... }
+const data = parsed.data;
 ```
 
 ### HTTP responses — use correct status codes
 
-```typescript
-@Post()               // → 201 Created
-@Get()                // → 200 OK
-throw new NotFoundException()    // → 404
-throw new BadRequestException()  // → 400
+```javascript
+res.status(201).json({ ... })   // POST that creates a resource
+res.json({ ... })               // GET (200 default)
+res.status(404).json({ error: 'Not found' })
+res.status(400).json({ error: 'Invalid input' })
 ```
 
 ### DB queries — select only what you need
 
-```typescript
+```javascript
 // ✗ wrong — fetches entire row
-const a = await this.prisma.expansionAssessment.findUnique({ where: { id } });
+const a = await prisma.expansionAssessment.findUnique({ where: { id } });
 
 // ✓ correct — fetches only needed columns
-const a = await this.prisma.expansionAssessment.findUnique({
+const a = await prisma.expansionAssessment.findUnique({
   where: { id },
   select: { readinessScore: true, cluster: true, topCountries: true },
 });
@@ -135,95 +135,121 @@ const a = await this.prisma.expansionAssessment.findUnique({
 
 ### Pagination — all list endpoints
 
-```typescript
-async list(page = 1, limit = 20) {
+```javascript
+async function list(page = 1, limit = 20) {
   const [items, total] = await Promise.all([
-    this.prisma.model.findMany({ skip: (page - 1) * limit, take: limit }),
-    this.prisma.model.count(),
+    prisma.model.findMany({ skip: (page - 1) * limit, take: limit }),
+    prisma.model.count(),
   ]);
   return { items, total, page, limit };
 }
+```
+
+### Async errors — always use asyncHandler
+
+```javascript
+import { asyncHandler } from '../middleware/errorHandler.js';
+
+router.get('/path', requireAuth, asyncHandler(async (req, res) => {
+  // throws are caught and forwarded to the global error handler
+}));
 ```
 
 ---
 
 ## Frontend Standards
 
-### Component file structure
+### Current architecture — static HTML + vanilla JS
 
 ```
-frontend/src/
-  app/[route]/
-    page.tsx              ← thin wrapper: import + return one component, no logic
-  components/platform/
-    Platform[View].tsx    ← the actual component
-    Platform[View].module.css  ← view-specific CSS (extends shared vars)
+frontend/
+  wingrox-os.html          ← single-file platform app (ALL views live here)
+  wingrox-api-adapter.js   ← backend integration layer (included as last <script>)
+  src/components/platform/ ← empty — placeholder for future React components
+  vercel.json              ← rewrites / → /wingrox-os.html for Vercel deployment
 ```
 
-### CSS — source from HTML prototype
+### Adding a new view section
 
-Before writing any CSS:
-1. Read `#view-[name]` in `wingrox-os.html`
-2. Copy the exact class names used in that view
-3. Create matching rules in `Platform[View].module.css`
-4. CSS variables (`--gold`, `--ink-08`, etc.) need no redefinition — they're global
+1. Find the right insertion point in `wingrox-os.html` (views are grouped by nav order)
+2. Add `<div class="view" id="view-[name]">` — replace any existing iframe stub
+3. Reuse existing CSS classes from the `<style>` block — no new `<style>` tags
+4. CSS variables (`--gold`, `--ink-08`, `--r-sm`, etc.) are global — never redefine
+5. Wire API calls via `wingrox-api-adapter.js` — add a `window.wingrox[ViewName]` namespace
 
 Never use Tailwind, MUI, Chakra, or any external CSS library.
 
-### Data fetching pattern — Client Component
+### Data fetching pattern — vanilla JS
 
-```typescript
-const [data, setData] = useState<ResponseType | null>(null);
-const [loading, setLoading] = useState(true);
+```javascript
+// In wingrox-api-adapter.js, add a namespace:
+window.wingroxExpansion = {
+  async submitAssessment(payload) {
+    return api('/expansion/assessment', { method: 'POST', body: JSON.stringify(payload) });
+  },
+};
 
-useEffect(() => {
-  fetch('/api/[view]/[endpoint]')
-    .then(r => r.json())
-    .then(res => { if (res.success) setData(res.data); })
-    .catch(() => {}) // silent — show stale/default data
-    .finally(() => setLoading(false));
-}, []);
-
-if (loading) return <SkeletonLayout />;
+// In the view's JS function:
+async function submitForm() {
+  const skeletonEl = document.getElementById('result-skeleton');
+  const resultEl   = document.getElementById('result-panel');
+  skeletonEl.style.display = 'block';
+  resultEl.style.display   = 'none';
+  try {
+    const { assessment } = await window.wingroxExpansion.submitAssessment(payload);
+    localStorage.setItem('wg_assessment_id', assessment.id);
+    renderResult(assessment);
+  } catch (err) {
+    console.error(err);
+    // show friendly error inline — never alert()
+  } finally {
+    skeletonEl.style.display = 'none';
+  }
+}
 ```
 
-### Skeleton pattern
+### Skeleton pattern — HTML
 
-```tsx
-const Skeleton = ({ w = '100%', h = 20 }: { w?: string; h?: number }) => (
-  <div style={{ width: w, height: h, background: 'var(--ink-08)', borderRadius: 'var(--r-sm)', animation: 'shimmer 1.5s infinite' }} />
-);
+```html
+<div id="result-skeleton" style="display:none">
+  <div style="width:100%;height:20px;background:var(--ink-08);border-radius:var(--r-sm);animation:shimmer 1.5s infinite"></div>
+</div>
 ```
 
 ---
 
 ## Backend Status
 
-| Route | Backend | DB Tables | Key Endpoints |
+> Backend is **Express.js** (not NestJS). All routes are in `backend/src/routes/`. Port **4000**.
+
+| Route | Route File | DB Table(s) | Key Endpoints |
 |---|---|---|---|
 | `/` | — | — | none |
-| `/dashboard` | ✅ | `expansion_assessments` (read) | `GET /api/dashboard/overview?assessmentId=` |
-| `/twin` | ✅ | `twin_assessments` | `POST /api/twin-assessment/otp/send`, `/verify`, `/progress`, `/complete` |
-| `/expansion` | ✅ | `expansion_assessments`, `expansion_countries` | `POST /api/expansion/assessment` |
-| `/intel` | ✅ | `expansion_assessments` | Reuses expansion assessment endpoint |
-| `/match` | ✅ | `match_sessions`, `match_discovery_calls` | `POST /api/match/run`, `POST /api/match/book-call` |
-| `/hub` | ✅ | `hub_saves` | `GET /api/hub/feed`, `POST /api/hub/save` |
-| `/sim` | ✅ | `sim_runs`, `sim_unlocks` | `POST /api/sim/run`, `GET /api/sim/last`, `POST /api/sim/unlock` |
-| `/eco` | ✅ | `eco_applications` | `POST /api/eco/apply`, `GET /api/eco/status`, `GET /api/eco/stats` |
+| `/expansion` & `/intel` | `routes/expansion.js` | `expansion_assessments` | `POST /api/expansion/assessment`, `GET /api/expansion/assessments`, `GET /api/expansion/usage` |
+| `/sessions` (twin) | `routes/sessions.js` | `diagnostic_sessions` | `POST /api/sessions`, `PATCH /api/sessions/:id`, `POST /api/sessions/:id/complete` |
+| `/auth` | `routes/auth.js` | `users` | `POST /api/auth/signup`, `/login`, `/me`, `PATCH /api/auth/upgrade` |
+| `/files` | `routes/files.js` | `uploaded_files` | `POST /api/files`, `GET /api/files`, `DELETE /api/files/:id` |
+| `/leads` | `routes/leads.js` | `advisor_leads` | `POST /api/leads` |
+| `/payments` | `routes/payments.js` | `payments` | Stripe integration |
+
+> **Note:** `/dashboard`, `/match`, `/hub`, `/sim`, `/eco` routes do **not exist yet** in the backend.
 
 ## Frontend Status
 
-| Route | Approach | Status | Notes |
+> Frontend is a **single static HTML file**: `frontend/wingrox-os.html` + `frontend/wingrox-api-adapter.js`. No React/Next.js framework is installed. `frontend/src/components/platform/` is empty.
+
+| Route (view id) | HTML Section | API Wired | Notes |
 |---|---|---|---|
-| `/` | Custom (`PlatformHome`) | ✅ | Static marketing |
-| `/dashboard` | Custom (`PlatformDashboard`) | ✅ | API-wired, score ring animation |
-| `/twin` | Custom (`PlatformTwin`) | ✅ | OTP + assessment flow |
-| `/expansion` | Custom (`ExpansionNavigator`) | ✅ | Full readiness flow |
-| `/intel` | Custom (`PlatformIntel`) | ✅ | API-wired, score ring, async generate |
-| `/match` | Custom (`PlatformMatch`) | ✅ | 4-step stepper, async match, discovery call modal |
-| `/hub` | Custom (`PlatformHub`) | ✅ | Sidebar filters, personalised feed, save toggle |
-| `/sim` | Custom (`PlatformSim`) | ✅ | 6-tab simulator, live sliders, Chart.js, paywall gate |
-| `/eco` | Custom (`PlatformEco`) | ✅ | Application form |
+| `#view-home` | ✅ Full HTML | ❌ | Static marketing only |
+| `#view-dashboard` | ✅ Full HTML | ❌ | Client-side mock data only |
+| `#view-twin` | ✅ Full HTML | ⚠️ Partial | `wingrox-api-adapter.js` wires sessions/files/auth |
+| `#view-intel` | ✅ Full HTML | ✅ Wired | `intelRenderReport()` calls `wingroxExpansion.submitAssessment()`; saves to DB; stores `wg_assessment_id` in localStorage |
+| `#view-expansion` | ✅ iframe (PLATFORM_NAVIGATOR) | ✅ Wired | 75-question quiz; `postMessage` bridge → `wingroxExpansion.submitAssessment()`; saves `wg_assessment_id` to localStorage |
+| `#view-match` | ✅ Full HTML | ❌ | No backend route exists |
+| `#view-hub` | ✅ Full HTML | ❌ | No backend route exists |
+| `#view-sim` | ✅ Full HTML | ❌ | No backend route exists |
+| `#view-eco` | ❌ iframe stub | ❌ | Renders blank; no HTML content |
+| `#view-atlas` | ✅ Full HTML | ❌ | Static only |
 
 ---
 
@@ -231,22 +257,33 @@ const Skeleton = ({ w = '100%', h = 20 }: { w?: string; h?: number }) => (
 
 | Layer | Technology |
 |---|---|
-| Frontend | Next.js 15 (App Router), React 19, TypeScript strict |
-| Styling | CSS Modules + CSS variables from `wingrox-os.html` |
-| Validation | Zod (component props) + class-validator (API DTOs) |
-| Backend | NestJS, global prefix `/api`, port 3001 |
-| ORM | Prisma + PostgreSQL (`wingrox_db`) |
-| Auth | JWT (access + refresh tokens) |
+| Frontend | Static HTML + vanilla JS (`frontend/wingrox-os.html`) |
+| Styling | CSS custom properties (variables) inline in `wingrox-os.html` `<style>` block |
+| API adapter | `frontend/wingrox-api-adapter.js` — plain JS, loaded as last `<script>` tag |
+| Backend | **Express.js** (ES modules), port **4000**, global prefix `/api` |
+| Validation | **Zod** (backend input validation — no class-validator, no decorators) |
+| ORM | Prisma + PostgreSQL |
+| Auth | JWT via `backend/src/lib/auth.js` (`verifyToken` / `signToken`) |
+| Hosting | Vercel (frontend static) + any Node host (backend) |
 
 ## Development
 
 ```bash
-cd frontend && npm run dev    # port 3000
-cd backend  && npm run dev    # port 3001
+# Backend (Express, port 4000 — uses node --watch, no restart needed for most changes)
+cd backend && npm run dev
 
-# After Prisma schema change (kill node first):
+# Frontend — open the HTML file directly in browser, or use a static file server:
+npx live-server frontend   # serves frontend/ at http://localhost:8080
+# Set WINGROX_API_BASE in the HTML or via localStorage before testing
+
+# After Prisma schema change (kill the node process first on Windows):
 Stop-Process -Name node -Force
-cd backend && npx prisma migrate dev --name [name] --skip-seed
+cd backend ; npx prisma db push      # fast schema sync (dev only)
+# OR for a tracked migration:
+cd backend ; npx prisma migrate dev --name [name]
+
+# View DB:
+cd backend && npx prisma studio      # opens http://localhost:5555
 ```
 
 ## Performance Targets (production)

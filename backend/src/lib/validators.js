@@ -79,6 +79,12 @@ export const checkoutSchema = z.object({
   cancelUrl: z.string().url(),
 });
 
+export const expansionCheckoutSchema = z.object({
+  tier: z.enum(['GOLD', 'PLATINUM']),
+  successUrl: z.string().url(),
+  cancelUrl: z.string().url(),
+});
+
 // Helper: validate and return parsed data or throw a clean 400
 export function validate(schema, data) {
   const result = schema.safeParse(data);

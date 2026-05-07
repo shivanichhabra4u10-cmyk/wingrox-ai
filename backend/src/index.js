@@ -13,6 +13,7 @@ import sessionRoutes from './routes/sessions.js';
 import fileRoutes from './routes/files.js';
 import leadRoutes from './routes/leads.js';
 import paymentRoutes from './routes/payments.js';
+import expansionRoutes from './routes/expansion.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { stripeWebhook } from './routes/webhooks.js';
 
@@ -65,6 +66,7 @@ app.use('/api/sessions', apiLimiter, sessionRoutes);
 app.use('/api/files', apiLimiter, fileRoutes);
 app.use('/api/leads', apiLimiter, leadRoutes);
 app.use('/api/payments', apiLimiter, paymentRoutes);
+app.use('/api/expansion', apiLimiter, expansionRoutes);
 
 // Serve uploaded files in dev (in production, use S3/CDN instead)
 if (process.env.UPLOAD_DRIVER === 'local') {

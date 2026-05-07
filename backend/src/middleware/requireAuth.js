@@ -15,7 +15,7 @@ export async function requireAuth(req, res, next) {
   // Fetch fresh user (so tier changes are reflected immediately after payment)
   const user = await prisma.user.findUnique({ 
     where: { id: payload.userId },
-    select: { id: true, email: true, name: true, tier: true }
+    select: { id: true, email: true, name: true, tier: true, expansionTier: true }
   });
   if (!user) {
     return res.status(401).json({ error: 'User not found' });

@@ -21,16 +21,20 @@ model User {
   name         String?
   
   // Tier they've paid for (or 'nucleus' for free users)
-  tier         Tier     @default(NUCLEUS)
+  tier         Tier          @default(NUCLEUS)
+  
+  // Expansion-specific plan (Silver/Gold/Platinum — separate from Digital Twin tiers)
+  expansionTier ExpansionTier @default(SILVER)
   
   // Stripe customer for billing
   stripeCustomerId String? @unique
   
   // Relations
-  sessions     DiagnosticSession[]
-  files        UploadedFile[]
-  leads        AdvisorLead[]
-  payments     Payment[]
+  sessions            DiagnosticSession[]
+  expansionAssessments ExpansionAssessment[]
+  files               UploadedFile[]
+  leads               AdvisorLead[]
+  payments            Payment[]
   
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -43,6 +47,12 @@ enum Tier {
   NUCLEUS  // free, 15 questions
   VANGUARD // $199, 100 questions
   APEX     // book-call, white glove
+}
+
+enum ExpansionTier {
+  SILVER   // free — 1 assessment/month
+  GOLD     // paid — 5 assessments/month
+  PLATINUM // paid — unlimited assessments
 }
 
 // DIAGNOSTIC SESSION · one per user attempt
@@ -176,4 +186,35 @@ enum PaymentStatus {
   SUCCEEDED
   FAILED
   REFUNDED
+}
+
+// EXPANSION ASSESSMENT · stores results from the Global Scale-Up Readiness Navigator
+model ExpansionAssessment {
+  id             String   @id @default(cuid())
+
+  // Optional auth link — anonymous assessments are stored without userId
+  userId         String?
+  user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Input profile
+  company        String
+  hq             String   @default("India")
+  industry       String
+  revenue        String   @default("")
+  model          String   @default("")
+  targetGeos     Json     @default("[]")  // string[] — country codes
+  goal           String   @default("")
+
+  // Computed results
+  readinessScore Int
+  cluster        String   // Scale-Ready | Expansion-Ready | Preparation-Stage | Foundation-Stage
+  topCountries   Json     @default("[]")  // { code, score, name, flag }[]
+  revProjection  Json     @default("{}")  // { low, base, high }
+  nextMoves      Json     @default("[]")  // { title, desc, when }[]
+
+  createdAt      DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, createdAt])
+  @@map("expansion_assessments")
 }

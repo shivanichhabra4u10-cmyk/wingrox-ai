@@ -69,11 +69,18 @@ async function handleCheckoutCompleted(session) {
     },
   });
   
-  // Upgrade user tier
-  await prisma.user.update({
-    where: { id: userId },
-    data: { tier },
-  });
-  
-  console.log(`✓ Upgraded user ${userId} to ${tier}`);
+  // Upgrade user tier — expansion product updates expansionTier; twin updates tier
+  if (session.metadata?.product === 'expansion') {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { expansionTier: tier },
+    });
+  } else {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { tier },
+    });
+  }
+
+  console.log(`✓ Upgraded user ${userId} to ${tier} (product: ${session.metadata?.product ?? 'twin'})`);
 }

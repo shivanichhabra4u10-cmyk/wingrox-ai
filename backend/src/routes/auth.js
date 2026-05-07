@@ -68,4 +68,29 @@ router.get('/me', requireAuth, asyncHandler(async (req, res) => {
   res.json({ user: req.user });
 }));
 
+// PATCH /api/auth/upgrade — upgrade account tier (used after dummy payment for testing)
+router.patch('/upgrade', requireAuth, asyncHandler(async (req, res) => {
+  const { tier } = req.body;
+  const validTiers = ['NUCLEUS', 'VANGUARD', 'APEX'];
+  if (!tier || !validTiers.includes(tier.toUpperCase())) {
+    return res.status(400).json({ error: 'Invalid tier. Must be NUCLEUS, VANGUARD, or APEX.' });
+  }
+
+  const newTier = tier.toUpperCase();
+  const tierRank = { NUCLEUS: 0, VANGUARD: 1, APEX: 2 };
+
+  // Only allow upgrading, not downgrading
+  if (tierRank[newTier] <= tierRank[req.user.tier]) {
+    return res.status(400).json({ error: `Already on ${req.user.tier} or higher.` });
+  }
+
+  const user = await prisma.user.update({
+    where: { id: req.user.id },
+    data: { tier: newTier },
+    select: { id: true, email: true, name: true, tier: true },
+  });
+
+  res.json({ user });
+}));
+
 export default router;
