@@ -4570,6 +4570,67 @@ function applyPkgCoupon(pkg){
   if(btnEl && disc===100) btnEl.textContent='Start Free Assessment →';
 }
 
+
+// ── WinGroX Plan Status Bridge ───────────────────────────────────────────
+// Receives plan info from parent window and adjusts package cards accordingly
+function applyPlanStatus(plan) {
+  var TIERS = ['silver', 'gold', 'platinum'];
+  var planLower = (plan || 'silver').toLowerCase();
+  var planIdx = TIERS.indexOf(planLower);
+  if (planIdx === -1) planIdx = 0;
+
+  TIERS.forEach(function(tier, idx) {
+    var btn = document.getElementById('buy-btn-' + tier);
+    var card = btn && btn.closest ? btn.closest('.pkg-card') : null;
+    if (!btn) return;
+
+    // Remove any existing status badge
+    var existing = card && card.querySelector('.wg-plan-badge');
+    if (existing) existing.parentNode.removeChild(existing);
+
+    if (idx < planIdx) {
+      // Lower tier — user has better; gray it out
+      btn.textContent = '✓ Included in Your Plan';
+      btn.disabled = true;
+      btn.style.opacity = '0.5';
+      btn.style.cursor = 'default';
+      btn.onclick = function() { return false; };
+    } else if (idx === planIdx) {
+      // Current tier — let them run the assessment
+      btn.textContent = 'Run Assessment →';
+      btn.disabled = false;
+      btn.style.opacity = '';
+      btn.style.cursor = '';
+      btn.onclick = function() { beginQuizWithPackage(tier); };
+      // Add "Your Plan" badge
+      if (card) {
+        var badge = document.createElement('div');
+        badge.className = 'wg-plan-badge';
+        badge.textContent = '✓ Your Current Plan';
+        badge.style.cssText = 'display:inline-block;margin-bottom:10px;background:#22c55e;color:#fff;font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;';
+        btn.parentNode.insertBefore(badge, btn);
+      }
+    } else {
+      // Higher tier — offer upgrade
+      var tierLabel = tier.charAt(0).toUpperCase() + tier.slice(1);
+      btn.textContent = 'Upgrade to ' + tierLabel + ' →';
+      btn.disabled = false;
+      btn.style.opacity = '';
+      btn.style.cursor = '';
+      btn.onclick = (function(t) {
+        return function() {
+          try { window.parent.postMessage({ type: 'wingrox:upgrade:request', tier: t.toUpperCase() }, '*'); } catch(e) {}
+        };
+      })(tier);
+    }
+  });
+}
+
+window.addEventListener('message', function(e) {
+  if (e.data && e.data.type === 'wingrox:plan:info') {
+    applyPlanStatus(e.data.plan);
+  }
+});
 </script>
 </body>
 </html>
