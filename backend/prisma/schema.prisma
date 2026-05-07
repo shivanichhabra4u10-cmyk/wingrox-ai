@@ -32,6 +32,7 @@ model User {
   // Relations
   sessions            DiagnosticSession[]
   expansionAssessments ExpansionAssessment[]
+  matchRequests        MatchRequest[]
   files               UploadedFile[]
   leads               AdvisorLead[]
   payments            Payment[]
@@ -217,4 +218,57 @@ model ExpansionAssessment {
   @@index([userId])
   @@index([userId, createdAt])
   @@map("expansion_assessments")
+}
+
+// MATCH REQUEST · stores a matchmaking run (profile + intent + results)
+model MatchRequest {
+  id            String   @id @default(cuid())
+
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Step 1 — company profile
+  company       String
+  hq            String   @default("India")
+  sector        String
+  stage         String
+  revenue       String
+  description   String   @default("")
+
+  // Step 2 — intent
+  intents       Json     @default("[]")  // string[] e.g. ["investor","distributor"]
+  geos          Json     @default("[]")  // string[] e.g. ["DACH","UK"]
+  priorities    Json     @default("[]")  // string[]
+  notes         String   @default("")
+
+  // Results (set on completion)
+  matchCount    Int      @default(0)
+  aiRead        String   @default("")
+  geoBreakdown  Json     @default("[]")  // { geo, count }[]
+  typeBreakdown Json     @default("[]")  // { type, count }[]
+  matches       Json     @default("[]")  // anonymised match cards
+
+  status        MatchStatus @default(PENDING)
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+  @@map("match_requests")
+}
+
+enum MatchStatus {
+  PENDING
+  COMPLETE
+}
+
+// DISCOVERY CALL BOOKING · from the "Book Discovery Call" modal
+model DiscoveryCall {
+  id            String   @id @default(cuid())
+  matchRequestId String?
+  name          String
+  email         String
+  preferredTime String   @default("")
+  status        String   @default("requested")
+  createdAt     DateTime @default(now())
+
+  @@map("discovery_calls")
 }

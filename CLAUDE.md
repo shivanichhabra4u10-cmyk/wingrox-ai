@@ -245,7 +245,7 @@ async function submitForm() {
 | `#view-twin` | ✅ Full HTML | ⚠️ Partial | `wingrox-api-adapter.js` wires sessions/files/auth |
 | `#view-intel` | ✅ Full HTML | ✅ Wired | `intelRenderReport()` calls `wingroxExpansion.submitAssessment()`; saves to DB; stores `wg_assessment_id` in localStorage |
 | `#view-expansion` | ✅ iframe (PLATFORM_NAVIGATOR) | ✅ Wired | 75-question quiz; `postMessage` bridge → `wingroxExpansion.submitAssessment()`; saves `wg_assessment_id` to localStorage |
-| `#view-match` | ✅ Full HTML | ❌ | No backend route exists |
+| `#view-match` | ✅ Full HTML | ✅ Wired | `wingroxMatch.run()` → `POST /api/match`; `wingroxMatch.bookCall()` → `POST /api/match/book-call`; result saved to DB |
 | `#view-hub` | ✅ Full HTML | ❌ | No backend route exists |
 | `#view-sim` | ✅ Full HTML | ❌ | No backend route exists |
 | `#view-eco` | ❌ iframe stub | ❌ | Renders blank; no HTML content |
