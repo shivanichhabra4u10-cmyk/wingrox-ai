@@ -98,6 +98,13 @@
       setSessionId(null);
     },
     isLoggedIn: () => !!getToken(),
+    async upgradeTier(tier) {
+      const data = await api('/auth/upgrade', {
+        method: 'PATCH',
+        body: JSON.stringify({ tier: tier.toUpperCase() }),
+      });
+      return data.user;
+    },
   };
   
   // ── Session sync ─────────────────────────────────────────
@@ -212,6 +219,143 @@
     },
   };
   
+  // ── Payment modal (dummy, test mode) ────────────────────
+  const TIER_INFO = {
+    vanguard: {
+      label: '◈ VANGUARD',
+      price: 199,
+      features: [
+        '100 full diagnostic questions',
+        'Sector intelligence engine',
+        'Personalised expansion map',
+        'Progress saved to your account',
+      ],
+    },
+    apex: {
+      label: '◆ APEX',
+      price: 499,
+      features: [
+        'Everything in Vanguard, plus:',
+        'Boardroom-grade report',
+        'Pitch coaching session',
+        'Written action brief in 7 days',
+      ],
+    },
+  };
+
+  let _paymentCallback = null;
+
+  function dtShowPaymentModal(tier, callback) {
+    _paymentCallback = callback;
+    const info = TIER_INFO[tier];
+    if (!info) { callback(); return; }
+
+    if (!document.getElementById('dt-payment-styles')) {
+      const s = document.createElement('style');
+      s.id = 'dt-payment-styles';
+      s.textContent = [
+        '#dt-payment-overlay{position:fixed;inset:0;background:rgba(10,10,14,.78);backdrop-filter:blur(4px);z-index:9000;display:flex;align-items:center;justify-content:center}',
+        '#dt-payment-modal{background:#12121e;border:1px solid rgba(212,175,55,.25);border-radius:16px;padding:36px 40px;width:420px;max-width:90vw;font-family:var(--f-sans,sans-serif);color:#F0EAD6;box-shadow:0 24px 64px rgba(0,0,0,.6)}',
+        '.dt-pm-badge{background:rgba(212,175,55,.12);border:1px solid rgba(212,175,55,.3);color:#D4AF37;font-size:11px;font-weight:700;letter-spacing:.08em;padding:4px 12px;border-radius:20px;display:inline-block;margin-bottom:16px}',
+        '.dt-pm-price{font-size:44px;font-weight:800;color:#fff;margin:0 0 4px}',
+        '.dt-pm-price sup{font-size:20px;vertical-align:top;margin-top:10px;display:inline-block}',
+        '.dt-pm-features{list-style:none;padding:0;margin:14px 0 20px}',
+        '.dt-pm-features li{padding:5px 0;font-size:14px;color:#c8bfa0}',
+        '.dt-pm-features li::before{content:"✓ ";color:#D4AF37}',
+        '.dt-pm-test{background:#0d2035;border:1px solid #1e4a70;border-radius:8px;padding:10px 14px;font-size:12px;color:#7eb8f7;margin-bottom:20px}',
+        '.dt-pm-field{margin-bottom:14px}',
+        '.dt-pm-field label{display:block;font-size:11px;font-weight:600;letter-spacing:.06em;color:#8a8070;margin-bottom:6px;text-transform:uppercase}',
+        '.dt-pm-field input{width:100%;box-sizing:border-box;background:#0a0a14;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 14px;color:#fff;font-size:15px;outline:none;font-family:monospace}',
+        '.dt-pm-field input:focus{border-color:rgba(212,175,55,.5)}',
+        '.dt-pm-row{display:flex;gap:12px}',
+        '.dt-pm-row .dt-pm-field{flex:1}',
+        '.dt-pm-btn{width:100%;padding:14px;background:linear-gradient(135deg,#D4AF37,#A67C00);color:#0a0a0e;font-weight:800;font-size:15px;border:none;border-radius:10px;cursor:pointer;margin-top:8px;transition:.15s}',
+        '.dt-pm-btn:hover:not(:disabled){opacity:.88}',
+        '.dt-pm-btn:disabled{opacity:.5;cursor:not-allowed}',
+        '.dt-pm-cancel{display:block;text-align:center;margin-top:14px;font-size:13px;color:#6b6456;cursor:pointer;text-decoration:underline}',
+        '.dt-pm-spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,.3);border-top-color:#000;border-radius:50%;animation:dt-spin .6s linear infinite;margin-right:8px;vertical-align:middle}',
+        '@keyframes dt-spin{to{transform:rotate(360deg)}}',
+        '.dt-pm-success{text-align:center;padding:24px 0}',
+        '.dt-pm-success .dt-pm-check{font-size:52px;margin-bottom:14px}',
+        '.dt-pm-success h3{color:#D4AF37;margin:0 0 8px;font-size:20px}',
+        '.dt-pm-success p{color:#c8bfa0;font-size:14px;margin:0}',
+      ].join('');
+      document.head.appendChild(s);
+    }
+
+    const existing = document.getElementById('dt-payment-overlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'dt-payment-overlay';
+    overlay.innerHTML = `
+      <div id="dt-payment-modal">
+        <div class="dt-pm-badge">${info.label}</div>
+        <p class="dt-pm-price"><sup>$</sup>${info.price}<span style="font-size:16px;font-weight:400;color:#8a8070"> / one-time</span></p>
+        <ul class="dt-pm-features">${info.features.map(f => `<li>${f}</li>`).join('')}</ul>
+        <div class="dt-pm-test">🧪 <strong>TEST MODE</strong> — Use any card details. No real charge will be made.</div>
+        <div class="dt-pm-field">
+          <label>Card number</label>
+          <input id="dt-pm-cardnum" type="text" value="4242 4242 4242 4242" maxlength="19" placeholder="1234 5678 9012 3456">
+        </div>
+        <div class="dt-pm-row">
+          <div class="dt-pm-field"><label>Expiry</label><input id="dt-pm-expiry" type="text" value="12/28" maxlength="5" placeholder="MM/YY"></div>
+          <div class="dt-pm-field"><label>CVV</label><input id="dt-pm-cvv" type="text" value="123" maxlength="4" placeholder="123"></div>
+        </div>
+        <button class="dt-pm-btn" id="dt-pm-pay-btn" onclick="window.dtProcessPayment('${tier}')">Pay $${info.price} →</button>
+        <span class="dt-pm-cancel" onclick="window.dtClosePaymentModal()">Cancel — continue without upgrading</span>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+  }
+
+  window.dtClosePaymentModal = function() {
+    const el = document.getElementById('dt-payment-overlay');
+    if (el) el.remove();
+    _paymentCallback = null;
+  };
+
+  window.dtProcessPayment = async function(tier) {
+    const btn = document.getElementById('dt-pm-pay-btn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="dt-pm-spinner"></span>Processing…'; }
+
+    try {
+      // Simulate payment gateway delay
+      await new Promise(r => setTimeout(r, 1500));
+
+      // Upgrade tier in DB
+      await window.wingroxAuth.upgradeTier(tier);
+
+      // Show success state inside the modal
+      const modal = document.getElementById('dt-payment-modal');
+      if (modal) {
+        modal.innerHTML = `
+          <div class="dt-pm-success">
+            <div class="dt-pm-check">✓</div>
+            <h3>Payment successful!</h3>
+            <p>Your account has been upgraded to ${tier.toUpperCase()}.</p>
+          </div>
+        `;
+      }
+
+      await new Promise(r => setTimeout(r, 1100));
+      window.dtClosePaymentModal();
+
+      if (window.dtToast) window.dtToast(`✓ Upgraded to ${tier.toUpperCase()}! Starting diagnostic…`);
+
+      const cb = _paymentCallback;
+      _paymentCallback = null;
+      if (cb) cb();
+    } catch (err) {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `Pay $${TIER_INFO[tier]?.price || ''} →`;
+      }
+      if (window.dtToast) window.dtToast('⚠ ' + err.message);
+      console.warn('Payment/upgrade error:', err.message);
+    }
+  };
+
   // ── Override existing DT engine functions ────────────────
   // These wrap the originals so the UI stays identical but persistence flows through API
   
@@ -247,12 +391,21 @@
     window.dtBeginDiagnostic = async function() {
       // Run original validation/state setup
       origBegin();
-      
+
       // Create backend session only if logged in and no active session already
       if (getToken() && window.DT_STATE?.tier && !getSessionId()) {
         try {
           const { files, ...profileToSave } = window.DT_STATE.profile || {};
-          await window.wingroxSession.create(window.DT_STATE.tier, profileToSave);
+          // Fetch account tier — backend enforces eligibility, only store if tier matches
+          const user = await window.wingroxAuth.me();
+          const tierRank = { nucleus: 0, vanguard: 1, apex: 2 };
+          const selectedTier = window.DT_STATE.tier.toLowerCase();
+          const accountTier = (user?.tier || 'NUCLEUS').toLowerCase();
+          if (tierRank[selectedTier] > tierRank[accountTier]) {
+            console.info(`Session not stored — selected tier (${selectedTier}) exceeds account tier (${accountTier}). Upgrade required.`);
+            return;
+          }
+          await window.wingroxSession.create(selectedTier, profileToSave);
         } catch (err) {
           console.warn('Could not create backend session:', err.message);
         }
@@ -344,6 +497,31 @@
       }
     };
     
+    // 7. Wrap dtSelectTier — show payment modal if selected tier exceeds account tier
+    const origSelectTier = window.dtSelectTier;
+    window.dtSelectTier = async function(tier) {
+      // Apex keeps its special mailto flow — skip payment intercept
+      if (tier === 'apex') { origSelectTier(tier); return; }
+
+      const tierRank = { nucleus: 0, vanguard: 1, apex: 2 };
+
+      // Nucleus is free — no payment needed
+      if (!tierRank[tier]) { origSelectTier(tier); return; }
+
+      if (getToken()) {
+        const user = await window.wingroxAuth.me();
+        const accountTier = (user?.tier || 'NUCLEUS').toLowerCase();
+        if (tierRank[tier] > tierRank[accountTier]) {
+          // User needs to upgrade — show payment modal
+          dtShowPaymentModal(tier, () => origSelectTier(tier));
+          return;
+        }
+      }
+
+      // Not logged in, or already has this tier — proceed normally
+      origSelectTier(tier);
+    };
+
     console.log('✓ WinGroX backend adapter wired');
   }
   
@@ -360,10 +538,15 @@
       try {
         const session = await window.wingroxSession.load(sessionId);
         if (session.status === 'IN_PROGRESS' && window.DT_STATE) {
-          window.DT_STATE.tier = session.tier.toLowerCase();
+          // Use the higher of session tier vs account tier (handles upgrades)
+          const tierRank = { nucleus: 0, vanguard: 1, apex: 2 };
+          const sessionTier = session.tier.toLowerCase();
+          const accountTier = (user.tier || 'NUCLEUS').toLowerCase();
+          const effectiveTier = tierRank[accountTier] >= tierRank[sessionTier] ? accountTier : sessionTier;
+          window.DT_STATE.tier = effectiveTier;
           window.DT_STATE.profile = { ...window.DT_STATE.profile, ...(session.profile || {}) };
           window.DT_STATE.answers = session.answers || {};
-          console.log(`✓ Resumed session ${session.id} (${Object.keys(session.answers || {}).length} answers)`);
+          console.log(`✓ Resumed session ${session.id} (tier: ${effectiveTier}, ${Object.keys(session.answers || {}).length} answers)`);
         }
       } catch (err) {
         console.warn('Could not resume session:', err.message);

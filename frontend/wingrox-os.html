@@ -20857,13 +20857,17 @@ function dtRenderDiagnostic() {
         <div class="dt-q-nav-meta">
           ${moduleAnswered === mod.questions.length 
             ? '<strong style="color:var(--gold-deep)">✓ Module complete — ready to advance</strong>' 
-            : `Answer to advance · cannot skip to next module until current module is complete`}
+            : DT_STATE.answers[q.id] != null
+              ? `<span style="color:var(--gold-2)">Answer recorded — click Next to continue</span>`
+              : `Select an answer to continue`}
         </div>
         <div class="dt-q-nav-buttons">
           <button class="dt-btn dt-btn-ghost" onclick="dtPrevQ()" ${DT_STATE.currentModuleIdx === 0 && DT_STATE.currentQIdx === 0 ? 'disabled style="opacity:0.4"' : ''}>← Previous</button>
           ${moduleAnswered === mod.questions.length 
             ? `<button class="dt-btn dt-btn-dark" onclick="dtCompleteModule()">${DT_STATE.currentModuleIdx === flow.length - 1 ? 'Finish diagnostic →' : 'Continue →'}</button>`
-            : ''}
+            : DT_STATE.answers[q.id] != null && DT_STATE.currentQIdx < mod.questions.length - 1
+              ? `<button class="dt-btn dt-btn-dark" onclick="dtNextQ()">Next →</button>`
+              : ''}
         </div>
       </div>
     </div>`;
@@ -20871,12 +20875,12 @@ function dtRenderDiagnostic() {
 
 function dtAnswer1Q(qId, optIdx) {
   DT_STATE.answers[qId] = optIdx;
-  const mod = DT_STATE.flow[DT_STATE.currentModuleIdx];
-  if (DT_STATE.currentQIdx < mod.questions.length - 1) {
-    setTimeout(() => { DT_STATE.currentQIdx++; dtRenderDiagnostic(); }, 250);
-  } else {
-    dtRenderDiagnostic();
-  }
+  dtRenderDiagnostic(); // show selection; user clicks Next to advance
+}
+
+function dtNextQ() {
+  DT_STATE.currentQIdx++;
+  dtRenderDiagnostic();
 }
 
 function dtPrevQ() {
@@ -22158,6 +22162,7 @@ window.dtAnswer1Q = dtAnswer1Q;
 window.dtPrevQ = dtPrevQ;
 window.dtCompleteModule = dtCompleteModule;
 window.dtAdvanceModule = dtAdvanceModule;
+window.dtNextQ = dtNextQ;
 window.dtFinishDiagnostic = dtFinishDiagnostic;
 window.dtAdvisorEmail = dtAdvisorEmail;
 window.dtBookCall = dtBookCall;
