@@ -555,6 +555,40 @@
     }
   }
   
+  // ── Expansion / Intel API ────────────────────────────────
+  window.wingroxExpansion = {
+    /**
+     * Save a completed assessment (score + countries + moves) to the DB.
+     * Called fire-and-forget from intelRenderReport() — never blocks the UI.
+     * Returns { assessment: { id, ... } } on success.
+     */
+    async submitAssessment(payload) {
+      return api('/expansion/assessment', { method: 'POST', body: JSON.stringify(payload) });
+    },
+    /** List saved assessments for the logged-in user (requires auth). */
+    async listAssessments(page) {
+      return api('/expansion/assessments?page=' + (page || 1));
+    },
+    /** Fetch one saved assessment by id (requires auth + ownership). */
+    async getAssessment(id) {
+      return api('/expansion/assessments/' + id);
+    },
+    /** Monthly quota status for the logged-in user (requires auth). */
+    async getUsage() {
+      return api('/expansion/usage');
+    },
+    /**
+     * Create a Stripe checkout session to upgrade expansion plan.
+     * tier: 'GOLD' | 'PLATINUM'. Returns { url } to redirect to Stripe.
+     */
+    async checkout(tier, successUrl, cancelUrl) {
+      return api('/payments/expansion/checkout', {
+        method: 'POST',
+        body: JSON.stringify({ tier, successUrl, cancelUrl }),
+      });
+    },
+  };
+
   // Wire up after DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
