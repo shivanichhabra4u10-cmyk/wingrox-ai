@@ -33,6 +33,7 @@ model User {
   sessions            DiagnosticSession[]
   expansionAssessments ExpansionAssessment[]
   matchRequests        MatchRequest[]
+  ecoApplications      EcoPartnerApplication[]
   files               UploadedFile[]
   leads               AdvisorLead[]
   payments            Payment[]
@@ -271,4 +272,33 @@ model DiscoveryCall {
   createdAt     DateTime @default(now())
 
   @@map("discovery_calls")
+}
+
+// ECO PARTNER APPLICATION · from the "Become an Ecosystem Partner" flow
+model EcoPartnerApplication {
+  id        String   @id @default(cuid())
+
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  name      String
+  email     String
+  linkedin  String   @default("")
+  website   String   @default("")
+
+  expertise Json     @default("[]")   // string[] — chosen expertise tags
+
+  // Completion flags (OTP & NDA are client-side; we trust the payload)
+  otpVerified       Boolean @default(false)
+  ndaSigned         Boolean @default(false)
+  signatureProvided Boolean @default(false)
+
+  status    String   @default("PENDING")   // PENDING | APPROVED | REJECTED
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([status, createdAt])
+  @@map("eco_partner_applications")
 }

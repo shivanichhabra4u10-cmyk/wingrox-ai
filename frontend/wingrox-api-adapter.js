@@ -608,6 +608,18 @@
     },
   };
 
+  window.wingroxEco = {
+    /** Submit a partner application. */
+    async apply(payload) {
+      return api('/eco/apply', { method: 'POST', body: JSON.stringify(payload) });
+    },
+    /** List applications (admin). */
+    async listApplications(page, status) {
+      const qs = '?page=' + (page || 1) + (status ? '&status=' + status : '');
+      return api('/eco/applications' + qs);
+    },
+  };
+
   // Wire up after DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {

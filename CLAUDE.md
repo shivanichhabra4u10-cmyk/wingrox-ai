@@ -231,8 +231,10 @@ async function submitForm() {
 | `/files` | `routes/files.js` | `uploaded_files` | `POST /api/files`, `GET /api/files`, `DELETE /api/files/:id` |
 | `/leads` | `routes/leads.js` | `advisor_leads` | `POST /api/leads` |
 | `/payments` | `routes/payments.js` | `payments` | Stripe integration |
+| `/match` | `routes/match.js` | `match_requests`, `discovery_calls` | `POST /api/match`, `GET /api/match`, `POST /api/match/book-call` |
+| `/eco` | `routes/eco.js` | `eco_partner_applications` | `POST /api/eco/apply`, `GET /api/eco/applications` |
 
-> **Note:** `/dashboard`, `/match`, `/hub`, `/sim`, `/eco` routes do **not exist yet** in the backend.
+> **Note:** `/dashboard`, `/hub`, `/sim` routes do **not exist yet** in the backend.
 
 ## Frontend Status
 
@@ -248,7 +250,7 @@ async function submitForm() {
 | `#view-match` | ✅ Full HTML | ✅ Wired | `wingroxMatch.run()` → `POST /api/match`; `wingroxMatch.bookCall()` → `POST /api/match/book-call`; result saved to DB |
 | `#view-hub` | ✅ Full HTML | ❌ | No backend route exists |
 | `#view-sim` | ✅ Full HTML | ❌ | No backend route exists |
-| `#view-eco` | ❌ iframe stub | ❌ | Renders blank; no HTML content |
+| `#view-eco` | ❌ iframe stub (PLATFORM_ECOSYSTEM) | ✅ Wired | postMessage bridge: `wingrox:partner:apply` → `wingroxEco.apply()` → `POST /api/eco/apply`; saves to DB |
 | `#view-atlas` | ✅ Full HTML | ❌ | Static only |
 
 ---
