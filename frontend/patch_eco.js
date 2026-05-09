@@ -15,8 +15,10 @@ while (pos < html.length) {
 let dec = Buffer.from(raw, 'base64').toString('utf8');
 console.log('Decoded len:', dec.length);
 
-// Strip any previously injected nextStep bridges
+// Strip any previously injected bridges (nextStep style)
 dec = dec.replace(/\n\/\/ WINGROX BRIDGE[\s\S]{0,2000}?\}\)\(\);\n/g, '\n');
+// Strip inline bridges inside submitApplication (both comment styles)
+dec = dec.replace(/\n  \/\/ WinGroX bridge:[\s\S]{0,1500}?\}\)\(\);\n/g, '\n');
 console.log('After cleanup len:', dec.length);
 
 const TARGET = "showToast('Application submitted! Generating certificate...');";
