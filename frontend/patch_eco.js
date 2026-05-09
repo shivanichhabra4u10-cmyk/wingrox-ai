@@ -15,6 +15,13 @@ while (pos < html.length) {
 let dec = Buffer.from(raw, 'base64').toString('utf8');
 console.log('Decoded len:', dec.length);
 
+// ── PATCH 0: Force #view-success to display:none by default ──
+// The original CSS has #view-success { display:flex } which always shows it.
+dec = dec.replace(/#view-success\s*\{([^}]*?)display\s*:\s*flex([^}]*?)\}/g, function(m, before, after) {
+  return '#view-success {' + before + 'display:none' + after + '}';
+});
+console.log('PATCH 0: #view-success display overridden to none');
+
 // ── PATCH 1: Replace validateStep with canonical clean version ──
 // (LinkedIn mandatory, website optional URL validation, no duplicate blocks)
 const VALIDATE_RE = /function validateStep\(step\) \{[\s\S]*?return true;\s*\}/;
@@ -52,8 +59,7 @@ const SUBMIT_CLEAN = `function submitApplication() {
   const otp2 = [...otpInputs].map(i => i.value).join('');
   if (otp2.length < 6) { showToast('Please enter your signature OTP'); return; }
   document.getElementById('sig-hash').textContent = 'SHA-256: ' + generateHash();
-  showToast('Application submitted! Generating certificate...');
-  setTimeout(function(){ showView('success'); }, 1200);
+  showToast('Submitting your application...');
   try {
     var _exp = [];
     document.querySelectorAll('.chip.selected,.chip.active,.custom-chip').forEach(function(el){
@@ -72,13 +78,36 @@ const SUBMIT_CLEAN = `function submitApplication() {
         signatureProvided: true
       }
     }, '*');
-  } catch(_e){ console.warn('WinGroX bridge error:',_e); }
-}`;
+  } catch(_e){ console.warn('WinGroX bridge error:',_e); showToast('Submission failed. Please try again.'); }
+}
+
+// Listen for messages from parent
+window.addEventListener('message', function(e) {
+  if (!e.data) return;
+  if (e.data.type === 'wingrox:eco:apply:result') {
+    if (e.data.ok) {
+      showView('success');
+      var sv = document.getElementById('view-success');
+      if (sv) sv.style.display = 'flex';
+    } else {
+      showToast('Submission failed: ' + (e.data.error || 'Please try again.'));
+    }
+  }
+  if (e.data.type === 'wingrox:eco:reset') {
+    showView('landing');
+  }
+});`;
 if (!SUBMIT_RE.test(dec)) { console.error('submitApplication not found'); process.exit(1); }
 dec = dec.replace(SUBMIT_RE, SUBMIT_CLEAN);
 console.log('PATCH 2: submitApplication replaced (single postMessage)');
 console.log('Total postMessage calls:', (dec.match(/wingrox:partner:apply/g)||[]).length);
 console.log('Bridge injected OK');
+
+// ── PATCH 3: Remove any duplicate legacy message listeners ──
+const DUP_LISTENER_RE = /\/\/ Listen for result from parent\s*\n\s*window\.addEventListener\('message',[\s\S]*?\}\s*\}\s*\}\s*\)\s*;/g;
+const beforeRemoval = (dec.match(DUP_LISTENER_RE) || []).length;
+dec = dec.replace(DUP_LISTENER_RE, '');
+console.log('PATCH 3: removed', beforeRemoval, 'legacy message listener(s)');
 
 const encoded = Buffer.from(dec, 'utf8').toString('base64');
 const chunks = encoded.match(/.{1,80}/g);
