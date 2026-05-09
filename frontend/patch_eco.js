@@ -25,14 +25,14 @@ const VALIDATE_CLEAN = `function validateStep(step) {
     if (!document.getElementById('f-phone').value.trim()) { showToast('Please enter your mobile number'); return false; }
     var liVal = (document.getElementById('f-linkedin')||{}).value.trim();
     if (!liVal) { showToast('LinkedIn profile URL is required'); return false; }
-    if (!/^https?:\\/\\/[^\\s]{3,}\\.[^\\s]{2,}/i.test(liVal)) { showToast('Please enter a valid LinkedIn URL (e.g. https://linkedin.com/in/your-name)'); return false; }
+    if (!/^(https?:\\/\\/)?[^\\s]{3,}\\.[^\\s]{2,}/i.test(liVal)) { showToast('Please enter a valid LinkedIn URL (e.g. https://linkedin.com/in/your-name)'); return false; }
   }
   if (step === 2) {
     if (selectedExpertise.size === 0) { showToast('Please select at least one expertise area'); return false; }
   }
   if (step === 3) {
     var webVal = ((document.getElementById('f-website')||document.getElementById('f-url')||{}).value||'').trim();
-    if (webVal && !/^https?:\\/\\/[^\\s]{3,}\\.[^\\s]{2,}/i.test(webVal)) { showToast('Please enter a valid Website URL (e.g. https://yoursite.com)'); return false; }
+    if (webVal && !/^(https?:\\/\\/)?[^\\s]{3,}\\.[^\\s]{2,}/i.test(webVal)) { showToast('Please enter a valid Website URL (e.g. https://yoursite.com)'); return false; }
   }
   if (step === 4 && !otpVerified) { showToast('Please verify your OTP first'); return false; }
   if (step === 5) {
