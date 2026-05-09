@@ -1,4 +1,4 @@
-﻿// patch_eco.js — injects postMessage bridge into submitApplication() in PLATFORM_ECOSYSTEM
+﻿// patch_eco.js — clean canonical patch for PLATFORM_ECOSYSTEM
 const fs = require('fs');
 const html = fs.readFileSync('wingrox-os.html', 'utf8');
 
@@ -15,42 +15,69 @@ while (pos < html.length) {
 let dec = Buffer.from(raw, 'base64').toString('utf8');
 console.log('Decoded len:', dec.length);
 
-// Strip any previously injected bridges (nextStep style)
-dec = dec.replace(/\n\/\/ WINGROX BRIDGE[\s\S]{0,2000}?\}\)\(\);\n/g, '\n');
-// Strip inline bridges inside submitApplication (both comment styles)
-dec = dec.replace(/\n  \/\/ WinGroX bridge:[\s\S]{0,1500}?\}\)\(\);\n/g, '\n');
-console.log('After cleanup len:', dec.length);
+// ── PATCH 1: Replace validateStep with canonical clean version ──
+// (LinkedIn mandatory, website optional URL validation, no duplicate blocks)
+const VALIDATE_RE = /function validateStep\(step\) \{[\s\S]*?return true;\s*\}/;
+const VALIDATE_CLEAN = `function validateStep(step) {
+  if (step === 1) {
+    if (!document.getElementById('f-name').value.trim()) { showToast('Please enter your full name'); return false; }
+    if (!document.getElementById('f-email').value.trim()) { showToast('Please enter your email'); return false; }
+    if (!document.getElementById('f-phone').value.trim()) { showToast('Please enter your mobile number'); return false; }
+    var liVal = (document.getElementById('f-linkedin')||{}).value.trim();
+    if (!liVal) { showToast('LinkedIn profile URL is required'); return false; }
+    if (!/^https?:\\/\\/[^\\s]{3,}\\.[^\\s]{2,}/i.test(liVal)) { showToast('Please enter a valid LinkedIn URL (e.g. https://linkedin.com/in/your-name)'); return false; }
+  }
+  if (step === 2) {
+    if (selectedExpertise.size === 0) { showToast('Please select at least one expertise area'); return false; }
+  }
+  if (step === 3) {
+    var webVal = ((document.getElementById('f-website')||document.getElementById('f-url')||{}).value||'').trim();
+    if (webVal && !/^https?:\\/\\/[^\\s]{3,}\\.[^\\s]{2,}/i.test(webVal)) { showToast('Please enter a valid Website URL (e.g. https://yoursite.com)'); return false; }
+  }
+  if (step === 4 && !otpVerified) { showToast('Please verify your OTP first'); return false; }
+  if (step === 5) {
+    if (!document.getElementById('nda-agree').checked) { showToast('Please read and accept the agreement'); return false; }
+  }
+  return true;
+}`;
+if (!VALIDATE_RE.test(dec)) { console.error('validateStep not found'); process.exit(1); }
+dec = dec.replace(VALIDATE_RE, VALIDATE_CLEAN);
+console.log('PATCH 1: validateStep replaced (LinkedIn mandatory)');
 
-const TARGET = "showToast('Application submitted! Generating certificate...');";
-if (!dec.includes(TARGET)) { console.error('Target line not found'); process.exit(1); }
-
-const INJECT = [
-  '',
-  '  // WinGroX bridge: send to parent → backend',
-  '  (function(){',
-  '    try {',
-  '      var _exp = [];',
-  '      document.querySelectorAll(".chip.selected,.chip.active,.custom-chip").forEach(function(el){',
-  '        var t = el.textContent.replace(/\\u2715|\\u00d7/g,"").trim(); if(t) _exp.push(t);',
-  '      });',
-  '      window.parent.postMessage({',
-  "        type: 'wingrox:partner:apply',",
-  '        payload: {',
-  '          name:              (document.getElementById("f-name")    ||{}).value||"",',
-  '          email:             (document.getElementById("sig-email") ||{}).value||"",',
-  '          linkedin:          (document.getElementById("f-linkedin")||{}).value||"",',
-  '          website:           (document.getElementById("f-website") ||document.getElementById("f-url")||{}).value||"",',
-  '          expertise:         _exp,',
-  '          otpVerified:       typeof otpVerified  !=="undefined"?!!otpVerified :true,',
-  '          ndaSigned:         typeof ndaScrolled  !=="undefined"?!!ndaScrolled :true,',
-  '          signatureProvided: true',
-  '        }',
-  "      }, '*');",
-  '    } catch(_e){ console.warn("WinGroX bridge error:",_e); }',
-  '  })();',
-].join('\n');
-
-dec = dec.replace(TARGET, TARGET + INJECT);
+// ── PATCH 2: Replace submitApplication with canonical clean version ──
+// (single postMessage, no duplicates)
+const SUBMIT_RE = /function submitApplication\(\) \{[\s\S]*?\n\}/;
+const SUBMIT_CLEAN = `function submitApplication() {
+  const otpInputs = document.querySelectorAll('#step-6 .otp-input');
+  const otp2 = [...otpInputs].map(i => i.value).join('');
+  if (otp2.length < 6) { showToast('Please enter your signature OTP'); return; }
+  document.getElementById('sig-hash').textContent = 'SHA-256: ' + generateHash();
+  showToast('Application submitted! Generating certificate...');
+  setTimeout(function(){ showView('success'); }, 1200);
+  try {
+    var _exp = [];
+    document.querySelectorAll('.chip.selected,.chip.active,.custom-chip').forEach(function(el){
+      var t = el.textContent.replace(/\\u2715|\\u00d7/g,'').trim(); if(t) _exp.push(t);
+    });
+    window.parent.postMessage({
+      type: 'wingrox:partner:apply',
+      payload: {
+        name:              (document.getElementById('f-name')    ||{}).value||'',
+        email:             (document.getElementById('sig-email') ||{}).value||'',
+        linkedin:          (document.getElementById('f-linkedin')||{}).value||'',
+        website:           (document.getElementById('f-website') ||document.getElementById('f-url')||{}).value||'',
+        expertise:         _exp,
+        otpVerified:       typeof otpVerified !=='undefined'?!!otpVerified:true,
+        ndaSigned:         typeof ndaScrolled !=='undefined'?!!ndaScrolled:true,
+        signatureProvided: true
+      }
+    }, '*');
+  } catch(_e){ console.warn('WinGroX bridge error:',_e); }
+}`;
+if (!SUBMIT_RE.test(dec)) { console.error('submitApplication not found'); process.exit(1); }
+dec = dec.replace(SUBMIT_RE, SUBMIT_CLEAN);
+console.log('PATCH 2: submitApplication replaced (single postMessage)');
+console.log('Total postMessage calls:', (dec.match(/wingrox:partner:apply/g)||[]).length);
 console.log('Bridge injected OK');
 
 const encoded = Buffer.from(dec, 'utf8').toString('base64');
