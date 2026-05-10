@@ -14797,12 +14797,73 @@ function dtRenderTier() {
 function dtSelectTier(tier) {
   DT_STATE.tier = tier;
   if (tier === 'apex') {
-    window.location.href = `mailto:${ADVISOR_EMAIL}?subject=Apex%20Boardroom-Grade%20Engagement&body=Hi%20WinGroX%2C%0A%0AI'd%20like%20to%20book%20an%20Apex%20engagement.%0A%0AThanks.`;
-    dtToast('Email opened. Welcome to Apex.');
+    dtShowApexBooking();
     return;
   }
   dtToast(tier === 'nucleus' ? 'Nucleus · 15 questions' : 'Vanguard · 100 questions');
   dtStage('profile');
+}
+
+function dtShowApexBooking() {
+  // Show apex booking panel inline
+  const existing = document.getElementById('dt-apex-modal');
+  if (existing) { existing.style.display = 'flex'; return; }
+  const modal = document.createElement('div');
+  modal.id = 'dt-apex-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(26,24,20,.72);display:flex;align-items:center;justify-content:center;z-index:9999;padding:24px;';
+  modal.innerHTML = `
+    <div style="background:var(--surface,#fff);border-radius:16px;padding:40px;max-width:480px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.18);position:relative;">
+      <button onclick="document.getElementById('dt-apex-modal').style.display='none'" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--ink-50);">×</button>
+      <div style="font-family:var(--f-mono);font-size:10px;color:var(--gold-deep);letter-spacing:.14em;text-transform:uppercase;font-weight:700;margin-bottom:8px;">◆ APEX ENGAGEMENT</div>
+      <h2 style="font-family:var(--f-display);font-size:24px;font-weight:400;color:var(--ink);margin-bottom:8px;line-height:1.2;">Book your Apex Call</h2>
+      <p style="font-size:13px;color:var(--ink-70);margin-bottom:24px;line-height:1.6;">Boardroom-grade advisory. Pitch coaching + written action brief in 7 days. A team member will confirm within 24 hours.</p>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <input id="dt-apex-name" type="text" placeholder="Full name *" style="padding:11px 14px;border:1px solid var(--ink-08,#eee);border-radius:8px;font-family:var(--f-body);font-size:14px;color:var(--ink);background:var(--cream,#faf9f6);width:100%;box-sizing:border-box;">
+        <input id="dt-apex-email" type="email" placeholder="Email address *" style="padding:11px 14px;border:1px solid var(--ink-08,#eee);border-radius:8px;font-family:var(--f-body);font-size:14px;color:var(--ink);background:var(--cream,#faf9f6);width:100%;box-sizing:border-box;">
+        <input id="dt-apex-mobile" type="tel" placeholder="Mobile (optional)" style="padding:11px 14px;border:1px solid var(--ink-08,#eee);border-radius:8px;font-family:var(--f-body);font-size:14px;color:var(--ink);background:var(--cream,#faf9f6);width:100%;box-sizing:border-box;">
+        <textarea id="dt-apex-msg" rows="3" placeholder="Tell us about your company and goals (optional)" style="padding:11px 14px;border:1px solid var(--ink-08,#eee);border-radius:8px;font-family:var(--f-body);font-size:14px;color:var(--ink);background:var(--cream,#faf9f6);width:100%;box-sizing:border-box;resize:vertical;"></textarea>
+      </div>
+      <div id="dt-apex-err" style="color:#c0392b;font-size:12px;margin-top:8px;display:none;"></div>
+      <button id="dt-apex-submit" onclick="dtSubmitApexBooking()" style="margin-top:18px;width:100%;padding:13px;background:var(--ink,#1a1814);color:#fff;border:none;border-radius:999px;font-family:var(--f-body);font-size:14px;font-weight:500;cursor:pointer;letter-spacing:.02em;transition:.18s;">
+        Confirm Booking →
+      </button>
+      <p style="font-size:11px;color:var(--ink-50);margin-top:12px;text-align:center;">No payment now · Our team will contact you within 24 hours</p>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+function dtSubmitApexBooking() {
+  const name  = (document.getElementById('dt-apex-name') ||{}).value.trim();
+  const email = (document.getElementById('dt-apex-email')||{}).value.trim();
+  const mobile= (document.getElementById('dt-apex-mobile')||{}).value.trim();
+  const msg   = (document.getElementById('dt-apex-msg')  ||{}).value.trim();
+  const errEl = document.getElementById('dt-apex-err');
+  const btn   = document.getElementById('dt-apex-submit');
+  if (!name)  { errEl.textContent='Please enter your name.'; errEl.style.display='block'; return; }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { errEl.textContent='Please enter a valid email.'; errEl.style.display='block'; return; }
+  errEl.style.display='none';
+  btn.disabled=true; btn.textContent='Booking…';
+  const payload = { context:'apex-booking', email, name, mobile:mobile||undefined, message:msg||undefined, tier:'APEX', masterScore: DT_STATE.masterScore||undefined, sessionId: DT_STATE.sessionId||undefined };
+  (window.wingroxLeads ? window.wingroxLeads.create(payload) : fetch('/api/leads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).then(r=>r.json()))
+    .then(function(d) {
+      if (d && d.ok) {
+        const modal = document.getElementById('dt-apex-modal');
+        if (modal) modal.innerHTML = `<div style="background:var(--surface,#fff);border-radius:16px;padding:48px 40px;max-width:480px;width:100%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.18);">
+          <div style="font-size:40px;margin-bottom:16px;">✓</div>
+          <h2 style="font-family:var(--f-display);font-size:22px;color:var(--ink);font-weight:400;margin-bottom:10px;">Booking Confirmed</h2>
+          <p style="font-size:14px;color:var(--ink-70);line-height:1.6;margin-bottom:24px;">Thank you, ${name}. Our team will reach out to <strong>${email}</strong> within 24 hours to schedule your Apex call.</p>
+          <button onclick="document.getElementById('dt-apex-modal').style.display='none'" style="padding:11px 28px;background:var(--ink);color:#fff;border:none;border-radius:999px;font-family:var(--f-body);font-size:14px;cursor:pointer;">Close</button>
+        </div>`;
+      } else {
+        btn.disabled=false; btn.textContent='Confirm Booking →';
+        errEl.textContent='Submission failed. Please try again.'; errEl.style.display='block';
+      }
+    })
+    .catch(function() {
+      btn.disabled=false; btn.textContent='Confirm Booking →';
+      errEl.textContent='Network error. Please try again.'; errEl.style.display='block';
+    });
 }
 
 // ═══ STAGE 2 · PROFILE ═══

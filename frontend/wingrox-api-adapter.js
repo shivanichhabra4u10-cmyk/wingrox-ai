@@ -194,6 +194,10 @@
   
   // ── Lead capture ─────────────────────────────────────────
   window.wingroxLeads = {
+    async create(payload) {
+      if (!payload.email) throw new Error('Email is required');
+      return api('/leads', { method: 'POST', body: JSON.stringify(payload) });
+    },
     async submit(context, extra = {}) {
       // Pull data from current DT_STATE if available
       const state = window.DT_STATE || {};
