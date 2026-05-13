@@ -624,6 +624,25 @@
     },
   };
 
+  window.wingroxTwin = {
+    /** Fetch Growth DNA summary for one company from backend. */
+    async getGrowthDna(companyId) {
+      return api('/v1/growth-dna/' + encodeURIComponent(companyId));
+    },
+    /** Fetch Growth DNA summaries for all companies. */
+    async listGrowthDna() {
+      return api('/v1/growth-dna');
+    },
+    /** Optional endpoint for configure dashboard widgets (bar/pie/events). */
+    async getConfigureDashboard(companyId) {
+      return api('/v1/growth-dna/' + encodeURIComponent(companyId) + '/dashboard');
+    },
+    /** Optional endpoint for per-system counts (if backend exposes it). */
+    async getSystemRecordCounts(companyId) {
+      return api('/v1/growth-dna/' + encodeURIComponent(companyId) + '/system-counts');
+    },
+  };
+
   // Wire up after DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {

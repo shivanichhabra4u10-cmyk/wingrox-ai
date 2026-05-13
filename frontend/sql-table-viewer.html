@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WinGroX SQL Table Viewer</title>
+  <style>
+    :root {
+      --bg: #0c1424;
+      --panel: #121e34;
+      --panel-2: #0f1a2f;
+      --line: #28456f;
+      --text: #e9eef8;
+      --muted: #9db2d4;
+      --accent: #4ea2ff;
+      --accent-2: #79c0ff;
+      --good: #48c78e;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: radial-gradient(circle at 20% 0%, #13274a 0%, var(--bg) 55%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    h1 {
+      margin: 0 0 4px;
+      font-size: 28px;
+      letter-spacing: 0.2px;
+    }
+
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr 2fr;
+      gap: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    select,
+    button,
+    input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #0d1830;
+      color: var(--text);
+      padding: 10px;
+      font-size: 14px;
+    }
+
+    select[multiple] {
+      min-height: 210px;
+      padding: 8px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .btn-row button {
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .btn-row button:hover {
+      background: #142748;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      background: #0c172e;
+    }
+
+    .metric .k {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+
+    .metric .v {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent-2);
+      line-height: 1;
+    }
+
+    .metric .hint {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 14px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .ok { color: var(--good); }
+    .muted { color: var(--muted); }
+
+    #dataPreview table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 12px;
+    }
+
+    #dataPreview th,
+    #dataPreview td {
+      text-align: left;
+      padding: 8px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    #dataPreview th {
+      background: #0d1830;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    #dataPreview td {
+      color: var(--accent);
+      word-break: break-all;
+    }
+
+    @media (max-width: 980px) {
+      .controls { grid-template-columns: 1fr; }
+      .summary { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="card">
+      <h1>SQL Table Data Viewer</h1>
+      <p class="sub">SQL table explorer for fast local analysis.</p>
+    </section>
+
+    <section class="card controls">
+      <div>
+        <label for="sqlSource">SQL Source</label>
+        <select id="sqlSource">
+          <option value="./urbanbasket-synthetic-database.sql">urbanbasket-synthetic-database.sql</option>
+          <option value="./urbanbasket-demo-values.sql">urbanbasket-demo-values.sql (temp demo rows)</option>
+          <option value="./01-universal-database-schema.sql">01-universal-database-schema.sql</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="systemFilter">System Filter</label>
+        <select id="systemFilter">
+          <option value="all">All systems</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="tableFilter">Table Selection (Ctrl/Cmd + click for multiple)</label>
+        <select id="tableFilter" multiple></select>
+        <div class="btn-row">
+          <button id="selectAllBtn" type="button">Select all visible</button>
+          <button id="clearBtn" type="button">Clear selection</button>
+          <button id="refreshBtn" type="button">Reload SQL</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card summary">
+      <div class="metric">
+        <div class="k">Selected Total</div>
+        <div class="v" id="selectedTotal">0</div>
+        <div class="hint">Rows from selected tables</div>
+      </div>
+      <div class="metric">
+        <div class="k">Selected Tables</div>
+        <div class="v" id="selectedTables">0</div>
+        <div class="hint">Count of selected table names</div>
+      </div>
+      <div class="metric">
+        <div class="k">All Tables</div>
+        <div class="v" id="allTables">0</div>
+        <div class="hint">Detected in current SQL</div>
+      </div>
+      <div class="metric">
+        <div class="k">Status</div>
+        <div class="v ok" id="statusText">Ready</div>
+        <div class="hint" id="statusHint">Waiting for load</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="muted">Table Breakdown</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Table</th>
+            <th>System</th>
+            <th>Rows</th>
+          </tr>
+        </thead>
+        <tbody id="rowsBody"></tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <div class="muted">Sample Data</div>
+      <div id="dataPreview" style="margin-top: 12px; overflow-x: auto;"></div>
+    </section>
+  </div>
+
+  <script>
+    const MAX_PREVIEW_ROWS = 200;
+    const PREVIEW_PAGE_SIZE = 50;
+    const VIEWER_CONFIG = {
+      // Keep file mode for demos; switch later if backend preview is introduced.
+      sourceMode: "file"
+    };
+
+    const SYSTEM_PREFIXES = {
+      erp: ["erp_"],
+      crm: ["crm_"],
+      hrms: ["hr_"],
+      finance: ["finance_"],
+      workflow: ["workflow_"],
+      commerce: ["commerce_"],
+      logistics: ["logistics_"],
+      support: ["support_"],
+      marketing: ["marketing_"],
+      security: ["security_"],
+      analytics: ["product_analytics_"],
+      procurement: ["procurement_"]
+    };
+
+    const state = {
+      tableCounts: {},
+      tableData: {},
+      previewPageByTable: {},
+      source: "./urbanbasket-synthetic-database.sql"
+    };
+
+    const els = {
+      sqlSource: document.getElementById("sqlSource"),
+      systemFilter: document.getElementById("systemFilter"),
+      tableFilter: document.getElementById("tableFilter"),
+      selectAllBtn: document.getElementById("selectAllBtn"),
+      clearBtn: document.getElementById("clearBtn"),
+      refreshBtn: document.getElementById("refreshBtn"),
+      selectedTotal: document.getElementById("selectedTotal"),
+      selectedTables: document.getElementById("selectedTables"),
+      allTables: document.getElementById("allTables"),
+      statusText: document.getElementById("statusText"),
+      statusHint: document.getElementById("statusHint"),
+      rowsBody: document.getElementById("rowsBody"),
+      dataPreview: document.getElementById("dataPreview")
+    };
+
+    function detectSystem(table) {
+      for (const [system, prefixes] of Object.entries(SYSTEM_PREFIXES)) {
+        if (prefixes.some((p) => table.startsWith(p))) return system;
+      }
+      return "other";
+    }
+
+    function countRowsInValuesClause(statement) {
+      const upper = statement.toUpperCase();
+      const idx = upper.indexOf("VALUES");
+      if (idx === -1) return 0;
+
+      const valuesPart = statement.slice(idx + 6);
+      let depth = 0;
+      let inSingle = false;
+      let tuples = 0;
+
+      for (let i = 0; i < valuesPart.length; i++) {
+        const ch = valuesPart[i];
+
+        if (ch === "'") {
+          if (inSingle && valuesPart[i + 1] === "'") {
+            i++;
+            continue;
+          }
+          inSingle = !inSingle;
+          continue;
+        }
+
+        if (inSingle) continue;
+
+        if (ch === "(") {
+          if (depth === 0) tuples++;
+          depth++;
+        } else if (ch === ")") {
+          depth = Math.max(0, depth - 1);
+        }
+      }
+
+      return tuples;
+    }
+
+    function extractDataFromValuesClause(statement, maxRows = Infinity) {
+      const upper = statement.toUpperCase();
+      const idx = upper.indexOf("VALUES");
+      if (idx === -1) return [];
+
+      const valuesPart = statement.slice(idx + 6).trim();
+      const rows = [];
+      let current = "";
+      let depth = 0;
+      let inSingle = false;
+      let escaped = false;
+
+      for (let i = 0; i < valuesPart.length && rows.length < maxRows; i++) {
+        const ch = valuesPart[i];
+
+        if (escaped) {
+          current += ch;
+          escaped = false;
+          continue;
+        }
+
+        if (ch === "\\" && inSingle) {
+          escaped = true;
+          continue;
+        }
+
+        if (ch === "'") {
+          current += ch;
+          inSingle = !inSingle;
+          continue;
+        }
+
+        if (inSingle) {
+          current += ch;
+          continue;
+        }
+
+        if (ch === "(") {
+          if (depth === 0) current = "";
+          else current += ch;
+          depth++;
+          continue;
+        }
+
+        if (ch === ")") {
+          depth--;
+          if (depth === 0) {
+            const row = parseRowValues(current);
+            if (row) rows.push(row);
+            current = "";
+          } else {
+            current += ch;
+          }
+          continue;
+        }
+
+        current += ch;
+      }
+
+      return rows;
+    }
+
+    function parseRowValues(str) {
+      const parts = [];
+      let current = "";
+      let inSingle = false;
+
+      const pushToken = (token, quoted) => {
+        const value = token.trim();
+        if (!quoted && value === "") {
+          parts.push(null);
+          return;
+        }
+        if (quoted) {
+          parts.push(token);
+          return;
+        }
+        const lower = value.toLowerCase();
+        if (lower === "null") {
+          parts.push(null);
+        } else if (lower === "true") {
+          parts.push(true);
+        } else if (lower === "false") {
+          parts.push(false);
+        } else if (value !== "" && !Number.isNaN(Number(value))) {
+          parts.push(Number(value));
+        } else {
+          parts.push(value);
+        }
+      };
+
+      for (let i = 0; i < str.length; i++) {
+        const ch = str[i];
+
+        if (inSingle) {
+          if (ch === "'" && str[i + 1] === "'") {
+            current += "'";
+            i++;
+            continue;
+          }
+          if (ch === "'") {
+            pushToken(current, true);
+            current = "";
+            inSingle = false;
+            continue;
+          }
+          current += ch;
+          continue;
+        }
+
+        if (ch === "'") {
+          inSingle = true;
+          continue;
+        }
+
+        if (ch === ",") {
+          pushToken(current, false);
+          current = "";
+          continue;
+        }
+
+        if (ch !== " " || current.length > 0) {
+          current += ch;
+        }
+      }
+
+      if (current.length > 0 || str.endsWith(",")) {
+        pushToken(current, false);
+      }
+
+      return parts.length > 0 ? parts : null;
+    }
+
+    function extractTableCountsFromSql(sqlText) {
+      const counts = {};
+      state.tableData = {};
+      const statements = sqlText.split(/;\s*(?:\r?\n|$)/g);
+
+      for (const raw of statements) {
+        const statement = raw.trim();
+        const cleaned = statement.replace(/^(?:\s*--[^\n]*\n|\s*\n)*/g, "").trim();
+        if (!/^INSERT\s+INTO\s+/i.test(cleaned)) continue;
+
+        const tableMatch = cleaned.match(/^INSERT\s+INTO\s+([a-zA-Z_][a-zA-Z0-9_]*)/i);
+        if (!tableMatch) continue;
+
+        const table = tableMatch[1].toLowerCase();
+        
+        // Extract columns
+        const colMatch = cleaned.match(/INSERT\s+INTO\s+[a-zA-Z_][a-zA-Z0-9_]*\s*\(\s*([^)]+)\s*\)/i);
+        const columns = colMatch ? colMatch[1].split(",").map(c => c.trim()) : [];
+
+        let rows = 0;
+        let isSynthetic = false;
+
+        // Check for generate_series (synthetic data)
+        const seriesMatch = cleaned.match(/FROM\s+generate_series\s*\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\)/i);
+        if (seriesMatch) {
+          const start = Number(seriesMatch[1]);
+          const end = Number(seriesMatch[2]);
+          rows = Number.isFinite(start) && Number.isFinite(end) ? Math.max(0, end - start + 1) : 0;
+          isSynthetic = true;
+        } else {
+          // Count VALUES tuples
+          rows = countRowsInValuesClause(cleaned);
+        }
+
+        if (!Number.isFinite(rows) || rows <= 0) continue;
+        counts[table] = (counts[table] || 0) + rows;
+
+        // For synthetic data, show column structure; for static data, extract samples
+        if (!state.tableData[table]) {
+          if (isSynthetic) {
+            state.tableData[table] = {
+              columns: columns,
+              rows: [],
+              isSynthetic: true,
+              totalRows: rows
+            };
+          } else {
+            state.tableData[table] = {
+              columns: columns,
+              rows: extractDataFromValuesClause(cleaned, MAX_PREVIEW_ROWS),
+              isSynthetic: false
+            };
+          }
+        }
+      }
+
+      return counts;
+    }
+
+    function fmt(num) {
+      const n = Number(num || 0);
+      return n.toLocaleString("en-US");
+    }
+
+    function getFilteredTables() {
+      const system = els.systemFilter.value;
+      const all = Object.entries(state.tableCounts).map(([table, rows]) => ({
+        table,
+        rows,
+        system: detectSystem(table)
+      }));
+
+      if (system === "all") return all;
+      return all.filter((x) => x.system === system);
+    }
+
+    function renderSystemFilter() {
+      const systems = new Set(Object.keys(SYSTEM_PREFIXES));
+      for (const table of Object.keys(state.tableCounts)) systems.add(detectSystem(table));
+
+      const current = els.systemFilter.value;
+      els.systemFilter.innerHTML = "<option value=\"all\">All systems</option>";
+      [...systems].sort().forEach((s) => {
+        const opt = document.createElement("option");
+        opt.value = s;
+        opt.textContent = s.toUpperCase();
+        els.systemFilter.appendChild(opt);
+      });
+      els.systemFilter.value = [...els.systemFilter.options].some((o) => o.value === current) ? current : "all";
+    }
+
+    function renderTableFilter() {
+      const visible = getFilteredTables().sort((a, b) => b.rows - a.rows);
+      const selected = new Set([...els.tableFilter.selectedOptions].map((o) => o.value));
+
+      els.tableFilter.innerHTML = "";
+      visible.forEach(({ table, rows }) => {
+        const opt = document.createElement("option");
+        opt.value = table;
+        opt.textContent = `${table} (${fmt(rows)})`;
+        if (selected.has(table)) opt.selected = true;
+        els.tableFilter.appendChild(opt);
+      });
+    }
+
+    function renderTableRows() {
+      const selectedTables = [...els.tableFilter.selectedOptions].map((o) => o.value);
+      const selectedSet = new Set(selectedTables);
+      const source = getFilteredTables().filter((x) => selectedSet.size === 0 || selectedSet.has(x.table));
+
+      source.sort((a, b) => b.rows - a.rows);
+      const total = source.reduce((sum, x) => sum + Number(x.rows || 0), 0);
+
+      els.selectedTotal.textContent = fmt(total);
+      els.selectedTables.textContent = fmt(selectedSet.size || source.length);
+      els.allTables.textContent = fmt(Object.keys(state.tableCounts).length);
+
+      if (!source.length) {
+        els.rowsBody.innerHTML = '<tr><td colspan="3" class="muted">No tables match your current filter.</td></tr>';
+        els.dataPreview.innerHTML = '';
+        return;
+      }
+
+      els.rowsBody.innerHTML = source
+        .map((x) => `<tr><td>${x.table}</td><td>${x.system.toUpperCase()}</td><td>${fmt(x.rows)}</td></tr>`)
+        .join("");
+
+      // Show data preview for first selected table (or first visible if none selected)
+      const previewTable = selectedTables.length > 0 ? selectedTables[0] : source[0]?.table;
+      renderDataPreview(previewTable);
+    }
+
+    function renderDataPreview(tableName) {
+      const tableData = state.tableData[tableName];
+      if (!tableData) {
+        els.dataPreview.innerHTML = `<div class="muted" style="padding: 12px;">No data for <strong>${tableName}</strong></div>`;
+        return;
+      }
+
+      const { columns, rows, isSynthetic, totalRows } = tableData;
+      let html = `<div style="margin-bottom: 8px;"><strong>${tableName}</strong> `;
+      
+      if (isSynthetic) {
+        html += `<span class="muted">(${fmt(totalRows)} rows)</span></div>`;
+        html += '<div style="padding: 12px; background: #0d1830; border-radius: 8px; font-size: 13px; line-height: 1.5; color: var(--muted);">';
+        html += `Rows detected: <strong>${fmt(totalRows)}</strong> · Columns: <strong>${fmt(columns.length)}</strong> · Mode: <strong>${VIEWER_CONFIG.sourceMode}</strong>`;
+        html += '</div>';
+      } else {
+        // Static data with VALUES from SQL
+        if (!rows || rows.length === 0) {
+          els.dataPreview.innerHTML = `<div class="muted" style="padding: 12px;">No data rows found for <strong>${tableName}</strong></div>`;
+          return;
+        }
+
+        const totalRowsInPreview = rows.length;
+        const totalPages = Math.max(1, Math.ceil(totalRowsInPreview / PREVIEW_PAGE_SIZE));
+        let currentPage = state.previewPageByTable[tableName] || 1;
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+        state.previewPageByTable[tableName] = currentPage;
+
+        const start = (currentPage - 1) * PREVIEW_PAGE_SIZE;
+        const end = Math.min(start + PREVIEW_PAGE_SIZE, totalRowsInPreview);
+        const pageRows = rows.slice(start, end);
+
+        html += `<span class="muted">(showing ${start + 1}-${end} of ${totalRowsInPreview} rows, capped at ${MAX_PREVIEW_ROWS})</span></div>`;
+        html += `<div style="display:flex; gap:8px; align-items:center; margin:8px 0 10px;">`;
+        html += `<button type="button" data-preview-action="prev" data-preview-table="${tableName}" ${currentPage === 1 ? 'disabled' : ''}>Prev</button>`;
+        html += `<span class="muted">Page ${currentPage} / ${totalPages}</span>`;
+        html += `<button type="button" data-preview-action="next" data-preview-table="${tableName}" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>`;
+        html += `</div>`;
+        html += '<table style="width: 100%; border-collapse: collapse;"><thead><tr>';
+        
+        columns.forEach((col) => {
+          html += `<th style="text-align: left; padding: 8px; border-bottom: 1px solid var(--line); font-size: 12px; text-transform: uppercase; color: var(--muted);">${col}</th>`;
+        });
+        html += '</tr></thead><tbody>';
+
+        pageRows.forEach((row) => {
+          html += '<tr style="border-bottom: 1px solid var(--line);">';
+          columns.forEach((_, idx) => {
+            const cell = row[idx];
+            let display = '';
+            if (cell === null || cell === undefined) {
+              display = '<span class="muted">NULL</span>';
+            } else if (Array.isArray(cell)) {
+              display = JSON.stringify(cell);
+            } else {
+              display = String(cell).substring(0, 120);
+            }
+            html += `<td style="padding: 8px; font-size: 13px;">${display}</td>`;
+          });
+          html += '</tr>';
+        });
+
+        html += '</tbody></table>';
+      }
+
+      els.dataPreview.innerHTML = html;
+    }
+
+    async function loadSql() {
+      const source = els.sqlSource.value;
+      state.source = source;
+      els.statusText.textContent = "Loading";
+      els.statusHint.textContent = source;
+
+      try {
+        const res = await fetch(source, { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const sql = await res.text();
+        state.tableCounts = extractTableCountsFromSql(sql);
+
+        renderSystemFilter();
+        renderTableFilter();
+        renderTableRows();
+
+        els.statusText.textContent = "Loaded";
+        els.statusHint.textContent = `${fmt(Object.keys(state.tableCounts).length)} tables detected`;
+      } catch (err) {
+        state.tableCounts = {};
+        renderSystemFilter();
+        renderTableFilter();
+        renderTableRows();
+        els.statusText.textContent = "Error";
+        els.statusHint.textContent = err.message;
+      }
+    }
+
+    els.sqlSource.addEventListener("change", loadSql);
+    els.systemFilter.addEventListener("change", () => {
+      renderTableFilter();
+      renderTableRows();
+    });
+    els.tableFilter.addEventListener("change", renderTableRows);
+
+    els.selectAllBtn.addEventListener("click", () => {
+      [...els.tableFilter.options].forEach((o) => { o.selected = true; });
+      renderTableRows();
+    });
+
+    els.clearBtn.addEventListener("click", () => {
+      [...els.tableFilter.options].forEach((o) => { o.selected = false; });
+      renderTableRows();
+    });
+
+    els.refreshBtn.addEventListener("click", loadSql);
+
+    els.dataPreview.addEventListener("click", (e) => {
+      const target = e.target;
+      if (!(target instanceof HTMLElement)) return;
+
+      const action = target.getAttribute("data-preview-action");
+      const table = target.getAttribute("data-preview-table");
+      if (!action || !table) return;
+
+      const currentPage = state.previewPageByTable[table] || 1;
+      if (action === "prev") state.previewPageByTable[table] = Math.max(1, currentPage - 1);
+      if (action === "next") state.previewPageByTable[table] = currentPage + 1;
+      renderDataPreview(table);
+    });
+
+    loadSql();
+  </script>
+</body>
+</html>

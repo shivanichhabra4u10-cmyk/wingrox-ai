@@ -26398,6 +26398,207 @@ document.addEventListener('DOMContentLoaded', function() {
 /* ENHANCED DASHBOARD RENDERING - MATCHING IMAGES */
 /* ══════════════════════════════════════════════════════════════════════════ */
 
+// Demo/LIVE toggle for Advanced Digital Twin data source.
+// Priority: localStorage(wingrox_adt_demo) > window.WINGROX_ADT_DEMO > default(true)
+const ADT_DEMO_DEFAULT = window.WINGROX_ADT_DEMO !== false;
+const ADT_SQL_SOURCE = window.WINGROX_ADT_SQL_SOURCE || './urbanbasket-synthetic-database.sql';
+
+const ADT_SYSTEM_PREFIXES = {
+  erp: ['erp_'],
+  crm: ['crm_'],
+  hrms: ['hr_'],
+  finance: ['finance_'],
+  workflow: ['workflow_'],
+  commerce: ['commerce_'],
+  logistics: ['logistics_'],
+  support: ['support_'],
+  marketing: ['marketing_'],
+  security: ['security_'],
+  analytics: ['product_analytics_'],
+  procurement: ['procurement_']
+};
+
+let ADT_SQL_TABLE_COUNTS_CACHE = null;
+
+function adtIsDemoMode() {
+  const persisted = localStorage.getItem('wingrox_adt_demo');
+  if (persisted === 'true') return true;
+  if (persisted === 'false') return false;
+  return ADT_DEMO_DEFAULT;
+}
+
+function adtFormatCount(v) {
+  const n = Number(v || 0);
+  if (!Number.isFinite(n)) return '0';
+  if (n >= 1000) return `≈ ${(n / 1000).toFixed(1)}k`;
+  return `${n}`;
+}
+
+function adtCountRowsInValuesClause(statement) {
+  const upper = statement.toUpperCase();
+  const idx = upper.indexOf('VALUES');
+  if (idx === -1) return 0;
+  const valuesPart = statement.slice(idx + 6);
+  // Count tuples by detecting opening parentheses at depth 0.
+  let depth = 0;
+  let inSingle = false;
+  let tuples = 0;
+  for (let i = 0; i < valuesPart.length; i++) {
+    const ch = valuesPart[i];
+    if (ch === "'") {
+      if (inSingle && valuesPart[i + 1] === "'") {
+        i++;
+        continue;
+      }
+      inSingle = !inSingle;
+      continue;
+    }
+    if (inSingle) continue;
+    if (ch === '(') {
+      if (depth === 0) tuples++;
+      depth++;
+    } else if (ch === ')') {
+      depth = Math.max(0, depth - 1);
+    }
+  }
+  return tuples;
+}
+
+function adtExtractTableCountsFromSql(sqlText) {
+  const counts = {};
+  const statements = sqlText.split(/;\s*(?:\r?\n|$)/g);
+
+  for (const raw of statements) {
+    const statement = raw.trim();
+    const cleaned = statement.replace(/^(?:\s*--[^\n]*\n|\s*\n)*/g, '').trim();
+    if (!/^INSERT\s+INTO\s+/i.test(cleaned)) continue;
+
+    const tableMatch = cleaned.match(/^INSERT\s+INTO\s+([a-zA-Z_][a-zA-Z0-9_]*)/i);
+    if (!tableMatch) continue;
+    const table = tableMatch[1].toLowerCase();
+
+    let rows = 0;
+    const seriesMatch = cleaned.match(/FROM\s+generate_series\s*\(\s*1\s*,\s*(\d+)\s*\)/i);
+    if (seriesMatch) {
+      rows = Number(seriesMatch[1]);
+    } else {
+      rows = adtCountRowsInValuesClause(cleaned);
+    }
+
+    if (!Number.isFinite(rows) || rows <= 0) continue;
+    counts[table] = (counts[table] || 0) + rows;
+  }
+
+  return counts;
+}
+async function adtLoadSqlTableCounts() {
+  if (ADT_SQL_TABLE_COUNTS_CACHE) return ADT_SQL_TABLE_COUNTS_CACHE;
+  try {
+    const res = await fetch(ADT_SQL_SOURCE, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`SQL file fetch failed: ${res.status}`);
+    const sql = await res.text();
+    ADT_SQL_TABLE_COUNTS_CACHE = adtExtractTableCountsFromSql(sql);
+    return ADT_SQL_TABLE_COUNTS_CACHE;
+  } catch (err) {
+    console.warn('ADT demo SQL load failed, using fallback counts:', err.message);
+    ADT_SQL_TABLE_COUNTS_CACHE = {
+      erp_sales_orders: 10000,
+      erp_inventory: 500,
+      erp_procurement: 3000,
+      crm_customers: 5000,
+      crm_customer_events: 15000,
+      hr_employees: 3200,
+      hr_job_requisitions: 800,
+      workflow_events: 10000,
+      finance_pnl: 12,
+      finance_budget_approvals: 1200,
+      commerce_orders: 10000,
+      commerce_returns: 1200,
+      logistics_deliveries: 8000,
+      support_tickets: 5500,
+      marketing_campaigns: 85,
+      security_events: 450,
+      product_analytics_sessions: 25000,
+      procurement_vendors: 200
+    };
+    return ADT_SQL_TABLE_COUNTS_CACHE;
+  }
+}
+
+function adtRollupCountsBySystem(tableCounts) {
+  const out = {};
+  Object.entries(ADT_SYSTEM_PREFIXES).forEach(([systemId, prefixes]) => {
+    const total = Object.entries(tableCounts).reduce((sum, [table, count]) => {
+      if (prefixes.some(p => table.startsWith(p))) return sum + Number(count || 0);
+      return sum;
+    }, 0);
+    out[systemId] = total;
+  });
+  return out;
+}
+function adtGetSystemTableBreakdown(tableCounts, systemId) {
+  const prefixes = ADT_SYSTEM_PREFIXES[systemId] || [];
+  return Object.entries(tableCounts)
+    .filter(([table]) => prefixes.some((p) => table.startsWith(p)))
+    .sort((a, b) => Number(b[1] || 0) - Number(a[1] || 0));
+}
+
+function adtFormatTableLabel(tableName, systemId) {
+  const prefixes = ADT_SYSTEM_PREFIXES[systemId] || [];
+  let short = tableName;
+  prefixes.forEach((p) => {
+    if (short.startsWith(p)) short = short.slice(p.length);
+  });
+  return short.replace(/_/g, ' ');
+}
+async function adtGetSystemCountsForCards() {
+  // Card counts are SQL-only for deterministic demo behavior.
+  const tableCounts = await adtLoadSqlTableCounts();
+  return adtRollupCountsBySystem(tableCounts);
+}
+async function adtPopulateSystemCountCards() {
+  const tableCounts = await adtLoadSqlTableCounts();
+  const counts = adtRollupCountsBySystem(tableCounts);
+  ADT_STATE.systemCounts = counts;
+  (ADT_STATE.connectedSystems || []).slice(0, 4).forEach((sysId) => {
+    const valEl = document.getElementById(`adt-sys-value-${sysId}`);
+    const descEl = document.getElementById(`adt-sys-desc-${sysId}`);
+    let tablesEl = document.getElementById(`adt-sys-tables-${sysId}`);
+    if (!tablesEl && descEl && descEl.parentElement) {
+      tablesEl = document.createElement('div');
+      tablesEl.id = `adt-sys-tables-${sysId}`;
+      tablesEl.style.marginTop = '8px';
+      tablesEl.style.fontSize = '11px';
+      tablesEl.style.lineHeight = '1.4';
+      tablesEl.style.opacity = '0.8';
+      descEl.insertAdjacentElement('afterend', tablesEl);
+    }
+    if (valEl) valEl.textContent = adtFormatCount(counts[sysId] || 0);
+    if (descEl) descEl.textContent = 'Records ingested';
+
+    if (tablesEl) {
+      const rows = adtGetSystemTableBreakdown(tableCounts, sysId);
+      if (!rows.length) {
+        tablesEl.innerHTML = '<div style="opacity:.65">No mapped tables</div>';
+      } else {
+        tablesEl.innerHTML = rows
+          .slice(0, 4)
+          .map(([table, count]) => `<div>${adtFormatTableLabel(table, sysId)}: ${adtFormatCount(count)}</div>`)
+          .join('');
+      }
+    }
+  });
+}
+window.wingroxADT = window.wingroxADT || {
+  isDemoMode: () => adtIsDemoMode(),
+  setDemoMode(flag) {
+    localStorage.setItem('wingrox_adt_demo', flag ? 'true' : 'false');
+  },
+  clearDemoModeOverride() {
+    localStorage.removeItem('wingrox_adt_demo');
+  }
+};
+
 // Override the existing render functions with enhanced versions
 
 function adtRenderConnect() {
@@ -26457,8 +26658,8 @@ function adtRenderConfigure() {
             <div class="adt-sys-card">
               <div class="adt-sys-icon">${sys.icon || '📊'}</div>
               <div class="adt-sys-label">${sys.name || 'SYSTEM'}</div>
-              <div class="adt-sys-value">≈ 29.2k</div>
-              <div class="adt-sys-desc">Records ingested</div>
+              <div class="adt-sys-value" id="adt-sys-value-${sys.id || sysId}">…</div>
+              <div class="adt-sys-desc" id="adt-sys-desc-${sys.id || sysId}">Loading records…</div>
             </div>
           `;
         }).join('')}
@@ -26558,6 +26759,9 @@ function adtRenderConfigure() {
       </div>
     </div>
   `;
+
+  // Populate per-system counts from SQL demo data or backend source.
+  adtPopulateSystemCountCards();
   
   // Draw pie chart
   setTimeout(() => adtDrawSignalPie(), 100);
@@ -27470,3 +27674,8 @@ function adtExportFullReport() {
 }
 
 </script>
+
+
+
+
+
