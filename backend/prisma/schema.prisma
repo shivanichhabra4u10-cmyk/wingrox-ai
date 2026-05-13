@@ -1,9 +1,3 @@
-// ─────────────────────────────────────────────────────────────
-// WINGROX DATABASE SCHEMA
-// Run: npm run db:push  (to sync schema to DB)
-// Run: npm run db:studio (to open visual DB browser)
-// ─────────────────────────────────────────────────────────────
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,145 +7,632 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// USERS · accounts that can run diagnostics
-model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  name         String?
-  
-  // Tier they've paid for (or 'nucleus' for free users)
-  tier         Tier          @default(NUCLEUS)
-  
-  // Expansion-specific plan (Silver/Gold/Platinum — separate from Digital Twin tiers)
-  expansionTier ExpansionTier @default(SILVER)
-  
-  // Stripe customer for billing
-  stripeCustomerId String? @unique
-  
-  // Relations
-  sessions            DiagnosticSession[]
-  expansionAssessments ExpansionAssessment[]
-  matchRequests        MatchRequest[]
-  ecoApplications      EcoPartnerApplication[]
-  files               UploadedFile[]
-  leads               AdvisorLead[]
-  payments            Payment[]
-  
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  lastLoginAt  DateTime?
-  
-  @@map("users")
+model advisor_leads {
+  id                  String               @id
+  userId              String?
+  sessionId           String?
+  context             String
+  email               String
+  name                String?
+  mobile              String?
+  message             String?
+  masterScore         Float?
+  tier                Tier?
+  status              LeadStatus           @default(NEW)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime
+  diagnostic_sessions diagnostic_sessions? @relation(fields: [sessionId], references: [id])
+  users               users?               @relation(fields: [userId], references: [id])
+
+  @@index([status, createdAt])
 }
 
-enum Tier {
-  NUCLEUS  // free, 15 questions
-  VANGUARD // $199, 100 questions
-  APEX     // book-call, white glove
+model commerce_orders {
+  order_id                String    @id @db.VarChar(50)
+  customer_id             String?   @db.VarChar(50)
+  order_total             Decimal?  @db.Decimal(12, 2)
+  fulfillment_status      String?   @db.VarChar(50)
+  created_timestamp       DateTime? @db.Timestamp(6)
+  fulfilled_timestamp     DateTime? @db.Timestamp(6)
+  stage_1_completion      Boolean?  @default(true)
+  stage_2_completion      Boolean?  @default(false)
+  stage_3_completion      Boolean?  @default(false)
+  data_inconsistency_flag Boolean?  @default(false)
+
+  @@index([created_timestamp], map: "idx_commerce_created")
+}
+
+model commerce_returns {
+  return_id             String    @id @db.VarChar(50)
+  order_id              String?   @db.VarChar(50)
+  refund_amount         Decimal?  @db.Decimal(12, 2)
+  reason_code           String?   @db.VarChar(100)
+  created_date          DateTime? @db.Timestamp(6)
+  processing_time_hours Decimal?  @db.Decimal(6, 2)
+}
+
+model company_profiles {
+  company_id            String                  @id @db.VarChar(50)
+  company_name          String                  @db.VarChar(255)
+  industry              String?                 @db.VarChar(100)
+  sector                String?                 @db.VarChar(100)
+  revenue_usd           Decimal?                @db.Decimal(15, 2)
+  employees             Int?
+  founded_year          Int?
+  regions               Json?
+  channels              Json?
+  metadata              Json?
+  created_at            DateTime?               @default(now()) @db.Timestamp(6)
+  updated_at            DateTime?               @default(now()) @db.Timestamp(6)
+  field_signal_mappings field_signal_mappings[]
+  signal_time_series    signal_time_series[]
+  system_connections    system_connections[]
+
+  @@index([industry], map: "idx_company_industry")
+  @@index([sector], map: "idx_company_sector")
+}
+
+model crm_customer_events {
+  event_id             String    @id @db.VarChar(50)
+  customer_id          String?   @db.VarChar(50)
+  event_type           String?   @db.VarChar(100)
+  cart_value           Decimal?  @db.Decimal(12, 2)
+  cart_abandonment     Boolean?
+  session_time_minutes Int?
+  timestamp            DateTime? @db.Timestamp(6)
+  conversion_flag      Boolean?
+
+  @@index([timestamp], map: "idx_crm_events_timestamp")
+}
+
+model crm_customers {
+  customer_id          String    @id @db.VarChar(50)
+  acquisition_channel  String?   @db.VarChar(100)
+  lifetime_value       Decimal?  @db.Decimal(12, 2)
+  churn_risk_score     Decimal?  @db.Decimal(5, 4)
+  repeat_purchase_rate Decimal?  @db.Decimal(5, 4)
+  nps_score            Int?
+  created_date         DateTime? @db.Timestamp(6)
+  last_purchase_date   DateTime? @db.Timestamp(6)
+  total_orders         Int?
+}
+
+model decision_events {
+  decision_id            String    @id @db.VarChar(50)
+  decision_type          String?   @db.VarChar(100)
+  decision_owner_role    String?   @db.VarChar(100)
+  urgency_level          String?   @db.VarChar(20)
+  decision_latency_hours Decimal?  @db.Decimal(6, 2)
+  escalation_required    Boolean?
+  outcome_quality_score  Decimal?  @db.Decimal(5, 4)
+  timestamp              DateTime? @db.Timestamp(6)
+  value_usd              Decimal?  @db.Decimal(15, 2)
+  approval_chain_length  Int?
+
+  @@index([timestamp], map: "idx_decision_timestamp")
+}
+
+model decision_paths {
+  path_id     Int       @id @default(autoincrement())
+  decision_id String?   @db.VarChar(50)
+  step_number Int?
+  role        String?   @db.VarChar(100)
+  delay_hours Decimal?  @db.Decimal(6, 2)
+  rework_flag Boolean?
+  timestamp   DateTime? @db.Timestamp(6)
+}
+
+model diagnostic_sessions {
+  id             String           @id
+  userId         String
+  tier           Tier
+  profile        Json             @default("{}")
+  answers        Json             @default("{}")
+  results        Json?
+  status         SessionStatus    @default(IN_PROGRESS)
+  completedAt    DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime
+  advisor_leads  advisor_leads[]
+  users          users            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  uploaded_files uploaded_files[]
+
+  @@index([userId])
+}
+
+model digital_twin_state {
+  state_id                   Int       @id @default(autoincrement())
+  company_id                 String?   @default("UB_RET_01") @db.VarChar(20)
+  timestamp                  DateTime? @db.Timestamp(6)
+  growth_velocity_index      Decimal?  @db.Decimal(5, 4)
+  execution_efficiency_index Decimal?  @db.Decimal(5, 4)
+  capital_efficiency_index   Decimal?  @db.Decimal(5, 4)
+  resilience_index           Decimal?  @db.Decimal(5, 4)
+  innovation_index           Decimal?  @db.Decimal(5, 4)
+  active_pain_score          Decimal?  @db.Decimal(5, 4)
+  operational_load           Decimal?  @db.Decimal(5, 4)
+  decision_latency_index     Decimal?  @db.Decimal(5, 4)
+  transformation_readiness   Decimal?  @db.Decimal(5, 4)
+  overall_health_score       Decimal?  @db.Decimal(5, 2)
+}
+
+model discovery_calls {
+  id             String   @id
+  matchRequestId String?
+  name           String
+  email          String
+  preferredTime  String   @default("")
+  status         String   @default("requested")
+  createdAt      DateTime @default(now())
+}
+
+model eco_partner_applications {
+  id                String   @id
+  userId            String?
+  name              String
+  email             String
+  linkedin          String   @default("")
+  website           String   @default("")
+  expertise         Json     @default("[]")
+  otpVerified       Boolean  @default(false)
+  ndaSigned         Boolean  @default(false)
+  signatureProvided Boolean  @default(false)
+  status            String   @default("PENDING")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime
+  users             users?   @relation(fields: [userId], references: [id])
+
+  @@index([email])
+  @@index([status, createdAt])
+}
+
+model erp_inventory {
+  warehouse_id      String    @db.VarChar(50)
+  sku_id            String    @db.VarChar(50)
+  inventory_level   Int?
+  spoilage_rate     Decimal?  @db.Decimal(5, 4)
+  stockout_events   Int?
+  forecast_accuracy Decimal?  @db.Decimal(5, 4)
+  last_updated      DateTime? @db.Timestamp(6)
+
+  @@id([warehouse_id, sku_id])
+}
+
+model erp_procurement {
+  po_id               String    @id @db.VarChar(50)
+  vendor_id           String?   @db.VarChar(50)
+  po_amount           Decimal?  @db.Decimal(15, 2)
+  inflation_rate      Decimal?  @db.Decimal(5, 4)
+  approval_time_hours Decimal?  @db.Decimal(6, 2)
+  renegotiation_flag  Boolean?
+  created_date        DateTime? @db.Timestamp(6)
+  approval_status     String?   @db.VarChar(50)
+  escalation_required Boolean?  @default(false)
+}
+
+model erp_sales_orders {
+  order_id               String    @id @db.VarChar(50)
+  customer_id            String?   @db.VarChar(50)
+  city                   String?   @db.VarChar(100)
+  order_date             DateTime? @db.Timestamp(6)
+  sku_id                 String?   @db.VarChar(50)
+  quantity               Int?
+  order_value            Decimal?  @db.Decimal(12, 2)
+  discount_amount        Decimal?  @db.Decimal(12, 2)
+  fulfillment_time_hours Int?
+  order_status           String?   @db.VarChar(50)
+  return_flag            Boolean?
+  approval_time_hours    Decimal?  @db.Decimal(6, 2)
+  escalation_flag        Boolean?  @default(false)
+
+  @@index([order_date], map: "idx_erp_orders_date")
+  @@index([order_status], map: "idx_erp_orders_status")
+}
+
+model execution_failures {
+  failure_id          String    @id @db.VarChar(50)
+  initiative_id       String?   @db.VarChar(50)
+  failure_stage       String?   @db.VarChar(100)
+  delay_days          Int?
+  cost_overrun_pct    Decimal?  @db.Decimal(5, 4)
+  timestamp           DateTime? @db.Timestamp(6)
+  root_cause_category String?   @db.VarChar(100)
+}
+
+model expansion_assessments {
+  id             String   @id
+  userId         String?
+  company        String
+  hq             String   @default("India")
+  industry       String
+  revenue        String   @default("")
+  model          String   @default("")
+  targetGeos     Json     @default("[]")
+  goal           String   @default("")
+  readinessScore Int
+  cluster        String
+  topCountries   Json     @default("[]")
+  revProjection  Json     @default("{}")
+  nextMoves      Json     @default("[]")
+  createdAt      DateTime @default(now())
+  users          users?   @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([userId])
+}
+
+model field_signal_mappings {
+  mapping_id           Int               @id @default(autoincrement())
+  company_id           String?           @db.VarChar(50)
+  source_system        String?           @db.VarChar(50)
+  source_table         String?           @db.VarChar(100)
+  source_field         String?           @db.VarChar(100)
+  signal_id            String?           @db.VarChar(50)
+  transformation_logic String?
+  confidence_score     Decimal?          @db.Decimal(3, 2)
+  mapping_method       String?           @db.VarChar(50)
+  created_at           DateTime?         @default(now()) @db.Timestamp(6)
+  company_profiles     company_profiles? @relation(fields: [company_id], references: [company_id], onDelete: NoAction, onUpdate: NoAction)
+  signal_taxonomy      signal_taxonomy?  @relation(fields: [signal_id], references: [signal_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([company_id], map: "idx_field_mappings_company")
+  @@index([source_system], map: "idx_field_mappings_system")
+}
+
+model finance_budget_approvals {
+  approval_id         String    @id @db.VarChar(50)
+  initiative_type     String?   @db.VarChar(100)
+  approved_amount     Decimal?  @db.Decimal(15, 2)
+  ai_initiative_flag  Boolean?
+  approval_time_hours Decimal?  @db.Decimal(6, 2)
+  requested_date      DateTime? @db.Timestamp(6)
+  approved_date       DateTime? @db.Timestamp(6)
+  approver_role       String?   @db.VarChar(100)
+  escalation_count    Int?      @default(0)
+}
+
+model finance_pnl {
+  month              DateTime @id @db.Date
+  revenue            Decimal? @db.Decimal(15, 2)
+  gross_margin       Decimal? @db.Decimal(5, 4)
+  logistics_cost     Decimal? @db.Decimal(15, 2)
+  marketing_spend    Decimal? @db.Decimal(15, 2)
+  refund_cost        Decimal? @db.Decimal(15, 2)
+  net_margin         Decimal? @db.Decimal(5, 4)
+  operating_expenses Decimal? @db.Decimal(15, 2)
+}
+
+model growth_dna_indices {
+  snapshot_id                Int       @id @default(autoincrement())
+  company_id                 String?   @default("UB_RET_01") @db.VarChar(20)
+  timestamp                  DateTime? @db.Timestamp(6)
+  growth_velocity_index      Decimal?  @db.Decimal(5, 2)
+  execution_efficiency_index Decimal?  @db.Decimal(5, 2)
+  capital_efficiency_index   Decimal?  @db.Decimal(5, 2)
+  resilience_index           Decimal?  @db.Decimal(5, 2)
+  innovation_index           Decimal?  @db.Decimal(5, 2)
+  overall_dna_score          Decimal?  @db.Decimal(5, 2)
+}
+
+model growth_dna_mapping {
+  mapping_id       Int              @id @default(autoincrement())
+  index_name       String           @db.VarChar(100)
+  signal_id        String?          @db.VarChar(50)
+  weight           Decimal          @db.Decimal(5, 4)
+  impact_direction String?          @db.VarChar(10)
+  sector           String?          @db.VarChar(100)
+  notes            String?
+  signal_taxonomy  signal_taxonomy? @relation(fields: [signal_id], references: [signal_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([index_name], map: "idx_dna_mapping_index")
+  @@index([signal_id], map: "idx_dna_mapping_signal")
+}
+
+model hr_employees {
+  employee_id              String    @id @db.VarChar(50)
+  role                     String?   @db.VarChar(100)
+  department               String?   @db.VarChar(100)
+  productivity_score       Decimal?  @db.Decimal(5, 4)
+  attrition_risk           Decimal?  @db.Decimal(5, 4)
+  hire_date                DateTime? @db.Timestamp(6)
+  manager_id               String?   @db.VarChar(50)
+  decision_authority_level Int?
+  salary_band              String?   @db.VarChar(20)
+}
+
+model hr_job_requisitions {
+  req_id              String    @id @db.VarChar(50)
+  role_type           String?   @db.VarChar(100)
+  ai_related_flag     Boolean?
+  hiring_priority     String?   @db.VarChar(20)
+  approval_time_hours Decimal?  @db.Decimal(6, 2)
+  status              String?   @db.VarChar(50)
+  created_date        DateTime? @db.Timestamp(6)
+  filled_date         DateTime? @db.Timestamp(6)
+  escalation_to_cfo   Boolean?  @default(false)
+}
+
+model ioi_events_unified {
+  event_id               String   @id @db.VarChar(50)
+  company_id             String   @default("UB_RET_01") @db.VarChar(20)
+  timestamp              DateTime @db.Timestamp(6)
+  source_system          String   @db.VarChar(50)
+  domain                 String?  @db.VarChar(50)
+  event_type             String   @db.VarChar(100)
+  event_subtype          String?  @db.VarChar(100)
+  entity_id              String?  @db.VarChar(100)
+  actor_type             String?  @db.VarChar(50)
+  raw_value              Decimal? @db.Decimal(15, 2)
+  unit                   String?  @db.VarChar(20)
+  severity               String?  @db.VarChar(20)
+  revenue_impact_flag    Boolean? @default(false)
+  profit_impact_flag     Boolean? @default(false)
+  valuation_impact_flag  Boolean? @default(false)
+  reputation_impact_flag Boolean? @default(false)
+  metadata               Json?
+
+  @@index([source_system], map: "idx_ioi_source")
+  @@index([timestamp], map: "idx_ioi_timestamp")
+  @@index([event_type], map: "idx_ioi_type")
+}
+
+model logistics_deliveries {
+  delivery_id         String    @id @db.VarChar(50)
+  order_id            String?   @db.VarChar(50)
+  delivery_time_hours Decimal?  @db.Decimal(6, 2)
+  sla_breach          Boolean?
+  fuel_cost           Decimal?  @db.Decimal(10, 2)
+  customer_rating     Int?
+  delivery_date       DateTime? @db.Timestamp(6)
+  delay_minutes       Int?      @default(0)
+
+  @@index([delivery_date], map: "idx_logistics_date")
+}
+
+model marketing_campaigns {
+  campaign_id       String    @id @db.VarChar(50)
+  spend             Decimal?  @db.Decimal(15, 2)
+  impressions       Int?
+  conversions       Int?
+  revenue_generated Decimal?  @db.Decimal(15, 2)
+  start_date        DateTime? @db.Timestamp(6)
+  end_date          DateTime? @db.Timestamp(6)
+  roi               Decimal?  @db.Decimal(5, 4)
+}
+
+model match_requests {
+  id            String      @id
+  userId        String?
+  company       String
+  hq            String      @default("India")
+  sector        String
+  stage         String
+  revenue       String
+  description   String      @default("")
+  intents       Json        @default("[]")
+  geos          Json        @default("[]")
+  priorities    Json        @default("[]")
+  notes         String      @default("")
+  matchCount    Int         @default(0)
+  aiRead        String      @default("")
+  geoBreakdown  Json        @default("[]")
+  typeBreakdown Json        @default("[]")
+  matches       Json        @default("[]")
+  status        MatchStatus @default(PENDING)
+  createdAt     DateTime    @default(now())
+  users         users?      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model normalized_signals {
+  signal_id        Int       @id @default(autoincrement())
+  company_id       String?   @default("UB_RET_01") @db.VarChar(20)
+  signal_name      String?   @db.VarChar(100)
+  normalized_value Decimal?  @db.Decimal(5, 4)
+  raw_value        Decimal?  @db.Decimal(15, 4)
+  timestamp        DateTime? @db.Timestamp(6)
+  signal_category  String?   @db.VarChar(50)
+  impact_level     String?   @db.VarChar(20)
+
+  @@index([signal_name], map: "idx_signals_name")
+  @@index([timestamp], map: "idx_signals_timestamp")
+}
+
+model payments {
+  id                    String        @id
+  userId                String
+  stripePaymentIntentId String        @unique
+  stripeSessionId       String?       @unique
+  amountCents           Int
+  currency              String        @default("usd")
+  tier                  Tier
+  status                PaymentStatus @default(PENDING)
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime
+  users                 users         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model procurement_vendors {
+  vendor_id             String   @id @db.VarChar(50)
+  risk_score            Decimal? @db.Decimal(5, 4)
+  compliance_score      Decimal? @db.Decimal(5, 4)
+  sustainability_rating String?  @db.VarChar(10)
+  on_time_delivery_rate Decimal? @db.Decimal(5, 4)
+  price_inflation_rate  Decimal? @db.Decimal(5, 4)
+}
+
+model product_analytics_sessions {
+  session_id               String    @id @db.VarChar(50)
+  customer_id              String?   @db.VarChar(50)
+  session_duration_minutes Int?
+  crash_flag               Boolean?
+  checkout_completed       Boolean?
+  timestamp                DateTime? @db.Timestamp(6)
+  pages_viewed             Int?
+  cart_abandonment         Boolean?
+}
+
+model role_friction_signals {
+  friction_id   Int       @id @default(autoincrement())
+  role          String?   @db.VarChar(100)
+  friction_type String?   @db.VarChar(100)
+  frequency     Int?
+  severity      String?   @db.VarChar(20)
+  root_cause    String?
+  timestamp     DateTime? @db.Timestamp(6)
+}
+
+model security_events {
+  event_id              String    @id @db.VarChar(50)
+  severity              String?   @db.VarChar(20)
+  event_type            String?   @db.VarChar(100)
+  fraud_amount          Decimal?  @db.Decimal(12, 2)
+  customer_data_impact  Boolean?
+  timestamp             DateTime? @db.Timestamp(6)
+  resolution_time_hours Decimal?  @db.Decimal(6, 2)
+}
+
+model signal_taxonomy {
+  signal_id             String                  @id @db.VarChar(50)
+  signal_name           String                  @unique @db.VarChar(100)
+  signal_category       String                  @db.VarChar(50)
+  signal_type           String?                 @db.VarChar(50)
+  leading_or_lagging    String?                 @db.VarChar(20)
+  description           String?
+  unit                  String?                 @db.VarChar(20)
+  frequency             String?                 @db.VarChar(20)
+  normalization_method  String?                 @db.VarChar(50)
+  min_value             Decimal?                @db.Decimal(15, 4)
+  max_value             Decimal?                @db.Decimal(15, 4)
+  sector_benchmarks     Json?
+  metadata              Json?
+  field_signal_mappings field_signal_mappings[]
+  growth_dna_mapping    growth_dna_mapping[]
+  signal_time_series    signal_time_series[]
+
+  @@index([signal_category], map: "idx_signal_category")
+  @@index([signal_type], map: "idx_signal_type")
+}
+
+model signal_time_series {
+  ts_id            Int               @id @default(autoincrement())
+  company_id       String?           @db.VarChar(50)
+  signal_id        String?           @db.VarChar(50)
+  time_bucket      DateTime          @db.Timestamp(6)
+  aggregation_type String?           @db.VarChar(20)
+  value            Decimal?          @db.Decimal(15, 4)
+  sample_count     Int?
+  variance         Decimal?          @db.Decimal(15, 6)
+  trend_direction  String?           @db.VarChar(10)
+  created_at       DateTime?         @default(now()) @db.Timestamp(6)
+  company_profiles company_profiles? @relation(fields: [company_id], references: [company_id], onDelete: NoAction, onUpdate: NoAction)
+  signal_taxonomy  signal_taxonomy?  @relation(fields: [signal_id], references: [signal_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([company_id, signal_id], map: "idx_ts_company_signal")
+  @@index([time_bucket], map: "idx_ts_time_bucket")
+}
+
+model simulation_runs {
+  run_id           String    @id @db.VarChar(50)
+  scenario_id      String?   @db.VarChar(50)
+  iteration_number Int?
+  random_seed      Int?
+  input_variance   Decimal?  @db.Decimal(5, 4)
+  output_revenue   Decimal?  @db.Decimal(15, 2)
+  output_profit    Decimal?  @db.Decimal(15, 2)
+  output_risk      Decimal?  @db.Decimal(5, 4)
+  success_flag     Boolean?
+  timestamp        DateTime? @db.Timestamp(6)
+}
+
+model support_tickets {
+  ticket_id             String    @id @db.VarChar(50)
+  issue_type            String?   @db.VarChar(100)
+  severity              String?   @db.VarChar(20)
+  resolution_time_hours Decimal?  @db.Decimal(6, 2)
+  escalation_flag       Boolean?
+  refund_requested      Boolean?
+  created_timestamp     DateTime? @db.Timestamp(6)
+  resolved_timestamp    DateTime? @db.Timestamp(6)
+  customer_id           String?   @db.VarChar(50)
+
+  @@index([created_timestamp], map: "idx_support_created")
+}
+
+model system_connections {
+  connection_id     String            @id @db.VarChar(50)
+  company_id        String?           @db.VarChar(50)
+  system_type       String            @db.VarChar(50)
+  system_name       String?           @db.VarChar(100)
+  connection_config Json
+  schema_mapping    Json?
+  connection_status String?           @default("active") @db.VarChar(20)
+  last_sync         DateTime?         @db.Timestamp(6)
+  created_at        DateTime?         @default(now()) @db.Timestamp(6)
+  company_profiles  company_profiles? @relation(fields: [company_id], references: [company_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([company_id], map: "idx_connections_company")
+  @@index([system_type], map: "idx_connections_type")
+}
+
+model uploaded_files {
+  id                  String               @id
+  userId              String
+  sessionId           String?
+  filename            String
+  mimeType            String
+  sizeBytes           Int
+  storageKey          String
+  storageDriver       String               @default("local")
+  createdAt           DateTime             @default(now())
+  diagnostic_sessions diagnostic_sessions? @relation(fields: [sessionId], references: [id])
+  users               users                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([userId])
+}
+
+model users {
+  id                       String                     @id
+  email                    String                     @unique
+  passwordHash             String
+  name                     String?
+  tier                     Tier                       @default(NUCLEUS)
+  stripeCustomerId         String?                    @unique
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime
+  lastLoginAt              DateTime?
+  expansionTier            ExpansionTier              @default(SILVER)
+  advisor_leads            advisor_leads[]
+  diagnostic_sessions      diagnostic_sessions[]
+  eco_partner_applications eco_partner_applications[]
+  expansion_assessments    expansion_assessments[]
+  match_requests           match_requests[]
+  payments                 payments[]
+  uploaded_files           uploaded_files[]
+}
+
+model workflow_events {
+  workflow_id           String    @id @db.VarChar(50)
+  workflow_type         String?   @db.VarChar(100)
+  escalation_flag       Boolean?
+  completion_time_hours Decimal?  @db.Decimal(8, 2)
+  automation_flag       Boolean?
+  created_timestamp     DateTime? @db.Timestamp(6)
+  completed_timestamp   DateTime? @db.Timestamp(6)
+  stage_dropoff         Int?
+  status                String?   @db.VarChar(50)
+
+  @@index([created_timestamp], map: "idx_workflow_created")
 }
 
 enum ExpansionTier {
-  SILVER   // free — 1 assessment/month
-  GOLD     // paid — 5 assessments/month
-  PLATINUM // paid — unlimited assessments
-}
-
-// DIAGNOSTIC SESSION · one per user attempt
-model DiagnosticSession {
-  id           String   @id @default(cuid())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Tier this session was started under (lock at session start)
-  tier         Tier
-  
-  // Profile data — stored as JSON since structure mirrors frontend
-  // Includes: name, industry, email, mobile, linkedin, year, chips{}, 
-  //           and 12 financial overrides
-  profile      Json     @default("{}")
-  
-  // Question answers — { Q1: 5, Q2: 3, ... }
-  answers      Json     @default("{}")
-  
-  // Computed results cache (filled when diagnostic completes)
-  results      Json?
-  
-  // Lifecycle
-  status       SessionStatus @default(IN_PROGRESS)
-  completedAt  DateTime?
-  
-  // Files attached to this session
-  files        UploadedFile[]
-  leads        AdvisorLead[]
-  
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  @@index([userId])
-  @@map("diagnostic_sessions")
-}
-
-enum SessionStatus {
-  IN_PROGRESS
-  COMPLETED
-  ABANDONED
-}
-
-// UPLOADED FILES · pitch decks, financials etc.
-model UploadedFile {
-  id           String   @id @default(cuid())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  sessionId    String?
-  session      DiagnosticSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
-  
-  filename     String
-  mimeType     String
-  sizeBytes    Int
-  
-  // Storage location
-  storageKey   String   // local path OR S3 key
-  storageDriver String  @default("local") // 'local' | 's3'
-  
-  createdAt    DateTime @default(now())
-  
-  @@index([userId])
-  @@index([sessionId])
-  @@map("uploaded_files")
-}
-
-// ADVISOR LEADS · captures every "Book strategy call" / "Email advisor" click
-model AdvisorLead {
-  id           String   @id @default(cuid())
-  userId       String?  // optional — could be from anonymous user
-  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  
-  sessionId    String?
-  session      DiagnosticSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
-  
-  // Where in the report they triggered
-  context      String   // e.g. 'exec-summary', 'revenue-engine', 'simulator'
-  
-  // The user-supplied data
-  email        String
-  name         String?
-  mobile       String?
-  message      String?
-  
-  // Snapshot of master score at time of lead (for advisor context)
-  masterScore  Float?
-  tier         Tier?
-  
-  // Lead lifecycle
-  status       LeadStatus @default(NEW)
-  
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  @@index([status, createdAt])
-  @@map("advisor_leads")
+  SILVER
+  GOLD
+  PLATINUM
 }
 
 enum LeadStatus {
@@ -161,26 +642,9 @@ enum LeadStatus {
   CLOSED
 }
 
-// PAYMENTS · Stripe transactions
-model Payment {
-  id                    String   @id @default(cuid())
-  userId                String
-  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  stripePaymentIntentId String   @unique
-  stripeSessionId       String?  @unique
-  
-  amountCents           Int
-  currency              String   @default("usd")
-  tier                  Tier     // tier they bought
-  
-  status                PaymentStatus @default(PENDING)
-  
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  
-  @@index([userId])
-  @@map("payments")
+enum MatchStatus {
+  PENDING
+  COMPLETE
 }
 
 enum PaymentStatus {
@@ -190,115 +654,14 @@ enum PaymentStatus {
   REFUNDED
 }
 
-// EXPANSION ASSESSMENT · stores results from the Global Scale-Up Readiness Navigator
-model ExpansionAssessment {
-  id             String   @id @default(cuid())
-
-  // Optional auth link — anonymous assessments are stored without userId
-  userId         String?
-  user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  // Input profile
-  company        String
-  hq             String   @default("India")
-  industry       String
-  revenue        String   @default("")
-  model          String   @default("")
-  targetGeos     Json     @default("[]")  // string[] — country codes
-  goal           String   @default("")
-
-  // Computed results
-  readinessScore Int
-  cluster        String   // Scale-Ready | Expansion-Ready | Preparation-Stage | Foundation-Stage
-  topCountries   Json     @default("[]")  // { code, score, name, flag }[]
-  revProjection  Json     @default("{}")  // { low, base, high }
-  nextMoves      Json     @default("[]")  // { title, desc, when }[]
-
-  createdAt      DateTime @default(now())
-
-  @@index([userId])
-  @@index([userId, createdAt])
-  @@map("expansion_assessments")
+enum SessionStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
 }
 
-// MATCH REQUEST · stores a matchmaking run (profile + intent + results)
-model MatchRequest {
-  id            String   @id @default(cuid())
-
-  userId        String?
-  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  // Step 1 — company profile
-  company       String
-  hq            String   @default("India")
-  sector        String
-  stage         String
-  revenue       String
-  description   String   @default("")
-
-  // Step 2 — intent
-  intents       Json     @default("[]")  // string[] e.g. ["investor","distributor"]
-  geos          Json     @default("[]")  // string[] e.g. ["DACH","UK"]
-  priorities    Json     @default("[]")  // string[]
-  notes         String   @default("")
-
-  // Results (set on completion)
-  matchCount    Int      @default(0)
-  aiRead        String   @default("")
-  geoBreakdown  Json     @default("[]")  // { geo, count }[]
-  typeBreakdown Json     @default("[]")  // { type, count }[]
-  matches       Json     @default("[]")  // anonymised match cards
-
-  status        MatchStatus @default(PENDING)
-  createdAt     DateTime @default(now())
-
-  @@index([userId])
-  @@map("match_requests")
-}
-
-enum MatchStatus {
-  PENDING
-  COMPLETE
-}
-
-// DISCOVERY CALL BOOKING · from the "Book Discovery Call" modal
-model DiscoveryCall {
-  id            String   @id @default(cuid())
-  matchRequestId String?
-  name          String
-  email         String
-  preferredTime String   @default("")
-  status        String   @default("requested")
-  createdAt     DateTime @default(now())
-
-  @@map("discovery_calls")
-}
-
-// ECO PARTNER APPLICATION · from the "Become an Ecosystem Partner" flow
-model EcoPartnerApplication {
-  id        String   @id @default(cuid())
-
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  name      String
-  email     String
-  linkedin  String   @default("")
-  website   String   @default("")
-
-  expertise Json     @default("[]")   // string[] — chosen expertise tags
-
-  // Completion flags (OTP & NDA are client-side; we trust the payload)
-  otpVerified       Boolean @default(false)
-  ndaSigned         Boolean @default(false)
-  signatureProvided Boolean @default(false)
-
-  status    String   @default("PENDING")   // PENDING | APPROVED | REJECTED
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([email])
-  @@index([status, createdAt])
-  @@map("eco_partner_applications")
+enum Tier {
+  NUCLEUS
+  VANGUARD
+  APEX
 }

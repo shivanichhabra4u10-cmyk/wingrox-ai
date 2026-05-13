@@ -16,6 +16,7 @@ import paymentRoutes from './routes/payments.js';
 import expansionRoutes from './routes/expansion.js';
 import matchRoutes from './routes/match.js';
 import ecoRoutes from './routes/eco.js';
+import growthDnaRoutes from './routes/growthDna.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { stripeWebhook } from './routes/webhooks.js';
 
@@ -71,6 +72,7 @@ app.use('/api/payments', apiLimiter, paymentRoutes);
 app.use('/api/expansion', apiLimiter, expansionRoutes);
 app.use('/api/match', apiLimiter, matchRoutes);
 app.use('/api/eco', apiLimiter, ecoRoutes);
+app.use('/api/v1', apiLimiter, growthDnaRoutes);
 
 // Serve uploaded files in dev (in production, use S3/CDN instead)
 if (process.env.UPLOAD_DRIVER === 'local') {
