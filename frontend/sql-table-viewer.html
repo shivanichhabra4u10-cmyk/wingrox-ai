@@ -423,6 +423,7 @@
       const parts = [];
       let current = "";
       let inSingle = false;
+      let tokenQuoted = false;
 
       const pushToken = (token, quoted) => {
         const value = token.trim();
@@ -458,8 +459,6 @@
             continue;
           }
           if (ch === "'") {
-            pushToken(current, true);
-            current = "";
             inSingle = false;
             continue;
           }
@@ -468,13 +467,15 @@
         }
 
         if (ch === "'") {
+          tokenQuoted = true;
           inSingle = true;
           continue;
         }
 
         if (ch === ",") {
-          pushToken(current, false);
+          pushToken(current, tokenQuoted);
           current = "";
+          tokenQuoted = false;
           continue;
         }
 
@@ -483,8 +484,8 @@
         }
       }
 
-      if (current.length > 0 || str.endsWith(",")) {
-        pushToken(current, false);
+      if (current.length > 0 || tokenQuoted || str.endsWith(",")) {
+        pushToken(current, tokenQuoted);
       }
 
       return parts.length > 0 ? parts : null;

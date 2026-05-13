@@ -31,6 +31,7 @@ DROP TABLE IF EXISTS decision_events CASCADE;
 DROP TABLE IF EXISTS decision_paths CASCADE;
 DROP TABLE IF EXISTS role_friction_signals CASCADE;
 DROP TABLE IF EXISTS execution_failures CASCADE;
+DROP TABLE IF EXISTS company_profile CASCADE;
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- PART 1: MASTER IoI EVENT LAYER (Unified Events from All Systems)
@@ -59,6 +60,18 @@ CREATE TABLE ioi_events_unified (
 CREATE INDEX idx_ioi_timestamp ON ioi_events_unified(timestamp);
 CREATE INDEX idx_ioi_source ON ioi_events_unified(source_system);
 CREATE INDEX idx_ioi_type ON ioi_events_unified(event_type);
+
+CREATE TABLE company_profile (
+    company_id VARCHAR(20) PRIMARY KEY,
+    company_name VARCHAR(255) NOT NULL,
+    industry VARCHAR(100),
+    sector VARCHAR(100),
+    revenue_usd DECIMAL(15,2),
+    employees INTEGER,
+    founded_year INTEGER,
+    regions JSONB,
+    channels JSONB
+);
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- CONNECTOR 1: ERP SYSTEM (SAP S/4HANA)
@@ -429,6 +442,9 @@ CREATE TABLE simulation_runs (
 -- INSERT SYNTHETIC DATA - CONNECTOR 1: ERP SYSTEM
 -- This data will produce the exact dashboard outcomes
 -- ═══════════════════════════════════════════════════════════════════════════
+
+INSERT INTO company_profile (company_id, company_name, industry, sector, revenue_usd, employees, founded_year, regions, channels)
+VALUES ('UB_RET_01', 'UrbanBasket Retail', 'FMCG Commerce', 'FMCG', 680000000, 3200, 2018, '["India"]', '["App", "Web", "Retail", "Dark Stores"]');
 
 -- ERP Sales Orders (Generate pattern showing execution dropoff)
 INSERT INTO erp_sales_orders (order_id, customer_id, city, order_date, sku_id, quantity, order_value, discount_amount, fulfillment_time_hours, order_status, return_flag, approval_time_hours, escalation_flag)
